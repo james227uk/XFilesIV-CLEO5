@@ -1,0 +1,54 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2600'
+test("2600 (is_text_empty)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("short string should be empty", test1)
+    it("short string should NOT be empty", test2)
+    it("long string should be empty", test3)
+    it("long string should NOT be empty", test4)
+    it("buffer string should be empty", test5)
+    it("buffer string should NOT be empty", test6)
+    return
+
+    function test1
+        1@s = ''
+        is_text_empty 1@s
+        assert_result_true()
+    end
+
+    function test2
+        1@s = 'test'
+        is_text_empty 1@s
+        assert_result_false()
+    end
+    
+    function test3
+        1@v = ""
+        is_text_empty 1@v
+		assert_result_true()
+    end
+
+    function test4
+        1@v = "test"
+        is_text_empty 1@s
+		assert_result_false()
+    end
+    
+    function test5
+        1@ = allocate_memory {size} 64 // 0 prefill in CLEO5
+        is_text_empty 1@
+        assert_result_true()
+    end
+
+    function test6
+        1@ = allocate_memory {size} 64
+        string_format {buffer} 1@ {format} "some text"
+        is_text_empty 1@
+		assert_result_false()
+    end
+end

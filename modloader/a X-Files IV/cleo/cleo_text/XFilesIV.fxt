@@ -1,0 +1,163 @@
+# X-Files IV Text Mappings
+# Using FXT for easy access and modification in VS Code
+
+# Main Menu
+# ----------------------------
+XSM0000 ~y~:~w~ 
+XSM0001 X-Files IV
+XSM0002 Select Game Mode
+XSM0003 Storymode
+XSM0004 Freemode
+
+
+
+# The Introduction
+# ----------------------------
+XSM0101 X-Files IV
+XSM0102 By james227uk
+XSM0103 Two Weeks Later...
+XSM0104 ~y~CJ: ~w~Hey bartender, can I get another one?
+XSM0105 ~y~Bartender:~w~ Coming right up, CJ.
+XSM0106 ~y~Truth:~w~ Carl!
+XSM0107 ~y~CJ:~w~ Who' this?
+XSM0108 ~y~Truth:~w~ You know me, this is The Truth!
+XSM0109 ~y~CJ:~w~ No, I don't.
+XSM0110 ~y~Truth:~w~ Okay, you can drop the act now kid.
+XSM0111 ~y~Truth:~w~  Carl, it's me, The Truth! We got a date with destiny, man!
+XSM0112 ~y~Truth:~w~ In about five minutes!
+XSM0113 ~y~Truth:~w~ Make sure nobody follows you.
+XSM0114 ~y~CJ:~w~ I think you popped another microdot.
+XSM0115 ~y~CJ:~w~  What are you talking about?!
+XSM0116 ~y~CJ:~w~ Look, what's going on, Truth?! This is my day off man!
+XSM0117 ~y~CJ:~w~ Hello?!
+XSM0118 ~y~CJ:~w~ Damn! Gotta change my number!
+
+# Arrival
+# ----------------------------
+XSM0201 The Truth has requested to see you at ~y~Prospero H.Q.~w~
+XSM0202 Better find out what he's talking about.
+XSM0203 ~y~Guard:~w~ Johnson? Didn't expect to see you today
+XSM0204 ~y~CJ:~w~ Neither did I. Apparently something's going down?
+XSM0205 ~y~Guard:~w~ Yeah, you better head on in pronto.
+XSM0206 ~y~Guard:~w~ Johnson? Interesting set of wheels you got there...
+XSM0207 ~y~CJ:~w~ Don't ask. Truth said something's going down?
+XSM0208 ~y~CJ:~w~ Truth, what the hell's goin' on man?
+
+
+# Weapons Vendor
+# ----------------------------
+XWEP000 Price
+XWEP001 Free
+XWEP002 Your Jetpack is located outside the HQ main doors!
+XWEP101 Armoury
+XWEP102 Categories
+XWEP103 Pistols
+XWEP104 SMGs
+XWEP105 Rifles
+XWEP106 Shotguns
+XWEP107 Heavy Weapons
+XWEP108 Projectiles
+XWEP109 Melee
+XWEP110 Gadgets
+
+XWEP201 M1911A1
+XWEP202 The venerable Colt M1911A1. Lightweight and fast firing.
+XWEP203 M1911A1 (Silenced)
+XWEP204 The venerable Colt M1911A1, this time with attached suppressor.
+XWEP205 Desert Eagle
+XWEP206 With incredible stopping power, the Desert Eagle is the pistol of choice for the sophisticated Agent.
+
+XWEP301 TEC-9
+XWEP302 Cheap, but effective and fast firing.
+XWEP303 Micro Uzi
+XWEP304 A sizeable punch in a not-so-sizeable package. Pack plenty of ammo.
+XWEP305 MP5A3
+XWEP306 The trusty MP5. Impressive fire rate, accuracy, and stopping power.
+
+XWEP401 AK-47 (Prospero)
+XWEP402 Prospero's own custom version of the well-known AK47, combining parts from many different AK models to create a cheap but effective workhorse rifle.
+XWEP403 Colt Model 733
+XWEP404 The assault rifle of choice for Prospero agents.
+XWEP405 Marlin Model 336
+XWEP406 Level-action rifle typically used b hunters. Packs a punch, just don't miss.
+XWEP407 Remington Model 700 (Scoped)
+XWEP408 Remington Model 700 outfitted with a high zoom scope for long distance engagements. They'll never see you coming.
+
+XWEP501 Ithaca 37 Shotgun
+XWEP502 Pump-action shotgun. Fairly powerful, but inaccurate at anything other than the closest ranges.
+XWEP503 Colt Model 1883 Hammerless (Sawn-off)
+XWEP504 Small, powerful, and easy to wield. Just don't miss.
+XWEP505 SPAS-12
+XWEP506 Semi-automatic, with high stopping power, and a good fire rate.
+
+XWEP601 RPG-7
+XWEP602 It blows stuff up. Use it in close quarters and it'll blow you up too. 
+XWEP603 SA-7 Grail
+XWEP604 Man-portable guided missile launcher, capable of locking onto the heat signatures of vehicles.
+XWEP605 Flamethrower
+XWEP606 Give a myth a fire, it'll be warm for the rest of the night. Light a myth on fire, it'll be warm for the rest of it's life.
+XWEP607 M134 Minigun
+XWEP608 Jokingly referred to as the Cheese Grater, the M134 Minigun will poke even the toughest myth full of a million holes within seconds thanks to it's incredibly high fire rate.
+
+XWEP701 M67 Grenade
+XWEP702 Throw the grenade, not the pin. And think twice before throwing one up hill.
+XWEP703 Satchel Charge
+XWEP704 Throwable bombs that can be manually detonated at any time. Coated in a sticky subtance that can adhere to almost everything... including myths.
+XWEP705 Molotov Cocktail
+XWEP706 For when you DO want to set the world on fire.
+XWEP707 M7 CS Gas Grenade
+XWEP708 Typically used for riot control, this M7 grenade is filled with CS gas. Untested against myths.
+
+XWEP801 Brass Knuckles
+XWEP802 For when you absolutely have to slap a myth in the face with your bare hands.
+XWEP803 PR24 Control Device Baton
+XWEP804 Standard issue melee device used by law enforcement. 
+XWEP805 SOG Seal Pup
+XWEP806 Small, sharp, and deadly.
+XWEP807 Baseball Bat
+XWEP808 A classic sports item. Neither glove nor ball included.
+XWEP809 Katana
+XWEP810 Incredibly sharp, handle with care.
+XWEP811 Chainsaw
+XWEP812 For when you have to fight fire with fire.
+
+XWEP901 Armour
+XWEP902 Heavy body armour. You need protection, everybody does.
+XWEP903 Photo Camera
+XWEP904 Make sure to ask the myths to say Cheese.
+XWEP905 Night Vision Goggles
+XWEP906 If the myths can see in the dark, why shouldn't you?
+XWEP907 Thermal Goggles
+XWEP908 You can't shoot what you can't see- Oh wait. You can see it.
+XWEP909 Parachute
+XWEP910 Leaping out of a plane has never felt so safe. Warranty not included.
+XWEP911 X-07 Jetpack
+XWEP912 Fresh out of the Prospero labs, utilising ~r~REDACTED~w~ to enable aerial propulsion. Use with care.
+
+
+# Debug Menu
+# ----------------------------
+XDBGA01 Debug Menu
+XDBGA02 Options
+XDBGA03 Description
+XDBGA04 Spawning
+XDBGA05 Spawn vehicles and weapons
+XDBGA06 Teleports
+XDBGA07 Useful Locations
+XDBGA26 Settings
+XDBGA27 Change mod settings
+
+# ---Spawn Menu
+XDBGB01 Hydra
+XDBGB02 Spawn Vehicle
+
+# ---Teleports Menu
+XDBGC01 Prospero H.Q.
+XDBGC02 Shady Cabin
+XDBGC03 Weapons Vendor
+
+# ---Settings Menu
+XDBGM01 Free Weapons
+XDBGM02 Toggle free weapons from the vendor
+XDBGM03 Verbose Mode
+XDBGM04 Toggle code verbose comments

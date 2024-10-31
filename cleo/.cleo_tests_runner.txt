@@ -1,0 +1,76 @@
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+
+{$CLEO .cs}
+
+script_name 'CleoTest'
+debug_on
+
+print_big_string {text} "CLEO TESTING" {time} 4000 {style} TextStyle.MiddleSmaller
+
+wait 4000 // wait for game to fade in
+clear_prints
+
+RUN_TESTS_DIR("cleo:", "cleo_tests")
+
+print_big_string {text} "DONE" {time} 5000 {style} TextStyle.MiddleSmaller
+
+terminate_this_custom_script
+
+
+function RUN_TESTS_DIR(basePath :string, directory :string)
+    trace "" // separator
+    trace "~y~~h~--------  Testing module '~s~~h~%s~y~~h~'  --------" directory
+
+    // process all test files
+    int str = allocate_memory 260
+    string_format str = "%s\\%s\\*.s" basePath directory
+    
+    int searchHandle = 0
+    int found = allocate_memory 64
+
+    if
+        find_first_file str {handle} searchHandle {fileName} found
+    then
+        repeat
+            string_format str = "%s\\%s\\%s" basePath directory found
+            if
+                does_file_exist str // files only
+            then
+                stream_custom_script str
+                int script = get_script_struct_just_created
+
+                while is_script_running script
+                    wait 0
+                end
+            end
+        until not find_next_file searchHandle {fileName} found
+
+        find_close searchHandle
+    else
+        trace "~r~~h~~h~No tests found!"
+    end
+    
+    // process all sub directories
+    string_format str = "%s\\%s\\*" basePath directory
+    if
+        find_first_file str {handle} searchHandle {fileName} found
+    then
+        repeat
+            string_format str = "%s\\%s\\%s" basePath directory found
+            if and
+                not is_text_prefix {text} found {prefix} "." {ignoreCase} true
+                not is_text_prefix {text} found {prefix} ".." {ignoreCase} true
+                does_directory_exist str // directories only
+            then
+                string_format str =  "%s\\%s" basePath directory
+                RUN_TESTS_DIR(str, found)
+            end
+        until not find_next_file searchHandle {fileName} found
+
+        find_close searchHandle
+    end
+    
+    free_memory str
+    free_memory found
+end

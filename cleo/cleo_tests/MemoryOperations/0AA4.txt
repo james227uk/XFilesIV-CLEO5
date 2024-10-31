@@ -1,0 +1,42 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AA4"
+test("0AA4 (get_dynamic_library_procedure)", tests)
+terminate_this_custom_script
+
+function tests
+
+    it("should return address of Sleep function from kernel32.dll", test1)
+    it("should get export by index", test2)
+    return
+    
+    function test1
+        int load_library_addr = read_memory 0x858070 4 false
+        trace "Address of LoadLibrary function is %d" load_library_addr
+
+        int kernel_dll_addr = call_function_return {address} load_library_addr {numParams} 1 {pop} 0 {funcParams} "kernel32.dll" // tested opcode
+        if
+            // lib address can be any valid pointer, not necessarily one loaded with 0AA2 opcode
+            int sleep_addr = get_dynamic_library_procedure {procName} "Sleep" {DynamicLibrary} kernel_dll_addr
+        then
+            assert(true)
+        else
+            assert(false)
+        end
+    end
+    
+    function test2
+        int load_library_addr = read_memory 0x858070 4 false
+
+        int kernel_dll_addr = call_function_return {address} load_library_addr {numParams} 1 {pop} 0 {funcParams} "kernel32.dll" // tested opcode
+        if
+            // lib address can be any valid pointer, not necessarily one loaded with 0AA2 opcode
+            int sleep_addr = get_dynamic_library_procedure {procName} 1 {DynamicLibrary} kernel_dll_addr
+        then
+            assert(true)
+        else
+            assert(false)
+        end
+    end
+end

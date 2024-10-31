@@ -1,0 +1,81 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A8D'
+test("0A8D (read_memory)", tests)
+terminate_this_custom_script
+
+function tests
+    before_each(@prepare_tests)
+
+    it("should read 0 bytes", test1)
+    it("should read 1 byte", test2)
+    it("should read 2 bytes", test3)
+    it("should read 3 bytes", test4)
+    it("should read 4 bytes", test5)
+    it("should read float", test6)
+    
+    return
+    
+    :prepare_tests
+        0@ = get_label_pointer @DATA
+        1@ = 0xcccccccc
+        2@ = 0xdddddddd
+        3@ = 0xeeeeeeee
+    return
+
+    function test1
+        2@ = read_memory {address} 0@ {size} 0 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x00000000)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test2
+        2@ = read_memory {address} 0@ {size} 1 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x00000044)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test3
+        2@ = read_memory {address} 0@ {size} 2 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x00003344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test4
+        2@ = read_memory {address} 0@ {size} 3 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x00223344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test5
+        2@ = read_memory {address} 0@ {size} 4 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test6
+        0@ = 125.0
+        2@ = 0
+        get_var_pointer 0@ {store_to} 1@
+        2@ = read_memory {address} 1@ {size} 4 {vp} false
+
+        assert_eq(2@, 125.0)
+    end
+
+    :DATA
+    hex
+        44 33 22 11
+        "some longer testing text" 00
+    end
+end

@@ -1,0 +1,36 @@
+# Don't push these directories and files
+
+/_Tools/
+/_Working Files/
+/anim/
+
+/audio/*
+
+/data/*
+!/data/maps/
+
+/cleo/.cleo.log
+/cleo/Thumbs.db
+/cleo/cleo_saves/*
+/cleo_readme/*
+
+/logs/
+
+/models/
+/movies/*
+/text/*
+
+/modloader/b INSANITY/
+/modloader/b Saur - Lite Version/
+/modloader/b Vados Peds Pack/
+/modloader/modloader.log
+
+/eax.dll
+/gta_sa.exe
+/gta_sa.exe - base
+/gta_sa.exe - retail
+/cleo.log
+/scrlog.log
+/_Git Toolbox.bat
+
+/!audio/customaudio/

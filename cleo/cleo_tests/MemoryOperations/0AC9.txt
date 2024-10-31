@@ -1,0 +1,21 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AC9" // free_memory
+test("0AC9 (free_memory)", tests)
+terminate_this_custom_script
+
+function tests
+
+    it("should free allocated memory", test1)
+    return
+    
+    function test1
+        int ptr = 0x11223344
+        ptr = allocate_memory {size} 4
+        free_memory ptr
+
+        // not much to check within script. Did not crashed the game or printed error, so perhaps ok
+        assert(true)
+    end
+end

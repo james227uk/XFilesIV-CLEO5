@@ -1,0 +1,19 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0A96" // get_ped_pointer
+test("0A96 (get_ped_pointer)", tests)
+terminate_this_custom_script
+
+function tests
+
+    it("should return valid pointer", test1)
+    return
+    
+    function test1
+        int handle = get_player_char 0
+        int ptr = get_ped_pointer handle
+        
+        assert_ptr(ptr)
+    end
+end

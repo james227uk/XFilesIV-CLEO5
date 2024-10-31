@@ -1,0 +1,30 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AC7" // get_var_pointer
+test("0AC7 (get_var_pointer)", tests)
+terminate_this_custom_script
+
+function tests
+
+    it("should return valid pointer", test1)
+    return
+
+    function test1
+        int val1 = 0x11223344
+        int val2 = 0xCCCCCCCC
+        int ptr = get_var_pointer val1
+        val2 = read_memory ptr {size} 4 {vp} false
+
+        assert_ptr(ptr)
+        assert_eq(val1, 0x11223344)
+        assert_eq(val2, 0x11223344)
+    end
+
+    :DATA
+    hex
+        44 33 22 11
+        "some longer testing text" 00
+    end
+
+end

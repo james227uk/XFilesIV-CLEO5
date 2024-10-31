@@ -1,0 +1,28 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AC6" // get_label_pointer
+test("0AC6 (get_label_pointer)", tests)
+terminate_this_custom_script
+
+function tests
+
+    it("should return valid pointer", test1)
+    return
+    
+    function test1
+        int ptr = 0
+        ptr = get_label_pointer @DATA
+        int number = 0xCCCCCCCC
+        number = read_memory ptr {size} 4 {vp} false
+        assert_ptr(ptr)
+        assert_eq(number, 0x11223344)
+    end
+
+    :DATA
+    hex
+        44 33 22 11
+        "some longer testing text" 00
+    end
+
+end

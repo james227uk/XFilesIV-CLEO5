@@ -1,0 +1,87 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A8C'
+test("0A8C (write_memory)", tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@before)
+
+    it("should write 0 bytes", test1)
+    it("should write 1 byte", test2)
+    it("should write 2 bytes", test3)
+    it("should write 3 bytes", test4)
+    it("should write 4 bytes", test5)
+    it("should write 5 bytes", test6)
+    it("should write 7 bytes", test7)
+    it("should write float", test8)
+    return
+    
+    :before
+        get_var_pointer 2@ {store_to} 0@
+        1@ = 0xcccccccc
+        2@ = 0xdddddddd
+        3@ = 0xeeeeeeee
+    return
+
+    function test1
+        write_memory {address} 0@ {size} 0 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddddddd)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+    
+    function test2
+        write_memory {address} 0@ {size} 1 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddddd44)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test3
+        write_memory {address} 0@ {size} 2 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddd3344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test4
+        write_memory {address} 0@ {size} 3 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdd444444) // memset behavior
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test5
+        write_memory {address} 0@ {size} 4 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test6
+        write_memory {address} 0@ {size} 5 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x44444444)
+        assert_eq(3@, 0xeeeeee44)
+    end
+
+    function test7
+        write_memory {address} 0@ {size} 7 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x44444444)
+        assert_eq(3@, 0xee444444)
+    end
+
+    function test8
+        4@ = 100.0
+        0A8C: write_memory {address} 0@ {size} 4 {value} 4@ {vp} false // tested opcode
+        assert_eq(1@, 0xcccccccc)
+        assert_eqf(2@, 100.0)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+
+end
