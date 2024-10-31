@@ -12,22 +12,36 @@
 //========================================================================================================================================================================================================
 
 // --- Primary header
-DEFINE MISSIONS 0
-//DEFINE MISSION {ID} 0 AT {LABEL} @
-DEFINE EXTERNAL_SCRIPTS 0 // Use -1 in order not to compile AAA script
-//DEFINE SCRIPT {NAME}  AT {LABEL} @
+DEFINE MISSIONS 1
+DEFINE MISSION 0 AT @Mission_Initial
+
+DEFINE EXTERNAL_SCRIPTS 1 // Use -1 in order not to compile AAA script
+DEFINE SCRIPT DBGCAMH AT @External_CameraHelper
+
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
+
+// --- Import extensions & libraries
+{$USE CLEO+}
+{$USE file}
+{$USE ini}
+{$USE debug}
 
 // --- Initial variable declarations
 var 
     $player1: Player         // gta3sc/SBL analogue of PLAYER_CHAR
     $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
-    $player_group: Group
-end 
+    $playerGroup: Group
+    $mission_trigger_wait_time: Int = 250
+    $flagMissionInitialisationCompleted: Int = False
+end
+
+const
+    logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
+end
 script_name 'MAIN'
 declare_mission_flag {Name:} $ONMISSION
-set_var_int {Int:} $mission_trigger_wait_time {Value:} 250
+Fs.DeleteFile(logPath)
 
 
 
@@ -51,7 +65,7 @@ Weather.ForceNow({Weather ID:}0)
 // --- Create player
 Player.Create({Index:}0, {X:}2488.56, {Y:}-1666.84, {Z:}13.38, {Player:} $player1)
 Player.GetChar({Player:} $player1, {Player Char:} $scplayer)
-Player.GetGroup({Player:} $player1, {Player Group:} $player_group)
+Player.GetGroup({Player:} $player1, {Player Group:} $playerGroup)
 Player.SetControl({Player:} $player1, {State:} True)
 
 // --- Set player clothes
@@ -66,28 +80,29 @@ Restart.AddHospital({X:}2027.77, {Y:} -1420.52, {Z:}15.99, {Heading:}137.0, {Tow
 Restart.AddPolice({X:}1550.68, {Y:}-1675.49, {Z:}14.51, {Heading:}90.0, {TownID:} 0)
 
 // --- Set initial stats
-Stat.SetFloat(StatID.MaxHealth,                     {Value:}1000.0)
-Stat.SetInt  (StatID.DrivingSkill,                  {Value:}10000)
-Stat.SetInt  (StatID.FlyingSkill,                   {Value:}10000)
-Stat.SetInt  (StatID.BikeSkill,                     {Value:}10000)
-Stat.SetInt  (StatID.CycleSkill,                    {Value:}10000)
-Stat.SetFloat(StatID.WeapontypePistolSkill,         {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypePistolSilencedSkill, {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeDesertEagleSkill,    {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeShotgunSkill,        {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeSawnoffShotgunSkill, {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeSpas12ShotgunSkill,  {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeMicroUziSkill,       {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeMp5Skill,            {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeAk47Skill,           {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeM4Skill,             {Value:}1000.0)
-Stat.SetFloat(StatID.WeapontypeSniperrifleSkill,    {Value:}1000.0)
-Stat.SetInt  (StatID.CitiesPassed,                  {Value:}4)
-Player.IncreaseMaxArmor($player1,                   {Value:}5000)
-Player.AddScore        ($player1,                   {Value:}5000)
+Stat.SetFloat(StatID.MaxHealth,                     {Value:}1000.0  )
+Stat.SetInt  (StatID.DrivingSkill,                  {Value:}10000   )
+Stat.SetInt  (StatID.FlyingSkill,                   {Value:}10000   )
+Stat.SetInt  (StatID.BikeSkill,                     {Value:}10000   )
+Stat.SetInt  (StatID.CycleSkill,                    {Value:}10000   )
+Stat.SetFloat(StatID.WeapontypePistolSkill,         {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypePistolSilencedSkill, {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeDesertEagleSkill,    {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeShotgunSkill,        {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeSawnoffShotgunSkill, {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeSpas12ShotgunSkill,  {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeMicroUziSkill,       {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeMp5Skill,            {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeAk47Skill,           {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeM4Skill,             {Value:}1000.0  )
+Stat.SetFloat(StatID.WeapontypeSniperrifleSkill,    {Value:}1000.0  )
+Stat.SetInt  (StatID.CitiesPassed,                  {Value:}4       )
+Player.IncreaseMaxArmor($player1,                   {Value:}5000    )
+Player.AddScore        ($player1,                   {Value:}5000    )
+Game.SetMaxWantedLevel (                            {Value:}6       )
 Char.SetCanBeKnockedOffBike($scplayer, false)
 
-Game.SetMaxWantedLevel({Value:}6)
+Game.AllowPauseInWidescreen(True)
 set_deatharrest_state 0
 
 
@@ -100,13 +115,22 @@ wait 0
 Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Text.ClearHelp()
 
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Launching mission 'initial'...")
+
+// Launch the initialisation 'mission'. This contains the main menu etc.
+Mission.LoadAndLaunchInternal(0)
+while $flagMissionInitialisationCompleted == False
+    wait 0
+end
+Audio.PlayMissionPassedTune(2)
+
 
 //========================================================================================================================================================================================================
 //    5. Main Loop
 //    Keep the MAIN script in a perpetual loop to prevent shenanigans.
 //========================================================================================================================================================================================================
 while true
-    wait {Duration:} $mission_trigger_wait_time
+    wait $mission_trigger_wait_time
     Clock.GetTimeOfDay({Hours Var:} $TIME_HOURS, {Minutes Var:} $TIME_MINS)
 end
 
@@ -145,6 +169,9 @@ end
 //    All missions go here. They are only loaded into memory when called.
 //========================================================================================================================================================================================================
 
+:Mission_Initial
+{$INCLUDE_ONCE main\missions\Mission-Initial.txt}
+
 
 
 //========================================================================================================================================================================================================
@@ -152,5 +179,5 @@ end
 //    All external scripts. They are only loaded into memory when called.
 //========================================================================================================================================================================================================
 
-
-
+:External_CameraHelper
+{$INCLUDE_ONCE main\externals\External-CameraHelper.txt}

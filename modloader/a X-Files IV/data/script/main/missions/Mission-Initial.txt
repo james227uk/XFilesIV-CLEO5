@@ -1,0 +1,26 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        0. Initialisation Script
+// Description: This script handles the initialisation of the mod. At present, it contains the Main Menu used for gamemode selection.
+// Path:        main\missions\Mission-Initial.txt
+// Trigger:     Upon game load
+// Notes:       This is not a 'true' mission; it's here for organisation and optimisation.
+//==========================================================================================================================================================================================================
+{$USE CLEO}
+{$USE CLEO+}
+{$USE file}
+{$USE ini}
+{$USE debug}
+
+script_name 'initial'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Loaded mission 'initial'.")
+
+Text.PrintStringNow("HELLO", 5000)
+
+repeat
+    wait 0
+until Pad.IsKeyPressed(KeyCode.Y)
+$flagMissionInitialisationCompleted = True
+terminate_this_script
