@@ -8,8 +8,10 @@
 
 //========================================================================================================================================================================================================
 //    1. SCM Header 
-//    Counts how many missions and external scripts we have. Update when necessary. 
+//    Core SCM stats such as mission counts, and initial variable declarations.
 //========================================================================================================================================================================================================
+
+// --- Primary header
 DEFINE MISSIONS 0
 //DEFINE MISSION {ID} 0 AT {LABEL} @
 DEFINE EXTERNAL_SCRIPTS 0 // Use -1 in order not to compile AAA script
@@ -17,12 +19,15 @@ DEFINE EXTERNAL_SCRIPTS 0 // Use -1 in order not to compile AAA script
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
 
+// --- Initial variable declarations
 var 
-    $PLAYER_CHAR: Player 
+    $player1: Player         // gta3sc/SBL analogue of PLAYER_CHAR
+    $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
+    $player_group: Group
 end 
 script_name 'MAIN'
 declare_mission_flag {Name:} $ONMISSION
-set_var_int {Int:} $DEFAULT_WAIT_TIME {Value:} 250
+set_var_int {Int:} $mission_trigger_wait_time {Value:} 250
 
 
 
@@ -30,11 +35,11 @@ set_var_int {Int:} $DEFAULT_WAIT_TIME {Value:} 250
 //    2. Initialise World
 //    Initialise the world and set initial properties such as weather.
 //========================================================================================================================================================================================================
-request_collision {X:} 2488.56 {Y:} -1666.84
-load_scene {X:} 2488.56 {Y:} -1666.84 {Z:} 13.38
-set_area_visible {InteriorID:} 0
-set_time_of_day {Hour:} 8 {Minutes:} 0
-force_weather_now {Weather ID:} 0
+Streaming.RequestCollision({X:}2488.56, {Y:}-1666.84)
+Streaming.LoadScene({X:}2488.56, {Y:}-1666.84, {Z:}13.38)
+Streaming.SetAreaVisible({InteriorID:}0)
+Clock.SetTimeOfDay({Hour:}8, {Minutes:}0)
+Weather.ForceNow({Weather ID:}0)
 
 
 
@@ -43,27 +48,26 @@ force_weather_now {Weather ID:} 0
 //    Create player and set initial stats.
 //======================================================================================================================================================================================================== 
 
-// Create player
-create_player {Index:} 0 {X:} 2488.56 {Y:} -1666.84 {Z:} 13.38 {Player:} $PLAYER_CHAR
-get_player_char {Player:} $PLAYER_CHAR {Player Actor:} $PLAYER_ACTOR
-get_player_group {Player:} $PLAYER_CHAR {Player Group:} $PLAYER_GROUP
-set_player_control {Player:} $PLAYER_CHAR {State:} True
-set_camera_behind_player
+// --- Create player
+Player.Create({Index:}0, {X:}2488.56, {Y:}-1666.84, {Z:}13.38, {Player:} $player1)
+Player.GetChar({Player:} $player1, {Player Char:} $scplayer)
+Player.GetGroup({Player:} $player1, {Player Group:} $player_group)
+Player.SetControl({Player:} $player1, {State:} True)
 
-// Set player clothes
-give_player_clothes_outside_shop {Player:} $PLAYER_CHAR {Texture:} "PLAYER_FACE" {Model:} "HEAD" {Body Part:} 1
-give_player_clothes_outside_shop {Player:} $PLAYER_CHAR {Texture:} "JEANSDENIM" {Model:} "JEANS" {Body Part:} 2
-give_player_clothes_outside_shop {Player:} $PLAYER_CHAR {Texture:} "SNEAKERBINCBLK" {Model:} "SNEAKER" {Body Part:} 3
-give_player_clothes_outside_shop {Player:} $PLAYER_CHAR {Texture:} "VEST" {Model:} "VEST" {Body Part:} 0
-build_player_model {Player:} $PLAYER_CHAR
+// --- Set player clothes
+Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"PLAYER_FACE",      {Model:}"HEAD",     {Body Part:}BodyPart.Head)
+Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"JEANSDENIM",       {Model:}"JEANS",    {Body Part:}BodyPart.Legs)
+Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"SNEAKERBINCBLK",   {Model:}"SNEAKER",  {Body Part:}BodyPart.Shoes)
+Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"VEST",             {Model:}"VEST",     {Body Part:}BodyPart.Torso)
+Player.BuildModel($player1)
 
-// Set respawn points
-add_hospital_restart {X:} 2027.77 {Y:} -1420.52 {Z:} 15.99 {Angle:} 137.0 {TownID:} 0
-add_police_restart {X:} 1550.68 {Y:} -1675.49 {Z:} 14.51 {Angle:} 90.0 {TownID:} 0
+// --- Set respawn points
+Restart.AddHospital({X:}2027.77, {Y:} -1420.52, {Z:}15.99, {Heading:}137.0, {TownID:} 0)
+Restart.AddPolice({X:}1550.68, {Y:}-1675.49, {Z:}14.51, {Heading:}90.0, {TownID:} 0)
 
-// Set initial stats
-set_int_stat {StatID:} 181 {Value:} 4
-set_max_wanted_level 6
+// --- Set initial stats
+Stat.SetInt({StatID:}181, {Value:}4)
+Game.SetMaxWantedLevel({Value:}6)
 set_deatharrest_state 0
 
 
@@ -73,18 +77,18 @@ set_deatharrest_state 0
 //    Final initialisation steps, launch the initial 'mission', then create initial threads.
 //========================================================================================================================================================================================================
 wait 0
-do_fade {Duration:} 0 {Direction:} 1
-clear_help
+Camera.DoFade({Duration:}0, {Direction:}Fade.In)
+Text.ClearHelp()
 
 
 //========================================================================================================================================================================================================
 //    5. Main Loop
 //    Keep the MAIN script in a perpetual loop to prevent shenanigans.
 //========================================================================================================================================================================================================
-:MAIN_LOOP
-wait {Duration:} $DEFAULT_WAIT_TIME
-get_time_of_day {Hours Var:} $TIME_HOURS {Minutes Var:} $TIME_MINS
-jump @MAIN_LOOP 
+while true
+    wait {Duration:} $mission_trigger_wait_time
+    Clock.GetTimeOfDay({Hours Var:} $TIME_HOURS, {Minutes Var:} $TIME_MINS)
+end
 
 
 
