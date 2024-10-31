@@ -1,0 +1,62 @@
+//========================================================================================================================================================================================================
+//--------------------------------------------------------------------------------------------- X-Files IV Docs ------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------- Sanny Builder Help ----------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
+//                                                                                Useful snippets, shortcuts, etc to improve Sanny Builder Usage
+//========================================================================================================================================================================================================
+
+//====================================
+//              Contents
+//====================================
+//  1. Classes
+//  2. Legacy Migration
+//====================================
+
+
+
+//========================================================================================================
+//      1. Classes
+//========================================================================================================
+SBL has a ton more classes which makes code cleaner and quicker to write. The following are included:
+
+- Attractor         - Audio             - AudioStream       - AudioStream3D     - Blip          
+- Boat              - Camera            - Car               - CarGenerator      - CardDecks
+- Char              - Checkpoint        - CleoBlip          - Clipboard         - Clock
+- ColPoint          - Component         - Conversation      - Crane             - Credits
+- Cutscene          - Debugger          - DecisionMaker     - DecisionMakerChar - DecisionMakerGroup
+- DynamicLibrary    - Entity            - File              - FindFile          - Fs
+- Fx                - Game              - Gang              - Garage            - Group
+- Heli              - Hud               - ImGui             - IniFile           - KillFrenzy
+- List              - Math              - Matrix            - Memory            - Menu
+- MenuGrid          - Mission           - Mouse             - Object            - Pad
+- Particle          - Path              - Pickup            - Plane             - Player
+- Rc                - RenderObject      - Restart           - ScriptFire        - Searchlight
+- Sequence          - Shopping          - Skip              - Sound             - Sphere
+- Sprite            - Stat              - StreamedScript    - Streaming         - StuckCarCheck
+- Task              - Text              - Texture           - Trailer           - Train
+- Txd               - User3DMarker      - Weapon            - WeaponInfo        - Weather
+- World             - Zone
+
+
+
+//========================================================================================================
+//      2. Legacy Migration
+//========================================================================================================
+SBL is much more in-line with gta3script, so certain old conventions have changed:
+
+- Parameters are in the original order, with outputs after inputs
+    - For example: `create_player 0 0 0 0 store_to $player1`
+    - SB4 provides special syntax, where outputs in an assignment expression can be listed on the left-hand side, e.g. $player1 = create_player 0 0 0 0)
+
+- Opcodes no longer needed, simply type the command name as it appears in gta3script
+
+- Naming changes:
+    - Actor is called Char
+    - Marker is called Blip
+    - Model class no longer exists, its methods can be found in static Streaming class
+    - $PLAYER_CHAR replaced with $player1
+    - $PLAYER_ACTOR replaced with $scplayer
+    - angle is called heading
+    - thread is called script
+
+*(Src: https://github.com/sannybuilder/dev/wiki/Migration-from-legacy-edit-modes-to-SBL-modes)*
