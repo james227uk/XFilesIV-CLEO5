@@ -10,6 +10,7 @@
 //==========================================================================================================================================================================================================
 {$USE CLEO}
 {$USE CLEO+}
+{$USE NewOpcodes}
 {$USE file}
 {$USE ini}
 {$USE debug}
@@ -17,10 +18,17 @@
 script_name 'initial'
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Loaded mission 'initial'.")
 
-Text.PrintStringNow("HELLO", 5000)
+Camera.SetFixedPosition(2488.501709, 2754.590332, 19.302280, 0.0, 0.0, 0.0)
+Camera.PointAtPoint(2498.143799, 2754.322021, 19.368336, 2)
+
+func_loadModel(#INFERNUS, True)
+Car.Create(#INFERNUS, 2541.5222, 2777.7031, 10.8203, 0@)
+
 
 repeat
     wait 0
 until Pad.IsKeyPressed(KeyCode.Y)
-$flagMissionInitialisationCompleted = True
+$flagMissionInitialCompleted = True
+Camera.RestoreJumpcut()
+
 terminate_this_script

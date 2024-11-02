@@ -22,7 +22,9 @@ DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
 
 // --- Import extensions & libraries
+{$USE CLEO}
 {$USE CLEO+}
+{$USE NewOpcodes}
 {$USE file}
 {$USE ini}
 {$USE debug}
@@ -33,12 +35,17 @@ var
     $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
     $playerGroup: Group
     $mission_trigger_wait_time: Int = 250
-    $flagMissionInitialisationCompleted: Int = False
+    $flagMissionInitialCompleted: Int = False
 end
-
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
 end
+
+// External Script Name Mappings
+const
+    externalCameraHelper = 0
+end
+
 script_name 'MAIN'
 declare_mission_flag {Name:} $ONMISSION
 Fs.DeleteFile(logPath)
@@ -49,8 +56,8 @@ Fs.DeleteFile(logPath)
 //    2. Initialise World
 //    Initialise the world and set initial properties such as weather.
 //========================================================================================================================================================================================================
-Streaming.RequestCollision({X:}2488.56, {Y:}-1666.84)
-Streaming.LoadScene({X:}2488.56, {Y:}-1666.84, {Z:}13.38)
+Streaming.RequestCollision({X:}2544.1604, {Y:}2810.7729)
+Streaming.LoadScene({X:}2544.1604, {Y:}2810.7729, {Z:}10.8203)
 Streaming.SetAreaVisible({InteriorID:}0)
 Clock.SetTimeOfDay({Hour:}8, {Minutes:}0)
 Weather.ForceNow({Weather ID:}0)
@@ -63,7 +70,7 @@ Weather.ForceNow({Weather ID:}0)
 //======================================================================================================================================================================================================== 
 
 // --- Create player
-Player.Create({Index:}0, {X:}2488.56, {Y:}-1666.84, {Z:}13.38, {Player:} $player1)
+Player.Create({Index:}0, {X:}2544.1604, {Y:}2810.7729, {Z:}10.8203, {Player:} $player1)
 Player.GetChar({Player:} $player1, {Player Char:} $scplayer)
 Player.GetGroup({Player:} $player1, {Player Group:} $playerGroup)
 Player.SetControl({Player:} $player1, {State:} True)
@@ -114,15 +121,17 @@ set_deatharrest_state 0
 wait 0
 Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Text.ClearHelp()
-
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Launching mission 'initial'...")
 
 // Launch the initialisation 'mission'. This contains the main menu etc.
-Mission.LoadAndLaunchInternal(0)
-while $flagMissionInitialisationCompleted == False
+Mission.LoadAndLaunchInternal(Mission_Initial)
+while $flagMissionInitialCompleted == False
     wait 0
 end
 Audio.PlayMissionPassedTune(2)
+
+// Create scripts
+start_new_script @Debug_CameraHelper
 
 
 //========================================================================================================================================================================================================
@@ -135,20 +144,32 @@ while true
 end
 
 
-
 //========================================================================================================================================================================================================
 //    6. Universal Scripts
 //    Scripts that run in both Storymode and Freemode.
 //========================================================================================================================================================================================================
 
+:Debug_CameraHelper
+script_name "DBGCAML"
 
+while true
+    wait 0
+    if Pad.TestCheat("[")
+    then
+        StreamedScript.GetNumberOfInstances(externalCameraHelper, 0@)
+        if 0@ == 0
+        then
+            func_runExternalScript(externalCameraHelper)
+        end
+    end
+end
 
 //========================================================================================================================================================================================================
 //    7. Storymode Scripts
 //    Scripts that run exclusively in Storymode.
 //========================================================================================================================================================================================================
 
-
+ 
 
 //========================================================================================================================================================================================================
 //    8. Main Loop
@@ -161,6 +182,30 @@ end
 //    9. Functions
 //    Custom functions called extensively to reduce code bloat.
 //========================================================================================================================================================================================================
+
+function func_runExternalScript(targetScript: int)
+    StreamedScript.Stream(targetScript)
+    repeat
+        wait 0
+    until StreamedScript.HasLoaded(targetScript)
+    StreamedScript.StartNew(targetScript)
+end
+
+
+
+function func_loadModel(modelID: int, forceLoad: int)
+    Streaming.RequestModel(modelID)
+    if
+        forceLoad == 1
+    then
+        Streaming.LoadAllModelsNow()
+        return
+    else
+        repeat
+            wait 0
+        until Streaming.IsModelAvailable(modelID)
+    end
+end
 
 
 
