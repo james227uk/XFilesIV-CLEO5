@@ -8,55 +8,58 @@
 // Trigger:     Upon pressing activation buttons.
 //==========================================================================================================================================================================================================
 
+{$EXTERNAL}
 {$USE CLEO}
 {$USE CLEO+}
-{$USE file}
-{$USE ini}
-{$USE debug}
+
+float fCameraPosX
+float fCameraPosY
+float fCameraPosZ
+float fCameraPointX
+float fCameraPointY
+float fCameraPointZ
+float fPlayerPosX
+float fPlayerPosY
+float fPlayerPosZ
+float fCameraTargetRange = 100.0
+
 
 script_name 'DBGCAMH'
 
 while true
     wait 0
-    // Get camera position
+    // Record camera coordinates
     if Pad.TestCheat("[")
     then
-        Char.GetCoordinates($scplayer, 0@, 1@, 2@)
+        Char.GetCoordinates($scplayer, fPlayerPosX, fPlayerPosY, fPlayerPosZ)
+        Camera.GetThirdPersonTarget({Range:}fCameraTargetRange, {SourceX:}fPlayerPosX, {SourceY:}fPlayerPosX, {SourceZ:}fPlayerPosX, {OutputPosX:}fCameraPosX, {OutputPosY:}fCameraPosY, {OutputPosZ:}fCameraPosZ, {OutputPointX:}fCameraPointX, {OutputPointY:}fCameraPointY,{OutputPointZ:}fCameraPointZ)
         Text.PrintStringNow("Got pos coordinates", 1000)
     end
-    
-    // Get camera point position
-    if Pad.TestCheat("]") // ]
-    then
-        //Char.GetCoordinates($scplayer, 3@, 4@, 5@)
-        Camera.GetThirdPersonTarget(100.0, 0@, 1@, 2@, 10@, 11@, 12@, 13@, 14@, 15@)
-        Text.PrintStringNow("Got point coordinates", 1000)
-    end
-    
+
     // Test camera position
-    if Pad.TestCheat("'") // ' 
+    if Pad.TestCheat("]")
     then
-        Camera.SetFixedPosition(0@, 1@, 2@, 0.0, 0.0, 0.0)
-        //Camera.PointAtPoint(3@, 4@, 5@, 2)
-        Camera.PointAtPoint(13@, 14@, 15@, 2)
+        Camera.SetFixedPosition(fPlayerPosX, fPlayerPosY, fPlayerPosZ, 0.0, 0.0, 0.0)
+        Camera.PointAtPoint(fCameraPointX, fCameraPointY, fCameraPointZ, 2)
         
         // Stall until the player lets go of the key.
         repeat
             wait 0
-        until not Pad.TestCheat("'") // ' 
+        until not Pad.TestCheat("]") 
         
         // Stall until the player presses the key again to reset the camera.
         wait 250
         repeat
             wait 0
-        until Pad.TestCheat("'") // ' 
+        until Pad.TestCheat("]")
         Camera.RestoreJumpcut()       
     end
     
+    // Write the coordinates to the log file.
     if Pad.TestCheat("#") // ]
     then
-        Debugger.LogLine(logPath, True, "Camera Position: %f, %f, %f", 0@, 1@, 2@)
-        Debugger.LogLine(logPath, True, "Camera Point: %f, %f, %f", 3@, 4@, 5@)
+        Debugger.LogLine(logPath, True, "[CameraHelper] [INFO] Camera Position: %f, %f, %f", fPlayerPosX, fPlayerPosY, fPlayerPosZ)
+        Debugger.LogLine(logPath, True, "[CameraHelper] [INFO] Camera Point: %f, %f, %f", fCameraPointX, fCameraPointY, fCameraPointZ)
         Text.PrintStringNow("Wrote coordinates to log.", 1000)
         break
     end    

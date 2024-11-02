@@ -25,9 +25,6 @@ DEFINE UNKNOWN_THREADS_MEMORY 0
 {$USE CLEO}
 {$USE CLEO+}
 {$USE NewOpcodes}
-{$USE file}
-{$USE ini}
-{$USE debug}
 
 // --- Initial variable declarations
 var 
@@ -121,7 +118,7 @@ set_deatharrest_state 0
 wait 0
 Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Text.ClearHelp()
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Launching mission 'initial'...")
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
 
 // Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
@@ -217,11 +214,9 @@ end
 :Mission_Initial
 {$INCLUDE_ONCE main\missions\Mission-Initial.txt}
 
-
-
 //========================================================================================================================================================================================================
 //    11. External Scripts
-//    All external scripts. They are only loaded into memory when called.
+//    All external scripts go here. They are only loaded into memory when called.
 //========================================================================================================================================================================================================
 
 :External_CameraHelper

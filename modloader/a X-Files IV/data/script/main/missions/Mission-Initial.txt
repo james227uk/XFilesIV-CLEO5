@@ -15,6 +15,10 @@
 {$USE ini}
 {$USE debug}
 
+const
+    fCameraPosX = 0@
+end
+
 script_name 'initial'
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Loaded mission 'initial'.")
 
