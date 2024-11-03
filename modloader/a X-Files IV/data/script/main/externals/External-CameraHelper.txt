@@ -7,11 +7,6 @@
 // Path:        main\externals\External-CameraHelper.txt
 // Trigger:     Upon pressing activation buttons.
 //==========================================================================================================================================================================================================
-
-{$EXTERNAL}
-{$USE CLEO}
-{$USE CLEO+}
-
 float fCameraPosX
 float fCameraPosY
 float fCameraPosZ
@@ -23,24 +18,24 @@ float fPlayerPosY
 float fPlayerPosZ
 float fCameraTargetRange = 100.0
 
-
 script_name 'DBGCAMH'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[External-CameraHelper] [INFO] Loaded external script 'External-CameraHelper'.")
 
 while true
     wait 0
     // Record camera coordinates
     if Pad.TestCheat("[")
     then
-        Char.GetCoordinates($scplayer, fPlayerPosX, fPlayerPosY, fPlayerPosZ)
+        Char.GetCoordinates({Char:}$scplayer, {StoreXTo:}fPlayerPosX, {StoreYTo:}fPlayerPosY, {StoreZTo:}fPlayerPosZ)
         Camera.GetThirdPersonTarget({Range:}fCameraTargetRange, {SourceX:}fPlayerPosX, {SourceY:}fPlayerPosX, {SourceZ:}fPlayerPosX, {OutputPosX:}fCameraPosX, {OutputPosY:}fCameraPosY, {OutputPosZ:}fCameraPosZ, {OutputPointX:}fCameraPointX, {OutputPointY:}fCameraPointY,{OutputPointZ:}fCameraPointZ)
-        Text.PrintStringNow("Got pos coordinates", 1000)
+        Text.PrintStringNow({Text:}"Got pos coordinates", {Time:}1000)
     end
 
     // Test camera position
     if Pad.TestCheat("]")
     then
-        Camera.SetFixedPosition(fPlayerPosX, fPlayerPosY, fPlayerPosZ, 0.0, 0.0, 0.0)
-        Camera.PointAtPoint(fCameraPointX, fCameraPointY, fCameraPointZ, 2)
+        Camera.SetFixedPosition({X:}fPlayerPosX, {Y:}fPlayerPosY, {Z:}fPlayerPosZ, {HeadingX:}0.0, {HeadingY:}0.0, {HeadingZ:}0.0)
+        Camera.PointAtPoint({X:}fCameraPointX, {Y:}fCameraPointY, {Z:}fCameraPointZ, 2)
         
         // Stall until the player lets go of the key.
         repeat
@@ -58,8 +53,8 @@ while true
     // Write the coordinates to the log file.
     if Pad.TestCheat("#") // ]
     then
-        Debugger.LogLine(logPath, True, "[CameraHelper] [INFO] Camera Position: %f, %f, %f", fPlayerPosX, fPlayerPosY, fPlayerPosZ)
-        Debugger.LogLine(logPath, True, "[CameraHelper] [INFO] Camera Point: %f, %f, %f", fCameraPointX, fCameraPointY, fCameraPointZ)
+        Debugger.LogLine(logPath, True, "[External-CameraHelper] [INFO] Camera Position: %f, %f, %f", fPlayerPosX, fPlayerPosY, fPlayerPosZ)
+        Debugger.LogLine(logPath, True, "[External-CameraHelper] [INFO] Camera Point: %f, %f, %f", fCameraPointX, fCameraPointY, fCameraPointZ)
         Text.PrintStringNow("Wrote coordinates to log.", 1000)
         break
     end    

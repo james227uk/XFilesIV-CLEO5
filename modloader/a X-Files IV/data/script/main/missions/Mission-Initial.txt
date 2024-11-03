@@ -8,31 +8,167 @@
 // Trigger:     Upon game load
 // Notes:       This is not a 'true' mission; it's here for organisation and optimisation.
 //==========================================================================================================================================================================================================
-{$USE CLEO}
-{$USE CLEO+}
-{$USE NewOpcodes}
-{$USE file}
-{$USE ini}
-{$USE debug}
+int iRandomSceneChoice
+Menu mainMenu
+Int iMainMenuChoice
+AudioStream mainTheme
 
-const
-    fCameraPosX = 0@
-end
+Car custodianSceneHeli
+Char custodianSceneHeliPilot
+Char custodianSceneCustodian
+Char custodianSceneCarter
+Char custodianSceneDavis
+
 
 script_name 'initial'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[INFO] Loaded mission 'initial'.")
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Initial] [INFO] Loaded mission 'initial'.")
 
+// Set the scene. Position the camera.
 Camera.SetFixedPosition(2488.501709, 2754.590332, 19.302280, 0.0, 0.0, 0.0)
-Camera.PointAtPoint(2498.143799, 2754.322021, 19.368336, 2)
+Camera.PointAtPoint(2498.143799, 2754.322021, 19.368336, SwitchType.JumpCut)
 
-func_loadModel(#INFERNUS, True)
-Car.Create(#INFERNUS, 2541.5222, 2777.7031, 10.8203, 0@)
-
-
-repeat
+// Play the main theme.
+AudioStream.Load("root:\modloader\a X-Files IV\audio\soundtrack\maintheme.mp3", mainTheme)
+while not AudioStream.Load("root:\modloader\a X-Files IV\audio\soundtrack\maintheme.mp3", mainTheme)
     wait 0
-until Pad.IsKeyPressed(KeyCode.Y)
+end
+AudioStream.SetState(mainTheme, AudioStreamAction.Play)
+
+// Pick a random 'scene' that will be behind the main menu.
+gosub @Mission_Initial_SceneSelecter
+
+// Draw the main menu and handle the picked choice.
+Menu.Create("XSM0001", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False, {Handle:}mainMenu)
+Menu.SetColumn(mainMenu, {Column:}0, {Title:}"XSM0002", {Row0:}"XSM0003", {Row 1:}"XSM0004", {Rows 3-11:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        Menu.GetItemSelected({Menu:}mainMenu, {Store Choice To:}iMainMenuChoice)
+        Menu.Delete({Menu:}mainMenu)
+        while Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+            wait 0
+        end
+        
+        switch iMainMenuChoice
+            case 0 // Storymode
+                $flagGamemodeChoice = gmStorymode
+                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Initial] [INFO] Selected gamemode 'Storymode'.")
+                break
+            
+            case 1 // Freemode
+                $flagGamemodeChoice = gmFreemode
+                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Initial] [INFO] Selected gamemode 'Freemode'.")
+                break
+        end
+        //break
+    end   
+end
+Menu.Delete(mainMenu)
+
+// Now play out the scene as the screen fades to black.
+switch iRandomSceneChoice
+    // Custodian on helipad
+    case 0
+        Char.WarpIntoCarAsPassenger(custodianSceneCustodian, custodianSceneHeli, SeatId.RearRight)
+        Char.WarpIntoCarAsPassenger(custodianSceneCarter, custodianSceneHeli, SeatId.FrontRight)
+        Char.WarpIntoCarAsPassenger(custodianSceneDavis, custodianSceneHeli, SeatId.RearLeft)
+        
+        Camera.SetFixedPosition(2634.081299, 2696.565430, 32.328850, 0.0, 0.0, 0.0)
+        //Camera.PointAtCar(custodianSceneHeli, 0, SwitchType.JumpCut)
+        Camera.PointAtCar(custodianSceneHeli, CameraMode.Fixed, SwitchType.JumpCut)
+        Car.FreezePosition(custodianSceneHeli, False)
+        Heli.GotoCoords(custodianSceneHeli, 2714.5808, 2629.2925, 50.0171, 10.0, 40.0)
+        Camera.DoFade(5000, Fade.Out)
+        gosub @Mission_Initial_SilenceTheme
+        wait 7000
+        
+        Char.Delete(custodianSceneCustodian)
+        Char.Delete(custodianSceneCarter)
+        Char.Delete(custodianSceneDavis)
+        Char.Delete(custodianSceneHeliPilot)
+        Car.Delete(custodianSceneHeli)
+        Streaming.MarkModelAsNoLongerNeeded(#MAVERICK)
+        Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
+        Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+        Streaming.UnloadSpecialCharacter(1)
+        Streaming.UnloadSpecialCharacter(2)
+        Streaming.UnloadSpecialCharacter(3)
+        Camera.DoFade(0, Fade.In)        
+    
+    case 1
+    
+    case 2
+    
+    case 3
+    
+    case 4
+    
+end
+
+
+//Camera.DoFade({Time:}2000, {Direction:}Fade.Out)    
+jump @Mission_Initial_Cleanup
+
+:Mission_Initial_SceneSelecter
+// Randomly select a scene.
+Math.RandomIntInRange(0, 0, iRandomSceneChoice)
+
+switch iRandomSceneChoice
+    case 0 // Custodian on helipad      
+        Streaming.RequestModel(#MAVERICK)
+        Streaming.RequestModel(#BMYMIB)
+        Streaming.RequestModel(#DESERT_EAGLE)
+        Streaming.LoadSpecialCharacter(1, "WUZIMU")
+        Streaming.LoadSpecialCharacter(2, "CARTER")
+        Streaming.LoadSpecialCharacter(3, "DAVIS")
+        Streaming.LoadAllModelsNow()
+        
+        Char.SetCoordinates($scplayer, 2606.1252, 2726.7412, 23.8222)
+        
+        Car.Create(#MAVERICK, 2618.4946, 2721.7166, 36.5386, custodianSceneHeli)
+        Car.SetHeading(custodianSceneHeli, 270.0)
+        Heli.SetBladesFullSpeed(custodianSceneHeli)
+        Car.FreezePosition(custodianSceneHeli, True)
+        
+        Char.CreateInsideCar(custodianSceneHeli, PedType.Special, #BMYMIB, custodianSceneHeliPilot)
+        Char.Create(PedType.Special, #SPECIAL01, 2618.1626, 2723.8647, 36.5386, custodianSceneCustodian)
+        Char.Create(PedType.Special, #SPECIAL02, 2618.9534, 2724.5115, 36.5386, custodianSceneCarter)
+        Char.Create(PedType.Special, #SPECIAL03, 2617.0742, 2724.3591, 36.5386, custodianSceneDavis)
+        Char.SetHeading(custodianSceneCustodian, 358.7)
+        Char.SetHeading(custodianSceneCarter, 356.7)
+        Char.SetHeading(custodianSceneDavis, 0.0)
+        Char.GiveWeapon(custodianSceneCarter, WeaponType.DesertEagle, 1)
+        Char.GiveWeapon(custodianSceneDavis, WeaponType.DesertEagle, 1)
+        Task.AimGunAtCoord(custodianSceneCarter, 2616.405029, 2727.775635, 36.538643, -1)
+        Task.AimGunAtCoord(custodianSceneDavis, 2616.405029, 2727.775635, 36.538643, -1)
+
+        // Facing The Custodian and the heli.
+        Camera.SetFixedPosition(2616.405029, 2727.775635, 36.538643, 0.0, 0.0, 0.0)
+        Camera.PointAtPoint(2820.191650, 2213.777588, 114.439705, SwitchType.Interpolation)
+
+    case 1
+    
+    case 2
+     
+    case 3
+     
+    case 4
+end
+return
+
+
+:Mission_Initial_SilenceTheme
+AudioStream.SetVolumeWithTransition({{Audio:}mainTheme, {{Volume:}0.0, {Duration:}5000)
+return
+
+
+:Mission_Initial_Cleanup
+AudioStream.Remove(mainTheme)
+Streaming.RequestModel(#INFERNUS)
+Streaming.LoadAllModelsNow()
+Car.Create(#INFERNUS, 2541.5222, 2777.7031, 10.8203, 0@)
 $flagMissionInitialCompleted = True
 Camera.RestoreJumpcut()
-
+Mission.Finish()
 terminate_this_script
