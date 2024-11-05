@@ -7,33 +7,37 @@
 
 
 //========================================================================================================================================================================================================
-//    1. SCM Header 
-//    Core SCM stats such as mission counts, and initial variable declarations.
+//      1. SCM Header 
+//      Core SCM stats such as mission counts, and initial variable declarations.
 //========================================================================================================================================================================================================
 
-// --- Primary header
-DEFINE MISSIONS 1
-DEFINE MISSION 0 AT @Mission_Initial
+//--- Primary header
+DEFINE MISSIONS 2
+DEFINE MISSION 0 AT @Mission_Initial // 1. Initialisation Script
+DEFINE MISSION 1 AT @Mission_Arrival // 2. Storymode: Arrival
 
-DEFINE EXTERNAL_SCRIPTS 1 // Use -1 in order not to compile AAA script
-DEFINE SCRIPT DBGCAMH AT @External_CameraHelper
+DEFINE EXTERNAL_SCRIPTS 2 // Use -1 in order not to compile AAA script
+DEFINE SCRIPT DBGCAMS AT @External_CameraHelper
+DEFINE SCRIPT DBGCONS AT @External_DebugConsole
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
 
-// --- Import extensions & libraries
+//--- Import extensions & libraries
 {$USE CLEO}
 {$USE CLEO+}
 {$USE NewOpcodes}
 
 
-// --- Initial variable declarations
+//--- Initial variable declarations
 var 
     $player1: Player         // gta3sc/SBL analogue of PLAYER_CHAR
     $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
     $playerGroup: Group
     $mission_trigger_wait_time: Int = 250
+    $flagGamemodeChoice: Int = 0
     $flagMissionInitialCompleted: Int = False
+    $flagDebugConsoleOpen: Int = 0
 end
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
@@ -41,9 +45,10 @@ const
     gmFreemode = 1
 end
 
-// External Script Name Mappings
+//--- External Script Name Mappings
 const
     externalCameraHelper = 0
+    externalDebugConsole = 1
 end
 
 script_name 'MAIN'
@@ -53,40 +58,40 @@ Fs.DeleteFile(logPath)
 
 
 //========================================================================================================================================================================================================
-//    2. Initialise World
-//    Initialise the world and set initial properties such as weather.
+//      2. Initialise World
+//      Initialise the world and set initial properties such as weather.
 //========================================================================================================================================================================================================
 Streaming.RequestCollision({X:}2544.1604, {Y:}2810.7729)
 Streaming.LoadScene({X:}2544.1604, {Y:}2810.7729, {Z:}10.8203)
 Streaming.SetAreaVisible({InteriorID:}0)
-Clock.SetTimeOfDay({Hour:}8, {Minutes:}0)
-Weather.ForceNow({Weather ID:}0)
+Clock.SetTimeOfDay({Hour:}0, {Minutes:}0)
+Weather.ForceNow({Weather ID:} WeatherType.RainySf)
 
 
 
 //========================================================================================================================================================================================================
-//    3. Initialise Player
-//    Create player and set initial stats.
+//      3. Initialise Player
+//      Create player and set initial stats.
 //======================================================================================================================================================================================================== 
 
-// --- Create player
+//--- Create player
 Player.Create({Index:}0, {X:}2544.1604, {Y:}2810.7729, {Z:}10.8203, {Player:} $player1)
 Player.GetChar({Player:} $player1, {Player Char:} $scplayer)
 Player.GetGroup({Player:} $player1, {Player Group:} $playerGroup)
-Player.SetControl({Player:} $player1, {State:} True)
+Player.SetControl({Player:} $player1, {State:} False)
 
-// --- Set player clothes
+//--- Set player clothes
 Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"PLAYER_FACE",    {Model:}"HEAD",    {Body Part:}BodyPart.Head)
 Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"JEANSDENIM",     {Model:}"JEANS",   {Body Part:}BodyPart.Legs)
 Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"SNEAKERBINCBLK", {Model:}"SNEAKER", {Body Part:}BodyPart.Shoes)
 Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"VEST",           {Model:}"VEST",    {Body Part:}BodyPart.Torso)
 Player.BuildModel($player1)
 
-// --- Set respawn points
+//--- Set respawn points
 Restart.AddHospital({X:}2027.77, {Y:} -1420.52, {Z:}15.99, {Heading:}137.0, {TownID:} 0)
 Restart.AddPolice(  {X:}1550.68, {Y:}-1675.49,  {Z:}14.51, {Heading:}90.0,  {TownID:} 0)
 
-// --- Set initial stats
+//--- Set initial stats
 Stat.SetFloat(StatID.MaxHealth,                     {Value:}1000.0)
 Stat.SetInt  (StatID.DrivingSkill,                  {Value:}10000 )
 Stat.SetInt  (StatID.FlyingSkill,                   {Value:}10000 )
@@ -115,27 +120,53 @@ set_deatharrest_state 0
 
 
 //========================================================================================================================================================================================================
-//    4. Final Initialisation
-//    Final initialisation steps, launch the initial 'mission', then create initial threads.
+//      4. Final Initialisation
+//      Final initialisation steps, launch the initial 'mission', then create initial threads.
 //========================================================================================================================================================================================================
 wait 0
-Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Text.ClearHelp()
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
-// Launch the initialisation 'mission'. This contains the main menu etc.
+
+//--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
+$ONMISSION = True
 while $flagMissionInitialCompleted == False
     wait 0
 end
-Audio.PlayMissionPassedTune(2)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'initial'.")
 
-// Create scripts
+// Pick what to do next based on gamemode choice.
+if $flagGamemodeChoice == gmStorymode // Storymode
+then
+    wait 0
+    Mission.LoadAndLaunchInternal(Mission_Arrival)
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'arrival'...")
+    $ONMISSION = True
+    while $flagMissionArrivalCompleted == False
+        wait 0
+    end
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrival'.") 
+else
+    // Freemode
+    Camera.RestoreJumpcut()
+    Player.SetControl($player1, True)
+    func_giveAgentOutfit()
+    Camera.DoFade(1000, Fade.In)
+    Hud.SwitchWidescreen(False)
+end   
+Audio.PlayMissionPassedTune(2) // Debug
+
+//--- Create universal scripts
 start_new_script @Debug_CameraHelper
+start_new_script @Debug_DebugConsole
+Player.SetControl({Player:} $player1, {State:} True)
+Camera.RestoreJumpcut()
+Hud.SwitchWidescreen(False)
 
 
 //========================================================================================================================================================================================================
-//    5. Main Loop
-//    Keep the MAIN script in a perpetual loop to prevent shenanigans.
+//      5. Main Loop
+//      Keep the MAIN script in a perpetual loop to prevent shenanigans.
 //========================================================================================================================================================================================================
 while true
     wait $mission_trigger_wait_time
@@ -144,54 +175,94 @@ end
 
 
 //========================================================================================================================================================================================================
-//    6. Universal Scripts
-//    Scripts that run in both Storymode and Freemode.
+//      6. Universal Scripts
+//      Scripts that run in both Storymode and Freemode.
 //========================================================================================================================================================================================================
 
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Debug | CameraHelper
+//      - A debug tool used to obtain accurate camera angles.
+//------------------------------------------------------------------------------------------------------
 :Debug_CameraHelper
-script_name "DBGCAML"
+script_name 'DBGCAML'
 
 while true
     wait 0
     if Pad.TestCheat("[")
     then
-        StreamedScript.GetNumberOfInstances(externalCameraHelper, 0@)
-        if 0@ == 0
-        then
-            func_runExternalScript(externalCameraHelper)
-        end
+        func_runExternalScript(externalCameraHelper, "External-CameraHelper")
     end
 end
 
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Debug | Debug Console
+//      - A debug development console containing useful tools and readouts.
+//------------------------------------------------------------------------------------------------------
+:Debug_DebugConsole
+script_name 'DBGCONL' 
+
+while true
+    wait 0
+    if Pad.IsKeyPressed(KeyCode.F6)
+    then
+        while Pad.IsKeyPressed(KeyCode.F6)
+            wait 0
+        end 
+        func_runExternalScript(externalDebugConsole, "External-DebugConsole")
+    end
+    
+    while $flagDebugConsoleOpen == True
+        wait 0
+    end
+    StreamedScript.MarkAsNoLongerNeeded(externalDebugConsole)
+end
+
+
 //========================================================================================================================================================================================================
-//    7. Storymode Scripts
-//    Scripts that run exclusively in Storymode.
+//      7. Storymode Scripts
+//      Scripts that run exclusively in Storymode.
 //========================================================================================================================================================================================================
 
  
 
 //========================================================================================================================================================================================================
-//    8. Main Loop
-//    Scripts that run exclusively in Freemode.
+//      8. Freemode Scripts
+//      Scripts that run exclusively in Freemode.
 //========================================================================================================================================================================================================
 
 
 
 //========================================================================================================================================================================================================
-//    9. Functions
-//    Custom functions called extensively to reduce code bloat.
+//      9. Functions
+//      Custom functions called extensively to reduce code bloat.
 //========================================================================================================================================================================================================
 
-function func_runExternalScript(targetScript: int)
-    StreamedScript.Stream(targetScript)
-    repeat
-        wait 0
-    until StreamedScript.HasLoaded(targetScript)
-    StreamedScript.StartNew(targetScript)
+//------------------------------------------------------------------------------------------------------
+//      Functions | Run External Script
+//      - This function streams an external script, waits for it to be loaded, then starts it safely.
+//------------------------------------------------------------------------------------------------------
+function func_runExternalScript(targetScript: int, name: string)
+    int scriptCount = StreamedScript.GetNumberOfInstances(targetScript)
+    if scriptCount == 0
+    then
+        StreamedScript.Stream(targetScript)
+        while not StreamedScript.HasLoaded(targetScript)
+            wait 0
+        end
+        StreamedScript.StartNew(targetScript)
+        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Began external script '%s'.", name)
+    else
+        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Failed to start external script '%s'. Active instances already %i.", name, scriptCount)
+    end
 end
 
 
 
+//------------------------------------------------------------------------------------------------------
+//      Functions | Load Model
+//      - This function streams a model, waits for it to be loaded, then returns.
+//------------------------------------------------------------------------------------------------------
 function func_loadModel(modelID: int, forceLoad: int)
     Streaming.RequestModel(modelID)
     if
@@ -207,8 +278,37 @@ function func_loadModel(modelID: int, forceLoad: int)
 end
 
 
+//------------------------------------------------------------------------------------------------------
+//      Functions | Teleport Player Safely
+//      - This function teleports the player safely to the target coordinates, requesting collision beforehand.
+//------------------------------------------------------------------------------------------------------
+function func_teleportSafe(posX: float, posY: float, heading: float, area: int)
+    Streaming.SetAreaVisible(area)
+    Char.SetAreaVisible($scplayer, area)
+    Char.SetCoordinates($scplayer, posX, posY, 0.0)
+    Streaming.RequestCollision(posX, posY)
+    Streaming.LoadAllModelsNow()
+    wait 0
+    
+    // put on loaded ground
+    Char.SetCoordinates($scplayer, posX, posY, -100.0)
+    Char.SetHeading($scplayer, heading)
+    
+    float posZ
+    //Player is already at the waypoint
+    Char.GetCoordinates($scplayer, posX, posY, posZ)
+    //We're loading the scene
+    Streaming.LoadScene(posX, posY, posZ)
+    Streaming.LoadAllModelsNow()
+end
 
-function func_equipAgentOutfit()
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Equip Agent Outfit
+//      - This function puts CJ in his agent outfit.
+//------------------------------------------------------------------------------------------------------
+function func_giveAgentOutfit()
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Player_Face",   {Model:}"HEAD",      {Body Part:}BodyPart.Head)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Tuxedo",        {Model:}"Suit2",     {Body Part:}BodyPart.Torso)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Suit1TrBlk2",   {Model:}"Suit1Tr",   {Body Part:}BodyPart.Legs)
@@ -220,18 +320,68 @@ end
 
 
 
+//------------------------------------------------------------------------------------------------------
+//      Functions | Equip Agent Outfit
+//      - This function puts CJ in his agent outfit.
+//------------------------------------------------------------------------------------------------------
+function func_clearCameraVector()
+    float cameraX, cameraY, cameraZ
+    Camera.GetActiveCoordinates(cameraX, cameraY, cameraZ)
+    Camera.SetVectorMove(cameraX, cameraY, cameraZ, cameraX, cameraY, cameraZ, 0, False)
+    Camera.SetVectorTrack(cameraX, cameraY, cameraZ, cameraX, cameraY, cameraZ, 0, False)
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Give Weapon Safely
+//      - This function loads the model before giving the weapon to the specified Char.
+//------------------------------------------------------------------------------------------------------
+function func_giveWeaponSafely(targetChar: Char, modelID: int, weaponID: int, ammo: int)
+    Streaming.RequestModel(modelID)
+    Streaming.LoadAllModelsNow()
+    Char.GiveWeapon(targetChar, weaponID, ammo)
+    Char.SetCurrentWeapon(targetChar, weaponID)
+    Streaming.MarkModelAsNoLongerNeeded(modelID)
+end
+
+
+
 //========================================================================================================================================================================================================
-//    10. Missions
-//    All missions go here. They are only loaded into memory when called.
+//      10. Missions
+//      All missions go here. They are only loaded into memory when called.
 //========================================================================================================================================================================================================
 
+//------------------------------------------------------------------------------------------------------
+//      Missions | Mission 0: Initial
+//      - Initialisation 'mission' which has the main menu etc.
+//------------------------------------------------------------------------------------------------------
 :Mission_Initial
 {$INCLUDE_ONCE main\missions\Mission-Initial.txt}
 
+//------------------------------------------------------------------------------------------------------
+//      Missions | Mission 1: Arrival
+//      - Intro cinematic and CJ arriving at Prospero H.Q.
+//------------------------------------------------------------------------------------------------------
+:Mission_Arrival
+{$INCLUDE_ONCE main\missions\Mission-Arrival.txt}
+
 //========================================================================================================================================================================================================
-//    11. External Scripts
-//    All external scripts go here. They are only loaded into memory when called.
+//      11. External Scripts
+//      All external scripts go here. They are only loaded into memory when called.
 //========================================================================================================================================================================================================
 
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | Debug Camera Helper
+//      - A debug script used to get accurate camera angles.
+//------------------------------------------------------------------------------------------------------
 :External_CameraHelper
 {$INCLUDE_ONCE main\externals\External-CameraHelper.txt}
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | Debug Console
+//      - A debug developer console containing useful tools and readouts.
+//------------------------------------------------------------------------------------------------------
+:External_DebugConsole
+{$INCLUDE_ONCE main\externals\External-DebugConsole.txt}

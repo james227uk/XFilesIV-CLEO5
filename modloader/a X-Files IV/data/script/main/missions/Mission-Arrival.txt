@@ -1,0 +1,88 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        1. Arrival
+// Description: Intro cinematic. CJ arrives at Prospero H.Q. and is given his mission.
+// Path:        main\missions\Mission-Arrival.txt
+// Trigger:     Upon Storymode selected.
+// Notes:       
+//==========================================================================================================================================================================================================
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Arrival] [INFO] Loaded mission 'arrival'.")
+
+// Start the mssion
+register_mission_given
+gosub @Mission_Arrival_Start
+if has_deatharrest_been_executed
+then
+    gosub @Mission_Arrival_Failed
+end
+gosub @Mission_Arrival_Cleanup
+terminate_this_script
+
+//------------------------------------------------------------------------------------------------------
+//      Main Mission Body
+//------------------------------------------------------------------------------------------------------
+:Mission_Arrival_Start
+script_name 'arrival'
+
+//--- Part 1: Title card
+//    A simple title card displaying X-Files IV.
+skip_cutscene_start_internal @Mission_Arrival_Scene2
+    Char.SetCoordinates($scplayer, -1351.6396, 900.3057, 46.8549)
+    Camera.SetFixedPosition(-1290.726562, 799.381958, 1.0, 0.0, 0.0, 0.0)
+    Camera.PointAtPoint(-90361.820312, 702.167358, 44183.246094, SwitchType.JumpCut)
+    Camera.SetVectorTrack({From X:}-50716.812500, {From Y:}83541.726562, {From Z:}17745.085938, {To X:}-90361.820312, {To Y:}702.167358, {To Z:}44183.246094, {Time:}9000, {Ease:}False)
+    Streaming.RequestCollision(-1351.6396, 900.3057)
+    Streaming.LoadAllModelsNow()  
+    Camera.DoFade(1000, Fade.In)
+    wait 1000
+    Text.PrintBig("XSM0101", 8000, TextStyle.Middle)
+    wait 3000
+    Text.PrintNow("XSM0102", 5000, 2)
+    wait 5000
+
+
+//--- Part 2: A walk in the woods
+//    Several hikers walk through the woods, and are then attacked when the Bloodpool opens.
+:Mission_Arrival_Scene2    
+skip_cutscene_end
+skip_cutscene_start_internal @Mission_Arrival_Scene3
+
+//--- Set the scene
+Char.SetCoordinates($scplayer, -636.7043, -1926.9922, 19.1481)
+Streaming.RequestCollision(-636.7043, -1926.9922)
+Streaming.LoadAllModelsNow()
+wait 0
+Char.SetCoordinates($scplayer, -636.7043, -1926.9922, -100.0)
+
+:Mission_Arrival_Scene3
+skip_cutscene_end
+jump @Mission_Arrival_Passed
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Mission Passed
+//      - Actions performed if the mission is passed.
+//------------------------------------------------------------------------------------------------------
+
+:Mission_Arrival_Passed
+$flagMissionArrivalCompleted = True
+return
+
+
+//------------------------------------------------------------------------------------------------------
+//      Mission Failed
+//      - Actions performed if the mission is failed.
+//------------------------------------------------------------------------------------------------------
+
+:Mission_Arrival_Failed
+return
+
+
+// Mission cleanup.
+:Mission_Arrival_Cleanup
+$ONMISSION = False
+Mission.Finish()
+return

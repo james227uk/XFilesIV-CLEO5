@@ -1,0 +1,145 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        Camera Helper
+// Description: This script is a development tool used to help perfect camera angles.
+// Path:        main\externals\External-CameraHelper.txt
+// Trigger:     Upon pressing activation buttons.
+//==========================================================================================================================================================================================================
+
+
+//
+// ImGuiCleo Example Script
+//
+{$USE CLEO}
+{$USE imgui}
+
+script_name 'DBGCONS'
+
+const TOGGLE_KEY = 117 // F5
+int iShowWindow = 0
+
+while true
+    wait 0
+
+    ImGui.BeginFrame("IMGUI_XFIVDEBUG")
+    ImGui.SetCursorVisible(iShowWindow)
+
+    if iShowWindow == 1
+    then
+        ImGui.SetNextWindowSize(350.0, 600.0, ImGuiCond.Once)
+        iShowWindow = ImGui.Begin("X-Files IV Debug Console", iShowWindow, {NoTitle:}False, {NoResize:}False, {NoMove:}False, {AutoResize:}False)
+        ImGui.TextCentered("Welcome, Director.")
+        ImGui.Spacing()
+
+        ImGui.BeginChild("WindowChild")
+
+        int iTab = ImGui.Tabs("TabBar", "Teleports,Spawning,World")
+
+        // Teleports
+        if iTab == 0
+        then
+            ImGui.Spacing()
+            ImGui.Text("Prospero")
+            float fSzX, fSzY
+            ImGui.GetScalingSize("S0", 1, 0, fSzX, fSzY)
+            if ImGui.Button("Prospero H.Q.", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}2478.751, {Y:}2773.2268, {Heading:}270.0, {Area:}0)
+            end
+                        
+            ImGui.Separator()
+            ImGui.Spacing()
+            ImGui.Text("Other")
+            ImGui.GetScalingSize("S1", 2, 0, fSzX, fSzY)
+            if ImGui.Button("Bloodpool", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}-823.0774, {Y:}-1920.2523, {Heading:}239.0, {Area:}0)
+            end
+            ImGui.SameLine()
+            if ImGui.Button("Mount Chiliad", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}-2321.3279, {Y:}-1637.3391, {Heading:}354.0, {Area:}0)
+            end 
+
+            ImGui.GetScalingSize("S2", 2, 0, fSzX, fSzY)
+            if ImGui.Button("Grove Street", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}2492.0723, {Y:}-1667.1511, {Heading:}354.0, {Area:}0)
+            end  
+            ImGui.SameLine()            
+            if ImGui.Button("The Panopticon", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}-512.116, {Y:}-183.331, {Heading:}354.0, {Area:}0)
+            end                    
+            ImGui.Spacing()            
+        end
+
+        // Spawning
+        if iTab == 1
+        //Char.GiveWeapon(0, WeaponType.)
+        then
+            ImGui.Spacing()
+            ImGui.Text("Frequent")
+            ImGui.GetScalingSize("S3", 3, 0, fSzX, fSzY)
+            if ImGui.Button("M4", fSzX, fSzY)
+            then
+                func_giveWeaponSafely($scplayer, #M4, 31, 99999)
+            end
+            ImGui.SameLine()
+            if ImGui.Button("DEagle", fSzX, fSzY)
+            then
+                func_giveWeaponSafely($scplayer, #DESERT_EAGLE, 24, 99999)
+            end
+            ImGui.SameLine()
+            if ImGui.Button("RLauncher", fSzX, fSzY)
+            then
+                func_giveWeaponSafely($scplayer, #HEATSEEK, 36, 99999)
+            end    
+        end
+        
+        
+        if iTab == 2 // World
+        then
+            ImGui.Spacing()
+            ImGui.Text("Weather")
+            ImGui.GetScalingSize("S4", 3, 0, fSzX, fSzY)
+            if ImGui.Button("Sunny", fSzX, fSzY)
+            then
+                Weather.ForceNow(WeatherType.ExtraSunnyLa)
+            end
+            ImGui.SameLine()
+            if ImGui.Button("Stormy", fSzX, fSzY)
+            then
+                Weather.ForceNow(WeatherType.RainySf)
+            end
+            ImGui.SameLine()
+            if ImGui.Button("Foggy", fSzX, fSzY)
+            then
+                Weather.ForceNow(78)
+            end    
+        end        
+        ImGui.EndChild()
+
+        ImGui.End()
+    end
+    ImGui.EndFrame()
+
+    if Pad.IsKeyPressed(TOGGLE_KEY)
+    then
+        while Pad.IsKeyPressed(TOGGLE_KEY)
+            wait 0
+        end
+        
+        if iShowWindow == 1
+        then
+           iShowWindow = 0
+           Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[External-DebugConsole] [INFO] Script ending...")
+           terminate_this_script
+        else
+            iShowWindow = 1
+        end
+    end
+end
+

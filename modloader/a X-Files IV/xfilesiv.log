@@ -1,3 +1,15 @@
-03/11/2024 22:01:23.030 [Main] [INFO] Launching mission 'initial'...
-03/11/2024 22:01:23.121 [Initial] [INFO] Loaded mission 'initial'.
-03/11/2024 22:01:27.460 [Initial] [INFO] Selected gamemode 'Storymode'.
+05/11/2024 11:30:17.662 [Main] [INFO] Launching mission 'initial'...
+05/11/2024 11:30:17.717 [Mission-Initial] [INFO] Loaded mission 'initial'.
+05/11/2024 11:30:18.418 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
+05/11/2024 11:30:18.418 [Main] [INFO] Returned from mission 'initial'.
+05/11/2024 11:30:18.958 [Main] [INFO] Began external script 'External-DebugConsole'.
+05/11/2024 11:30:19.342 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.
+05/11/2024 11:30:19.541 [External-DebugConsole] [INFO] Script ending...
+05/11/2024 11:30:19.541 [Main] [INFO] Began external script 'External-DebugConsole'.
+05/11/2024 11:30:19.838 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.
+05/11/2024 11:30:20.273 [External-DebugConsole] [INFO] Script ending...
+05/11/2024 11:30:20.273 [Main] [INFO] Began external script 'External-DebugConsole'.
+05/11/2024 11:30:20.640 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.
+05/11/2024 11:30:20.996 [External-DebugConsole] [INFO] Script ending...
+05/11/2024 11:30:20.996 [Main] [INFO] Began external script 'External-DebugConsole'.
+05/11/2024 11:30:21.379 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.

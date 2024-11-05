@@ -5,8 +5,6 @@
 //                                                                                Useful snippets, shortcuts, etc to improve Sanny Builder Usage
 //========================================================================================================================================================================================================
 
-https://gtaforums.com/topic/876461-learn-gta3script-in-y-minutes/
-http://web.archive.org/web/20150329222932/https://gtaforums.com/topic/403790-mission-coding-for-dummies/#comment-1059080277
 
 //====================================
 //              Contents

@@ -21,9 +21,16 @@ Char custodianSceneDavis
 
 
 script_name 'initial'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Initial] [INFO] Loaded mission 'initial'.")
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Loaded mission 'initial'.")
+
+// Reveal the entire map, courtesy of Seemann.
+for 0@ = 354164 to 354188
+	&0(0@,1i) = 16843009
+end
 
 // Set the scene. Position the camera.
+Hud.SwitchWidescreen(True)
+Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Camera.SetFixedPosition(2488.501709, 2754.590332, 19.302280, 0.0, 0.0, 0.0)
 Camera.PointAtPoint(2498.143799, 2754.322021, 19.368336, SwitchType.JumpCut)
 
@@ -53,12 +60,12 @@ while true
         switch iMainMenuChoice
             case 0 // Storymode
                 $flagGamemodeChoice = gmStorymode
-                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Initial] [INFO] Selected gamemode 'Storymode'.")
+                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Selected gamemode 'Storymode'.")
                 break
             
             case 1 // Freemode
                 $flagGamemodeChoice = gmFreemode
-                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Initial] [INFO] Selected gamemode 'Freemode'.")
+                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Selected gamemode 'Freemode'.")
                 break
         end
         //break
@@ -75,26 +82,29 @@ switch iRandomSceneChoice
         Char.WarpIntoCarAsPassenger(custodianSceneDavis, custodianSceneHeli, SeatId.RearLeft)
         
         Camera.SetFixedPosition(2634.081299, 2696.565430, 32.328850, 0.0, 0.0, 0.0)
-        //Camera.PointAtCar(custodianSceneHeli, 0, SwitchType.JumpCut)
         Camera.PointAtCar(custodianSceneHeli, CameraMode.Fixed, SwitchType.JumpCut)
         Car.FreezePosition(custodianSceneHeli, False)
         Heli.GotoCoords(custodianSceneHeli, 2714.5808, 2629.2925, 50.0171, 10.0, 40.0)
         Camera.DoFade(5000, Fade.Out)
         gosub @Mission_Initial_SilenceTheme
-        wait 7000
+        //wait 7000        
         
         Char.Delete(custodianSceneCustodian)
         Char.Delete(custodianSceneCarter)
         Char.Delete(custodianSceneDavis)
         Char.Delete(custodianSceneHeliPilot)
         Car.Delete(custodianSceneHeli)
+        Char.MarkAsNoLongerNeeded(custodianSceneCustodian)
+        Char.MarkAsNoLongerNeeded(custodianSceneCarter)
+        Char.MarkAsNoLongerNeeded(custodianSceneDavis)
+        Char.MarkAsNoLongerNeeded(custodianSceneHeliPilot)
+        Car.MarkAsNoLongerNeeded(custodianSceneHeli)
         Streaming.MarkModelAsNoLongerNeeded(#MAVERICK)
         Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
         Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
         Streaming.UnloadSpecialCharacter(1)
         Streaming.UnloadSpecialCharacter(2)
-        Streaming.UnloadSpecialCharacter(3)
-        Camera.DoFade(0, Fade.In)        
+        Streaming.UnloadSpecialCharacter(3)       
     
     case 1
     
@@ -104,10 +114,7 @@ switch iRandomSceneChoice
     
     case 4
     
-end
-
-
-//Camera.DoFade({Time:}2000, {Direction:}Fade.Out)    
+end    
 jump @Mission_Initial_Cleanup
 
 :Mission_Initial_SceneSelecter
@@ -145,7 +152,7 @@ switch iRandomSceneChoice
 
         // Facing The Custodian and the heli.
         Camera.SetFixedPosition(2616.405029, 2727.775635, 36.538643, 0.0, 0.0, 0.0)
-        Camera.PointAtPoint(2820.191650, 2213.777588, 114.439705, SwitchType.Interpolation)
+        Camera.PointAtPoint(2820.191650, 2213.777588, 114.439705, SwitchType.Interpolation)      
 
     case 1
     
@@ -165,10 +172,6 @@ return
 
 :Mission_Initial_Cleanup
 AudioStream.Remove(mainTheme)
-Streaming.RequestModel(#INFERNUS)
-Streaming.LoadAllModelsNow()
-Car.Create(#INFERNUS, 2541.5222, 2777.7031, 10.8203, 0@)
 $flagMissionInitialCompleted = True
-Camera.RestoreJumpcut()
-Mission.Finish()
+$ONMISSION = False
 terminate_this_script

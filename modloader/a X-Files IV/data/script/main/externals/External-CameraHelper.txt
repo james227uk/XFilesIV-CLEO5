@@ -16,10 +16,11 @@ float fCameraPointZ
 float fPlayerPosX
 float fPlayerPosY
 float fPlayerPosZ
-float fCameraTargetRange = 100.0
+float fCameraTargetRange = 1000.0
 
-script_name 'DBGCAMH'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[External-CameraHelper] [INFO] Loaded external script 'External-CameraHelper'.")
+script_name 'DBGCAMS'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[External-CameraHelper] [INFO] Script started.")
+Text.PrintStringNow("JAFFA", 1000)
 
 while true
     wait 0
@@ -28,7 +29,7 @@ while true
     then
         Char.GetCoordinates({Char:}$scplayer, {StoreXTo:}fPlayerPosX, {StoreYTo:}fPlayerPosY, {StoreZTo:}fPlayerPosZ)
         Camera.GetThirdPersonTarget({Range:}fCameraTargetRange, {SourceX:}fPlayerPosX, {SourceY:}fPlayerPosX, {SourceZ:}fPlayerPosX, {OutputPosX:}fCameraPosX, {OutputPosY:}fCameraPosY, {OutputPosZ:}fCameraPosZ, {OutputPointX:}fCameraPointX, {OutputPointY:}fCameraPointY,{OutputPointZ:}fCameraPointZ)
-        Text.PrintStringNow({Text:}"Got pos coordinates", {Time:}1000)
+        Text.PrintStringNow({Text:}"Got coordinates", {Time:}1000)
     end
 
     // Test camera position
@@ -60,4 +61,5 @@ while true
     end    
 end
 
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[External-CameraHelper] [INFO] Script ending...")
 terminate_this_script
