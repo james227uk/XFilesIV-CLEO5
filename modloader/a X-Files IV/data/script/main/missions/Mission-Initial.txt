@@ -8,6 +8,10 @@
 // Trigger:     Upon game load
 // Notes:       This is not a 'true' mission; it's here for organisation and optimisation.
 //==========================================================================================================================================================================================================
+script_name 'initial'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Loaded mission 'initial'.")
+
+
 int iRandomSceneChoice
 Menu mainMenu
 Int iMainMenuChoice
@@ -19,16 +23,14 @@ Char custodianSceneCustodian
 Char custodianSceneCarter
 Char custodianSceneDavis
 
-
-script_name 'initial'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Loaded mission 'initial'.")
-
 // Reveal the entire map, courtesy of Seemann.
 for 0@ = 354164 to 354188
 	&0(0@,1i) = 16843009
 end
 
 // Set the scene. Position the camera.
+Text.ClearHelp()
+Text.ClearPrints()
 Hud.SwitchWidescreen(True)
 Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Camera.SetFixedPosition(2488.501709, 2754.590332, 19.302280, 0.0, 0.0, 0.0)
@@ -77,6 +79,7 @@ Menu.Delete(mainMenu)
 switch iRandomSceneChoice
     // Custodian on helipad
     case 0
+        skip_cutscene_start_internal @Mission_Initial_Skip_Custodian
         Char.WarpIntoCarAsPassenger(custodianSceneCustodian, custodianSceneHeli, SeatId.RearRight)
         Char.WarpIntoCarAsPassenger(custodianSceneCarter, custodianSceneHeli, SeatId.FrontRight)
         Char.WarpIntoCarAsPassenger(custodianSceneDavis, custodianSceneHeli, SeatId.RearLeft)
@@ -87,24 +90,12 @@ switch iRandomSceneChoice
         Heli.GotoCoords(custodianSceneHeli, 2714.5808, 2629.2925, 50.0171, 10.0, 40.0)
         Camera.DoFade(5000, Fade.Out)
         gosub @Mission_Initial_SilenceTheme
-        //wait 7000        
+        wait 7000        
         
-        Char.Delete(custodianSceneCustodian)
-        Char.Delete(custodianSceneCarter)
-        Char.Delete(custodianSceneDavis)
-        Char.Delete(custodianSceneHeliPilot)
-        Car.Delete(custodianSceneHeli)
-        Char.MarkAsNoLongerNeeded(custodianSceneCustodian)
-        Char.MarkAsNoLongerNeeded(custodianSceneCarter)
-        Char.MarkAsNoLongerNeeded(custodianSceneDavis)
-        Char.MarkAsNoLongerNeeded(custodianSceneHeliPilot)
-        Car.MarkAsNoLongerNeeded(custodianSceneHeli)
-        Streaming.MarkModelAsNoLongerNeeded(#MAVERICK)
-        Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
-        Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
-        Streaming.UnloadSpecialCharacter(1)
-        Streaming.UnloadSpecialCharacter(2)
-        Streaming.UnloadSpecialCharacter(3)       
+        :Mission_Initial_Skip_Custodian
+        skip_cutscene_end
+        gosub @Mission_Initial_Skip_Universal
+        gosub @Mission_Initial_Cleanup_Custodian      
     
     case 1
     
@@ -115,7 +106,8 @@ switch iRandomSceneChoice
     case 4
     
 end    
-jump @Mission_Initial_Cleanup
+jump @Mission_Initial_Cleanup_Universal
+
 
 :Mission_Initial_SceneSelecter
 // Randomly select a scene.
@@ -165,13 +157,43 @@ end
 return
 
 
+// Cleanup code executed for all scenes.
+:Mission_Initial_Cleanup_Universal
+AudioStream.Remove(mainTheme)
+$flagMissionInitialCompleted = True
+$ONMISSION = False
+terminate_this_script
+
+
+// Cleanup code unique to The Custodian's scene.
+:Mission_Initial_Cleanup_Custodian
+Char.Delete(custodianSceneCustodian)
+Char.Delete(custodianSceneCarter)
+Char.Delete(custodianSceneDavis)
+Char.Delete(custodianSceneHeliPilot)
+Car.Delete(custodianSceneHeli)
+Char.MarkAsNoLongerNeeded(custodianSceneCustodian)
+Char.MarkAsNoLongerNeeded(custodianSceneCarter)
+Char.MarkAsNoLongerNeeded(custodianSceneDavis)
+Char.MarkAsNoLongerNeeded(custodianSceneHeliPilot)
+Car.MarkAsNoLongerNeeded(custodianSceneHeli)
+Streaming.MarkModelAsNoLongerNeeded(#MAVERICK)
+Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
+Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+Streaming.UnloadSpecialCharacter(1)
+Streaming.UnloadSpecialCharacter(2)
+Streaming.UnloadSpecialCharacter(3) 
+return
+
+
+// A de-facto function for all scenes to fade out the main theme.
 :Mission_Initial_SilenceTheme
 AudioStream.SetVolumeWithTransition({{Audio:}mainTheme, {{Volume:}0.0, {Duration:}5000)
 return
 
 
-:Mission_Initial_Cleanup
-AudioStream.Remove(mainTheme)
-$flagMissionInitialCompleted = True
-$ONMISSION = False
-terminate_this_script
+// Skip code executed for all scenes.
+:Mission_Initial_Skip_Universal
+Camera.DoFade(0, Fade.Out)
+AudioStream.SetState(mainTheme, AudioStreamAction.Stop)
+return

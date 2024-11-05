@@ -124,7 +124,8 @@ set_deatharrest_state 0
 //      Final initialisation steps, launch the initial 'mission', then create initial threads.
 //========================================================================================================================================================================================================
 wait 0
-Text.ClearHelp()
+start_new_script @Debug_CameraHelper
+start_new_script @Debug_DebugConsole
 
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
@@ -157,8 +158,6 @@ end
 Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
-start_new_script @Debug_CameraHelper
-start_new_script @Debug_DebugConsole
 Player.SetControl({Player:} $player1, {State:} True)
 Camera.RestoreJumpcut()
 Hud.SwitchWidescreen(False)
@@ -321,8 +320,8 @@ end
 
 
 //------------------------------------------------------------------------------------------------------
-//      Functions | Equip Agent Outfit
-//      - This function puts CJ in his agent outfit.
+//      Functions | Clear Camera Vector
+//      - This function clears stubborn camera vector movements.
 //------------------------------------------------------------------------------------------------------
 function func_clearCameraVector()
     float cameraX, cameraY, cameraZ
