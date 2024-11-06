@@ -1,6 +1,9 @@
-06/11/2024 01:36:06.777 [Main] [INFO] Launching mission 'initial'...
-06/11/2024 01:36:06.818 [Mission-Initial] [INFO] Loaded mission 'initial'.
-06/11/2024 01:36:09.303 [Mission-Initial] [INFO] Selected gamemode 'Storymode'.
-06/11/2024 01:36:16.304 [Main] [INFO] Returned from mission 'initial'.
-06/11/2024 01:36:16.321 [Main] [INFO] Launching mission 'introduction'...
-06/11/2024 01:36:16.338 [Mission-Introduction] [INFO] Loaded mission 'introduction'.
+06/11/2024 21:58:54.099 [Main] [INFO] Launching mission 'initial'...
+06/11/2024 21:58:54.157 [Mission-Initial] [INFO] Loaded mission 'initial'.
+06/11/2024 21:58:55.489 [Mission-Initial] [INFO] Selected gamemode 'Storymode'.
+06/11/2024 21:59:02.502 [Main] [INFO] Returned from mission 'initial'.
+06/11/2024 21:59:02.519 [Main] [INFO] Launching mission 'introduction'...
+06/11/2024 21:59:02.536 [Mission-Introduction] [INFO] Loaded mission 'introduction'.
+06/11/2024 22:00:36.171 [JAFFA] [INFO] AS Length Is: 9, Duration Is: 0.000000
+06/11/2024 22:00:58.139 [Main] [INFO] Returned from mission 'introduction'.
+06/11/2024 22:00:59.139 [JAFFA] [INFO] Does exist.

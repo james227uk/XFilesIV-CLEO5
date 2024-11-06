@@ -52,6 +52,7 @@ end
 const
     externalCameraHelper = 0
     externalDebugConsole = 1
+    
 end
 
 script_name 'MAIN'
@@ -129,7 +130,6 @@ set_deatharrest_state 0
 wait 0
 start_new_script @Debug_CameraHelper
 start_new_script @Debug_DebugConsole
-
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
@@ -149,7 +149,7 @@ then
     while $flagMissionIntroductionCompleted == False
         wait 0
     end
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.") 
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.")
 else
     // Freemode
     Camera.RestoreJumpcut()
@@ -158,7 +158,7 @@ else
     Camera.DoFade(1000, Fade.In)
     Hud.SwitchWidescreen(False)
 end   
-Audio.PlayMissionPassedTune(2) // Debug
+//Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
 Player.SetControl({Player:} $player1, {State:} True)
@@ -345,6 +345,91 @@ function func_giveWeaponSafely(targetChar: Char, modelID: int, weaponID: int, am
     Char.GiveWeapon(targetChar, weaponID, ammo)
     Char.SetCurrentWeapon(targetChar, weaponID)
     Streaming.MarkModelAsNoLongerNeeded(modelID)
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Play SCM Sound Safely
+//      - This function safely loads and then plays an SCM sound.
+//------------------------------------------------------------------------------------------------------
+function func_playSoundSafely(slotID: int, soundID: int, waitUntilFinished: int)
+    Audio.LoadMissionAudio(slotID, soundID)
+    repeat
+        wait 0
+    until Audio.HasMissionAudioLoaded(slotID)
+    Audio.PlayMissionAudio(slotID)
+    
+    if waitUntilFinished == False
+    then
+        return
+    else
+        repeat
+            wait 0
+        until Audio.HasMissionAudioFinished(slotID)
+    end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Load AudioStream safely.
+//      - 
+//------------------------------------------------------------------------------------------------------
+function func_playAudioStreamSafely(streamID: AudioStream, soundPath: string, waitUntilFinished: int)
+    repeat
+        wait 0
+    until streamID = AudioStream.Load(soundPath)
+    AudioStream.SetState(streamID, AudioStreamAction.Play)
+    
+    if waitUntilFinished == False
+    then
+        return
+    else
+        repeat
+            wait 0
+        until not AudioStream.IsPlaying(streamID)
+    end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Play Dialogue
+//      - 
+//------------------------------------------------------------------------------------------------------
+function func_playDialogue(mode: int, asPath: string, scmSoundID: int, subID: string, doAnims: int, forChar: Char, waitUntilFinished: int)
+int streamLength = 0
+int subtitleDisplayTime = 0
+AudioStream streamID
+
+    if mode == 0 // AudioStream mode.
+    then
+        repeat
+            wait 0
+        until AudioStream.Load(asPath, streamID)
+        AudioStream.GetLength(streamID, streamLength)
+        streamLength *= 1000
+        //subtitleDisplayTime = streamLength
+        //subtitleDisplayTime += 500
+        streamLength += 1000
+        AudioStream.SetState(streamID, AudioStreamAction.Play)
+        Text.PrintNow(subID, streamLength, 1)  
+        
+        if doAnims == True
+        then
+            Task.PlayAnim({Char:}forChar, {Anim Name:}"idle_chat", {Anim File:}"ped", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}streamLength)
+            Char.StartFacialTalk(forChar, 10)
+        end
+        
+        if waitUntilFinished == True
+        then
+            repeat
+                wait 0
+            until not AudioStream.IsPlaying(streamID)
+            Char.StopFacialTalk(forChar)
+        end 
+    end
 end
 
 

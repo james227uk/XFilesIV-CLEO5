@@ -125,11 +125,13 @@ Camera.ResetNewScriptables()
 // Hikers moan about the weather
 Camera.SetFixedPosition({Pos3:}-714.767578, -1856.230347, 14.612205, {Offset Pos3:}0.0, 0.0, 0.0)
 Camera.PointAtPoint({Pos3:}-1826.590576, -146.726013, -363.410858, SwitchType.JumpCut)
-Task.TurnCharToFaceChar({Target:}cIntroFemale1, {Turn To:}cIntroMale1)
+Task.TurnCharToFaceChar({Target:}cIntroFemale2, {Turn To:}cIntroMale1)
 wait 500
 Task.PlayAnim({Char:}cIntroFemale2, {Anim:}"IDLE_CHAT", {Anim File:}"PED", {Speed:}4.0, {Loop:}True, {Lock X:}True, {Lock Y:}True, {Freeze Last Frame:}False, {Duration:}-1)
 cIntroFemale2.StartFacialTalk({Duration:}-1)
 Audio.PlayMissionAudio(MissionAudioSlot.Slot1) // Female 2: This weather is bullshit!
+Task.TurnCharToFaceChar({Target:}cIntroMale1, {Turn To:}cIntroFemale2)
+Task.TurnCharToFaceChar({Target:}cIntroFemale1, {Turn To:}cIntroFemale1)
 repeat
     wait 0
 until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
@@ -169,6 +171,8 @@ Sequence seqAnimPoint = Sequence.Open()
 Sequence.Close(seqAnimPoint)
 Audio.PlayMissionAudio(MissionAudioSlot.Slot2) // Male 2: What in tarnation?!
 Char.PerformSequence({Char:}cIntroMale2, {Sequence:}seqAnimPoint)
+wait 0
+Sequence.Clear(seqAnimPoint)
 wait 1000
 Camera.SetFixedPosition({Pos3:}-713.672913, -1849.339844, 16.056463, {Offset Pos3:}0.0, 0.0, 0.0)
 Camera.PointAtPoint({Pos3:}-839.196655, -2067.679443, -57.418488, SwitchType.JumpCut)
@@ -187,31 +191,30 @@ Char.Delete(cIntroFemale2)
 Car.Delete(vIntroCar)
 wait 5000
 
-//--- Part 3: The Bar
-//    CJ is at a bar enjoying his day off.
+
+//--- Part 3.1: The Bar: Exterior Shot
+//    CJ is at a bar enjoying his day off. We see his car outside with the text 'Two Weeks Later'...
 //------------------------------------------------------------------------------------------------------
 :Mission_Introduction_Scene3
 skip_cutscene_end
+Streaming.MarkModelAsNoLongerNeeded(#DWMYLC1) // Cowboy hat male
+Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)  // Country Female
+Streaming.MarkModelAsNoLongerNeeded(#CWMYFR)  // Country Male
+Streaming.MarkModelAsNoLongerNeeded(#DNFYLC)  // Country female - Eve's Mom
+Streaming.MarkModelAsNoLongerNeeded(#SADLER)  // Family car
+Streaming.RemoveAnimation("ON_LOOKERS")
 skip_cutscene_start_internal @Mission_Introduction_Scene4
-{
-Streaming.RequestAnimation("BAR")
-Streaming.RequestAnimation("DANCING"
-Streaming.RequestAnimation("RUNNINGMAN"
-Streaming.RequestAnimation("GANGS")
-Streaming.RequestModel(#WMYVA) // Bartender
-Streaming.RequestModel(#DNMOLC1)
-Streaming.RequestModel(#SWFYRI)
-Streaming.RequestModel(#CELLPHONE)
-}
 Clock.SetTimeOfDay(21, 0)
 
-Char.SetCoordinates($scplayer, {Pos3:}2503.3049, 1213.2024, 10.8203)
-Streaming.RequestCollision({Pos2:}2503.3049, 1213.2024)
+// Stream area. Put player in position.
+Char.SetCoordinates($scplayer, {Pos3:}2510.2959, 1202.2839, 10.8203)
+Streaming.RequestCollision({Pos2:}2510.2959, 1202.2839)
 Streaming.RequestModel(#INFERNUS)
 Streaming.LoadAllModelsNow()
 wait 0
-Char.SetCoordinates($scplayer, 2503.3049, 1213.2024, -100.0)
+Char.SetCoordinates({Pos3:} $scplayer, 2510.2959, 1202.2839, -100.0)
 
+// Spawn CJ's car outside the club.
 Car.CustomPlateForNextCar(#INFERNUS, "XFILES4")
 Car vIntroInfernus = Car.Create(#INFERNUS, {Pos3:}2497.2319, 1247.0275, 10.8203)
 Car.SetHeading(vIntroInfernus, 270.0)
@@ -219,311 +222,261 @@ Car.ChangeColor(vIntroInfernus, 0, 0)
 wait 0
 Car.MarkAsNoLongerNeeded(vIntroInfernus)
 
+// Camera tracks down to face the club. "Two Weeks Later..." displays.
 Camera.SetVectorMove({From Pos3:}2446.416504, 1301.942505, 29.584843, {To Pos3:}2495.787598, 1258.685791, 13.387424, {Duration:}10000, {Ease:}False)
 Camera.SetVectorTrack({To Pos3:}2468.504395, 1275.212402, 29.296982, {To Pos3:}2546.237061, 1168.128540, 21.925793, {Duration:}10000, {Ease:}False)
+Camera.DoFade(5000, Fade.In)
+Text.PrintBig("XSM0103", 5000, TextStyle.Middle)
+wait 9000
+Camera.DoFade(1000, Fade.Out)
 
 
+//--- Part 3.2: The Bar: Interior
+//    CJ is at a bar enjoying his day off. We see his car outside with the text 'Two Weeks Later'...
+//------------------------------------------------------------------------------------------------------
 :Mission_Introduction_Scene4 // Bar Interior
 skip_cutscene_end
+Text.ClearPrints()
+wait 1000
 skip_cutscene_start_internal @Mission_Introduction_Cleanup
 
+// Load models and bar area.
+Streaming.RequestAnimation("BAR")
+Streaming.RequestAnimation("DANCING")
+Streaming.RequestAnimation("RUNNINGMAN")
+Streaming.RequestAnimation("GANGS")
+Streaming.RequestAnimation("MISC")
+Streaming.RequestModel(#WMYVA) // Bartender
+Streaming.RequestModel(#DNMOLC1)
+Streaming.RequestModel(#SWFYRI)
+Streaming.RequestModel(#CELLPHONE)
+//-
+Char.SetAreaVisible($scplayer, 17)
+Char.SetCoordinates($scplayer, 499.9697, -20.6059, 1000.6)
+Streaming.SetAreaVisible(17) // Bar
+Streaming.RequestCollision(499.9697, -20.6059)
+Streaming.LoadAllModelsNow()
 
-{ Cleanup todo list:
+// Define anim sequences.
+Sequence animBartender = Sequence.Open()
+    Task.PlayAnim({Char:}-1, {Anim Name:}"barserve_bottle", {Anim File:}"bar", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"barserve_in",     {Anim File:}"bar", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"barserve_loop",   {Anim File:}"bar", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+Sequence.Close(animBartender)
 
-}
+Sequence animDanceEpicA1 = Sequence.Open()
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b1",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b2",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b3",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b4",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b5",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b6",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b7",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b8",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)    
+Sequence.Close(animDanceEpicA1)
+Sequence animDanceEpicA2 = Sequence.Open()
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b9",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b10", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b11", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b12", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b13", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b14", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b15", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_b16", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+Sequence.Close(animDanceEpicA2)
 
+Sequence animDanceEpicB1 = Sequence.Open()
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g1",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g2",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g3",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g4",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g5",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g6",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g7",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g8",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+Sequence.Close(animDanceEpicB1)
+Sequence animDanceEpicB2 = Sequence.Open()
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g9",  {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g10", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g11", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g12", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g13", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g14", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g15", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"dance_g16", {Anim File:}"runningman", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+Sequence.Close(animDanceEpicB2)
 
+// Put player in position. Give them a booze bottle.
+Char.SetCoordinates($scplayer, 499.9697, -20.6059, 1000.6168)
+Char.SetHeading($scplayer, 270.0)
+Object oBottle = Object.Create(1484, 0.0, 0.0, 0.0)
+Object.SetAreaVisible(oBottle, 17)
+Task.PickUpObject({Char:}$scplayer, {Object:}oBottle, {Offset Pos3:}0.0, 0.0, 0.0, {BoneID:}6, {Unknown}16, {Anim Name:}"NULL", {Anim File:}"NULL", {Duration:}-1)                  
 
-{
-       SET_TIME_OF_DAY 21 0
-        LOAD_SCENE (92489.9751, 1261.0487, 10.8203)
-        SET_CHAR_COORDINATES scplayer, (2480.5012, 1268.8696, 10.8125)
-        SET_FIXED_CAMERA_POSITION (2489.9751, 1261.0487, 10.8203), (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (2507.0688, 1243.4644, 15.0516), 2
-        CUSTOM_PLATE_FOR_NEXT_CAR infernus, "XFILES4"
-        CREATE_CAR infernus (2496.5117, 1247.4625, 10.8203), vehIntroInfernus
-        SET_CAR_HEADING vehIntroInfernus, 268.8425
-        CHANGE_CAR_COLOUR vehIntroInfernus, (0, 0)
-        DO_FADE 5000 FADE_IN
-        PRINT_BIG XSM0103 5000, 1 // Two Weeks Later...
-        WAIT 4000
-        DO_FADE 1000 FADE_OUT
-        WAIT 1000
-        SET_AREA_VISIBLE 17 // 04BB: select_interior analog
-        SET_CHAR_AREA_VISIBLE scplayer, 17
-        SET_CHAR_COORDINATES scplayer (499.9697, -20.6059, 1000.6168)
-        SET_CHAR_HEADING scplayer, 270.0
-        CREATE_OBJECT 1484, 0.0, 0.0, 0.0, oBottle
-        SET_OBJECT_AREA_VISIBLE oBottle 17
-        TASK_PICK_UP_OBJECT scplayer, oBottle, 0.0, 0.0, 0.0, 6, 16, "NULL", "NULL", -1
+// Create scene characters
+Char cIntroBartender = Char.Create(PedType.Special, #WMYVA, {Pos3:}501.8349, -18.6194, 1000.6)
+Char.SetHeading(cIntroBartender, 86.0)
+Char.SetAreaVisible(cIntroBartender, 17)
+Char.PerformSequence(cIntroBartender, animBartender)
+wait 0
+Sequence.Clear(animBartender)
 
-        OPEN_SEQUENCE_TASK animBartender
-            TASK_PLAY_ANIM -1 "barserve_bottle" bar, 4.0, FALSE, TRUE, TRUE, FALSE, -1
-            TASK_PLAY_ANIM -1 "barserve_in" bar, 4.0, FALSE, TRUE, TRUE, FALSE, -1 
-            TASK_PLAY_ANIM -1 "barserve_loop" bar, 4.0, FALSE, TRUE, TRUE, FALSE, -1
-        CLOSE_SEQUENCE_TASK animBartender
-        CREATE_CHAR 23, wmyva, (501.8349, -18.6194, 1000.6), cClubBartender
-        SET_CHAR_HEADING cClubBartender, 86.0
-        SET_CHAR_AREA_VISIBLE cClubBartender, 17
-        PERFORM_SEQUENCE_TASK cClubBartender, animBartender
-        CLEAR_SEQUENCE_TASK animBartender
+Char cIntroEpicDancerA = Char.Create(PedType.Special, #DNMOLC1, {Pos3:}487.8065, -15.0321, 1000.6)
+Char.SetHeading(cIntroEpicDancerA, 0.0)
+Char.SetAreaVisible(cIntroEpicDancerA, 17)
 
-        OPEN_SEQUENCE_TASK animDanceEpicA1
-            TASK_PLAY_ANIM -1 "dance_b1" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b2" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b3" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b4" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b5" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b6" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b7" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b8" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-        CLOSE_SEQUENCE_TASK animDanceEpicA1
-        OPEN_SEQUENCE_TASK animDanceEpicA2
-            TASK_PLAY_ANIM -1 "dance_b9" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b10" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b11" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b12" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b13" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b14" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b15" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_b16" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
-        CLOSE_SEQUENCE_TASK animDanceEpicA2
-        CREATE_CHAR 22, dnmolc1, (487.8065, -15.0321, 1000.6), cClubEpicDancerA
-        SET_CHAR_HEADING cClubEpicDancerA, 0.0
-        SET_CHAR_AREA_VISIBLE cClubEpicDancerA, 17
-
-        OPEN_SEQUENCE_TASK animDanceEpicB1
-            TASK_PLAY_ANIM -1 "dance_g1" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g2" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g3" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g4" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g5" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g6" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g7" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g8" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-        CLOSE_SEQUENCE_TASK animDanceEpicB1
-        OPEN_SEQUENCE_TASK animDanceEpicB2
-            TASK_PLAY_ANIM -1 "dance_g9" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g10" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g11" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g12" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g13" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g14" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g15" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-            TASK_PLAY_ANIM -1 "dance_g16" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
-        CLOSE_SEQUENCE_TASK animDanceEpicB2  
-        CREATE_CHAR 22, swfyri, (487.6528, -14.023, 1000.6797), cClubEpicDancerB
-        SET_CHAR_HEADING cClubEpicDancerB, 173.0
-        SET_CHAR_AREA_VISIBLE cClubEpicDancerB, 17
-
-        CREATE_RANDOM_CHAR 490.1774 -21.2311 1000.6797 cClubRandom1
-        SET_CHAR_HEADING cClubRandom1 17.4743
-        TASK_PLAY_ANIM cClubRandom1 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
-
-        CREATE_RANDOM_CHAR 482.7841 -18.0025 1000.6797 cClubRandom2    
-        SET_CHAR_HEADING cClubRandom2 306.057
-        TASK_PLAY_ANIM cClubRandom2 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
-
-        CREATE_RANDOM_CHAR 482.7142 -12.7037 1000.6797 cClubRandom3 
-        SET_CHAR_HEADING cClubRandom3 246.2098 
-        TASK_PLAY_ANIM cClubRandom3 "dance_loop" "dancing" 4.0, TRUE, FALSE, FALSE, FALSE, -1
-
-        CREATE_RANDOM_CHAR 481.9807 -8.0222 1000.6797 cClubRandom4
-        SET_CHAR_HEADING cClubRandom4 222.3963
-        TASK_PLAY_ANIM cClubRandom4 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
-        
-        CREATE_RANDOM_CHAR 485.569 -7.8098 1000.6719 cClubRandom5
-        SET_CHAR_HEADING cClubRandom5 268.7701
-        TASK_PLAY_ANIM cClubRandom5 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
-
-        CREATE_RANDOM_CHAR 481.9807 -8.0222 1000.6797 cClubRandom6
-        SET_CHAR_HEADING cClubRandom6 222.3963
-        TASK_PLAY_ANIM cClubRandom6 "dance_loop" "dancing" 4.0, TRUE, FALSE, FALSE, FALSE, -1
-        
-        // Camera: Behind-left of CJ, facing towards bar corner
-        SET_FIXED_CAMERA_POSITION (495.2984, -16.1996, 1000.2106) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (502.326, -23.1769, 1001.4701), 2
-        WAIT 2000
-        DO_FADE 1000 FADE_IN
-        WAIT 1000
-        TASK_PLAY_ANIM scplayer, "drnkbr_prtl", "GANGS", 4.0, FALSE, FALSE, FALSE, FALSE -1
-        WAIT 2000
-
-        // Camera: Close-up on epic dancing duo
-        SET_FIXED_CAMERA_POSITION (490.0669 -16.97 1000.6797) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (484.8581 -12.8829 1001.3391), 2
-        PERFORM_SEQUENCE_TASK cClubEpicDancerA animDanceEpicA1
-        PERFORM_SEQUENCE_TASK cClubEpicDancerB animDanceEpicB1
-        TASK_TURN_CHAR_TO_FACE_CHAR scplayer, cClubEpicDancerA
-        WAIT 3000
-
-        // Camera: Close to CJ, facing bar
-        SET_FIXED_CAMERA_POSITION (497.6537 -17.303 1001.0566) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (502.7314, -19.4638, 1000.8315), 2
-        TASK_TURN_CHAR_TO_FACE_CHAR scplayer, cClubBartender
-        WAIT 250
-        TASK_PLAY_ANIM scplayer, "drnkbr_prtl", "GANGS", 4.0, FALSE, FALSE, FALSE, FALSE -1    
-        WAIT 5000
-        TASK_PLAY_ANIM scplayer, "idle_chat", "ped", 4.0, FALSE, FALSE, FALSE, FALSE 2500  
-        PRINT_NOW XSM0104 2500, 1 // ~y~CJ: ~w~Hey bartender, can I get another one?
-        TASK_TURN_CHAR_TO_FACE_CHAR cClubBartender, scplayer
-        WAIT 2500 
-        PRINT_NOW XSM0105 2500, 1 // ~y~Bartender:~w~ Coming right up, CJ.
-        TASK_PLAY_ANIM cClubBartender, "idle_chat", "ped", 4.0, FALSE, FALSE, FALSE, FALSE 2500
-        WAIT 2500
-        TASK_PLAY_ANIM cClubBartender, "barserve_loop", "bar", 4.0, TRUE, FALSE, FALSE, FALSE -1
-
-        // Camera: Close-up on epic dancing duo
-        SET_FIXED_CAMERA_POSITION (490.0669 -16.97 1000.6797) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (484.8581 -12.8829 1001.3391), 2
-        DELETE_OBJECT oBottle
-        PERFORM_SEQUENCE_TASK cClubEpicDancerA animDanceEpicA2
-        PERFORM_SEQUENCE_TASK cClubEpicDancerB animDanceEpicB2
-        TASK_TURN_CHAR_TO_FACE_CHAR scplayer, cClubEpicDancerA
-        LOAD_MISSION_AUDIO 1 23000
-        WAIT 3000
-        
-        // Camera: Close to CJ, facing bar
-        SET_FIXED_CAMERA_POSITION (498.5305 -20.0609 1001.7631) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (500.5666 -21.1248 1001.3734), 2
-        WAIT 500
-        PLAY_MISSION_AUDIO 1
-        WAIT 2000
-        TASK_USE_MOBILE_PHONE scplayer, TRUE
-        CLEAR_MISSION_AUDIO 1
-        WAIT 500
-
-        // Camera: Close to CJ, facing bar
-        SET_FIXED_CAMERA_POSITION (497.0972, -20.7016, 1000.7) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (501.132, -20.7632, 1000.7), 2
-        SET_CHAR_HEADING scplayer, 93.0318
-        WAIT 2000
-
-        // Dialogue Bracket
-            sndDialogue1ID = 29801 // Truth: Carl!
-            sndDialogue1SUB = XSM0106
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-        
-            sndDialogue1ID = 29802 // CJ: Who's this?
-            sndDialogue1SUB = XSM0107
-            inputChar = scplayer
-            flag_doDialogueAnims = 0
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-
-            sndDialogue1ID = 29803 // Truth: You know me, this is The Truth
-            sndDialogue1SUB = XSM0108 
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-        
-            sndDialogue1ID = 29804 // CJ: No, I don't.
-            sndDialogue1SUB = XSM0109
-            inputChar = scplayer
-            flag_doDialogueAnims = 0
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-
-            sndDialogue1ID = 29807 // Truth: Okay, you can drop the act now kid.
-            sndDialogue1SUB = XSM0110
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-
-            sndDialogue1ID = 29822 // Truth: Carl. It's me. The Truth. We got a date with destiny, man.
-            sndDialogue1SUB = XSM0111
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-
-            sndDialogue1ID = 29823 // Truth: In about five minutes.
-            sndDialogue1SUB = XSM0112
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime        
-
-            sndDialogue1ID = 29814 // Truth: Make sure nobody follows you.
-            sndDialogue1SUB = XSM0113
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-
-            sndDialogue1ID = 16488 // CJ: I think you popped another microdot
-            sndDialogue1SUB = XSM0114
-            inputChar = scplayer
-            flag_doDialogueAnims = 0
-            GOSUB Function_PlayDialogue
-            WAIT defaultDialogueWaitTime
-
-            sndDialogue1ID = 37866 // CJ: What are you talking about?!
-            sndDialogue1SUB = XSM0115
-            inputChar = scplayer
-            flag_doDialogueAnims = 0
-            GOSUB Function_PlayDialogue
-            WAIT 1000
-
-            sndDialogue1ID = 16480 // CJ: Look, what's going on, Truth? This is my day off man! Cut the bullshit!
-            sndDialogue1SUB = XSM0116
-            inputChar = scplayer
-            flag_doDialogueAnims = 0
-            GOSUB Function_PlayDialogue
-            WAIT 2000
-
-            sndDialogue1ID = 12814 // CJ: Hello?
-            sndDialogue1SUB = XSM0117
-            inputChar = scplayer
-            flag_doDialogueAnims = 0
-            GOSUB Function_PlayDialogue
-            WAIT 2000
-
-            sndSoundID = 4203 // SFX: Cellphone hanging up
-            GOSUB Function_PlaySound
-            WAIT 1000
-
-        TASK_USE_MOBILE_PHONE scplayer, FALSE
-        WAIT 1000
-        SET_CURRENT_CHAR_WEAPON scplayer WEAPONTYPE_UNARMED
-        TASK_PLAY_ANIM scplayer, endchat_02, ped, 4.0, FALSE, FALSE, FALSE, FALSE, -1
-
-        sndDialogue1ID = 25030 // CJ: Damn! Gotta change my number!
-        sndDialogue1SUB = XSM0118
-        inputChar = scplayer
-        GOSUB Function_PlayDialogue
-        WAIT 1000
-
-        TASK_CHAR_SLIDE_TO_COORD scplayer, (494.2325, -22.9685, 1000.6797) 146.9256, 0.1
-        SET_FIXED_CAMERA_POSITION (491.7581 -22.401 1000.7379) (0.0, 0.0, 0.0)
-        POINT_CAMERA_AT_POINT (502.1483, -19.0472, 1001.3437), 2
-    SKIP_CUTSCENE_END
-        
-    DO_FADE 2000 FADE_OUT           
-    WAIT 2000
-    TASK_USE_MOBILE_PHONE scplayer, FALSE
-    MARK_MODEL_AS_NO_LONGER_NEEDED cellphone
-    DELETE_CHAR cClubBartender
-    DELETE_CHAR cClubEpicDancerA
-    DELETE_CHAR cClubEpicDancerB
-    DELETE_CHAR cClubRandom1
-    DELETE_CHAR cClubRandom2  
-    DELETE_CHAR cClubRandom3 
-    DELETE_CHAR cClubRandom4
-    DELETE_CHAR cClubRandom5
-    DELETE_CHAR cClubRandom6
-    DELETE_CAR vehIntroInfernus
-}
+Char cIntroEpicDancerB = Char.Create(PedType.Special, #SWFYRI, {Pos3:}487.6528, -14.023, 1000.6797)
+Char.SetHeading(cIntroEpicDancerB, 173.0)
+Char.SetAreaVisible(cIntroEpicDancerA, 17)
 
 
+// Camera behind-left of CJ, facing towards bar corner
+Camera.SetFixedPosition({Pos3:}495.2984, -16.1996, 1000.2106, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}502.326, -23.1769, 1001.4701, SwitchType.JumpCut)
+wait 3000
+Camera.DoFade(1000, Fade.In)
+wait 1000
 
+var cArrayIntroDancers: array 6 of Char
+int cArrayIntroDancersIndex = 0
+Char.CreateRandom(490.1774, -21.2311, 1000.6797, cArrayIntroDancers[cArrayIntroDancersIndex])
+Char.SetHeading(cArrayIntroDancers[cArrayIntroDancersIndex], 17.4743)
+cArrayIntroDancersIndex += 1
+Char.CreateRandom(482.7841, -18.0025, 1000.6797, cArrayIntroDancers[cArrayIntroDancersIndex])
+Char.SetHeading(cArrayIntroDancers[cArrayIntroDancersIndex], 306.057)
+cArrayIntroDancersIndex += 1
+Char.CreateRandom(482.7142, -12.7037, 1000.6797, cArrayIntroDancers[cArrayIntroDancersIndex])
+Char.SetHeading(cArrayIntroDancers[cArrayIntroDancersIndex], 246.2098)
+cArrayIntroDancersIndex += 1
+Char.CreateRandom(481.9807, -10.0222,  1000.6797, cArrayIntroDancers[cArrayIntroDancersIndex])
+Char.SetHeading(cArrayIntroDancers[cArrayIntroDancersIndex], 222.3963)
+cArrayIntroDancersIndex += 1
+Char.CreateRandom(485.569,  -7.8098,  1000.6719, cArrayIntroDancers[cArrayIntroDancersIndex])
+Char.SetHeading(cArrayIntroDancers[cArrayIntroDancersIndex], 268.7701)
+cArrayIntroDancersIndex += 1
+Char.CreateRandom(481.9807, -8.0222,  1000.6797, cArrayIntroDancers[cArrayIntroDancersIndex])
+Char.SetHeading(cArrayIntroDancers[cArrayIntroDancersIndex], 222.3963)
+cArrayIntroDancersIndex = 0
+repeat
+    wait 100
+    Task.PlayAnim({Char:}cArrayIntroDancers[cArrayIntroDancersIndex], {Anim Name:}"dance_loop", {Anim File:}"dancing", {Speed:}4.0, {Loop:}True, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    cArrayIntroDancersIndex += 1
+until cArrayIntroDancersIndex >= 6
+
+Task.PlayAnim({Char:} $scplayer, {Anim Name:}"drnkbr_prtl", {Anim File:}"GANGS", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}2000)
+wait 2000
+
+// Camera: Close-up on epic dancing duo
+Camera.SetFixedPosition({Pos3:}490.0669, -16.97, 1000.6797, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}484.8581, -12.8829, 1001.3391, SwitchType.JumpCut)
+Char.PerformSequence(cIntroEpicDancerA, animDanceEpicA1)
+Char.PerformSequence(cIntroEpicDancerB, animDanceEpicB1)
+wait 0
+Sequence.Clear(animDanceEpicA1)
+Sequence.Clear(animDanceEpicA1)
+Task.TurnCharToFaceChar($scplayer, cIntroEpicDancerA)
+wait 3000
+
+// Camera: Close to CJ, facing bar
+Camera.SetFixedPosition({Pos3:}497.6537, -17.303, 1001.0566, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}502.7314, -19.4638, 1000.8315, SwitchType.JumpCut)
+Task.TurnCharToFaceChar($scplayer, cIntroBartender)
+wait 250
+Task.PlayAnim({Char:} $scplayer, {Anim Name:}"drnkbr_prtl", {Anim File:}"GANGS", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}3000)
+wait 3000
+Task.PlayAnim({Char:} $scplayer, {Anim Name:}"idle_chat", {Anim File:}"ped", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}2500)
+Text.PrintNow("XSM0104", 2500, 1) // ~y~CJ: ~w~Hey bartender, can I get another one?
+wait 1000
+Task.TurnCharToFaceChar(cIntroBartender, $scplayer)
+wait 1500
+Text.PrintNow("XSM0105", 2500, 1) // ~y~Bartender:~w~ Coming right up, CJ.
+Task.PlayAnim({Char:}cIntroBartender, {Anim Name:}"idle_chat", {Anim File:}"ped", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}2500)
+wait 2500
+Task.PlayAnim({Char:}cIntroBartender, {Anim Name:}"barserve_loop", {Anim File:}"bar", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+
+// Camera: Close-up on epic dancing duo
+Camera.SetFixedPosition({Pos3:}490.0669, -16.97, 1000.6797, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint(484.8581, -12.8829, 1001.3391, SwitchType.JumpCut)
+Object.Delete(oBottle)
+Char.PerformSequence(cIntroEpicDancerA, animDanceEpicA2)
+Char.PerformSequence(cIntroEpicDancerB, animDanceEpicB2)
+wait 0
+Sequence.Clear(animDanceEpicA2)
+Sequence.Clear(animDanceEpicB2)
+Task.TurnCharToFaceChar($scplayer, cIntroEpicDancerA)
+Audio.LoadMissionAudio(MissionAudioSlot.Slot1, 23000)
+wait 3000
+while not Audio.HasMissionAudioLoaded(MissionAudioSlot.Slot1)
+    wait 0
+end
+
+// Camera: Close to CJ, facing bar
+Camera.SetFixedPosition({Pos3:}498.5305, -20.0609, 1001.0, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint(500.5666, -21.1248, 1001.0, SwitchType.JumpCut)
+wait 500
+Audio.PlayMissionAudio(MissionAudioSlot.Slot1)
+wait 2000
+Task.UseMobilePhone($scplayer, True)
+wait 500
+
+// Camera: Close to CJ, facing bar
+Camera.SetFixedPosition({Pos3:}497.0972, -20.7016, 1000.7, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}501.132, -20.7632, 1000.7, SwitchType.JumpCut)
+Char.SetHeading($scplayer, 93.0)
+wait 2000
+Audio.LoadMissionAudio(MissionAudioSlot.Slot1, 12814)
+while not Audio.HasMissionAudioLoaded(MissionAudioSlot.Slot1)
+    wait 0
+end
+Audio.PlayMissionAudio(MissionAudioSlot.Slot1)
+repeat
+    wait 500
+until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
+
+AudioStream asDialogue = AudioStream.Load("root:\modloader\a X-Files IV\audio\dialogue\introduction\XSM0107.mp3")
+repeat
+    wait 0
+until AudioStream.Load("root:\modloader\a X-Files IV\audio\dialogue\introduction\XSM0107.mp3", asDialogue)
+AudioStream.SetState(asDialogue, AudioStreamAction.Play)
+int asLengthTest = AudioStream.GetLength(asDialogue)
+float asDurationTest = AudioStream.GetDuration(asDialogue)
+Debugger.LogLine(logPath, True, "[JAFFA] [INFO] AS Length Is: %i, Duration Is: %f", asLengthTest, asDurationTest)
+repeat
+    wait 0
+until not AudioStream.IsPlaying(asDialogue)
+AudioStream.SetState(asDialogue, AudioStreamAction.Play)
+wait 1000
+AudioStream.SetState(asDialogue, AudioStreamAction.Stop)
+func_playSoundSafely({slotID:} 1, {soundID:} 4203, {waitUntilFinished:} True)
+wait 1000
+Task.PlayAnim({Char:} $scplayer, {Anim Name:}"plyr_shkhead", {Anim File:}"misc", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+wait 2000
+func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\introduction\XSM0108.mp3", {scmSoundID:}-1, {subID:}"XSM0108", {doAnims:}True, $scplayer, {waitUntilFinished:}True)
+wait 1000
+Task.UseMobilePhone($scplayer, False)
+wait 1000
+
+Task.CharSlideToCoord($scplayer, {Pos3:}495.0032, -22.45, 1000.6797, {Stop Angle:}115.5602, {Stop Radius:}0.1)
+Camera.SetFixedPosition({Pos3:}494.145569, -22.772722, 1000.485291, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}1445.754639, 185.501373, 1217.822754, SwitchType.JumpCut)
+Camera.DoFade(3000, Fade.Out)
+wait 5000
 
 
 // Mission cleanup.
 :Mission_Introduction_Cleanup
 skip_cutscene_end
-Streaming.MarkModelAsNoLongerNeeded(#DWMYLC1) // Cowboy hat male
-Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)  // Country Female
-Streaming.MarkModelAsNoLongerNeeded(#CWMYFR)  // Country Male
-Streaming.MarkModelAsNoLongerNeeded(#DNFYLC)  // Country female - Eve's Mom
-Streaming.MarkModelAsNoLongerNeeded(#SADLER)  // Family car
 Streaming.MarkModelAsNoLongerNeeded(#INFERNUS)
-Streaming.RemoveAnimation("ON_LOOKERS")
+Streaming.MarkModelAsNoLongerNeeded(#WMYVA) // Bartender
+Streaming.MarkModelAsNoLongerNeeded(#DNMOLC1)
+Streaming.MarkModelAsNoLongerNeeded(#SWFYRI)
+Streaming.MarkModelAsNoLongerNeeded(#CELLPHONE)
+Streaming.RemoveAnimation("BAR")
+Streaming.RemoveAnimation("DANCING")
+Streaming.RemoveAnimation("RUNNINGMAN")
+Streaming.RemoveAnimation("GANGS")
+Streaming.RemoveAnimation("MISC")
 AudioStream.Remove(asRoar)
-Sequence.Clear(seqAnimPoint)
 $flagMissionIntroductionCompleted = True
 $ONMISSION = False
 Mission.Finish()
