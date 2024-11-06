@@ -8,6 +8,7 @@
 // Trigger:     Upon game load
 // Notes:       This is not a 'true' mission; it's here for organisation and optimisation.
 //==========================================================================================================================================================================================================
+:Mission_Initial_Header
 script_name 'initial'
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Loaded mission 'initial'.")
 
@@ -22,6 +23,10 @@ Char custodianSceneHeliPilot
 Char custodianSceneCustodian
 Char custodianSceneCarter
 Char custodianSceneDavis
+
+//------------------------------------------------------------------------------------------------------
+//      Main Mission Body
+//------------------------------------------------------------------------------------------------------
 
 // Reveal the entire map, courtesy of Seemann.
 for 0@ = 354164 to 354188

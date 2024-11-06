@@ -1,0 +1,530 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        1. Introduction
+// Description: Intro cinematic. Hikers walk by the Bloodpool, and CJ is called to H.Q.
+// Path:        main\missions\Mission-Introduction.txt
+// Trigger:     Upon Storymode selected.
+// Notes:       
+//==========================================================================================================================================================================================================
+:Mission_Introduction_Header
+script_name 'introd'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Introduction] [INFO] Loaded mission 'introduction'.")
+
+
+//------------------------------------------------------------------------------------------------------
+//      Main Mission Body
+//------------------------------------------------------------------------------------------------------
+//--- Part 1: Title card
+//    A simple title card displaying X-Files IV.
+//------------------------------------------------------------------------------------------------------
+:Mission_Introduction_Start
+Weather.ForceNow(WeatherType.ExtraSunnySf)
+Clock.SetTimeOfDay(12, 0)
+
+skip_cutscene_start_internal @Mission_Introduction_Scene2
+    Char.SetCoordinates($scplayer, {Pos3:}-1351.6396, 900.3057, 46.8549)
+    Camera.SetFixedPosition({Pos3:}-1290.726562, 799.381958, 1.0, {Offset Pos3:}0.0, 0.0, 0.0)
+    Camera.PointAtPoint({Pos3:}-90361.820312, 702.167358, 44183.246094, SwitchType.JumpCut)
+    Camera.SetVectorTrack({From Pos3:}-50716.812500, 83541.726562, 17745.085938, {To Pos3:}-90361.820312, 702.167358, 44183.246094, {Time:}9000, {Ease:}False)
+    Streaming.RequestCollision({Pos2:}-1351.6396, 900.3057)
+    Streaming.LoadAllModelsNow()  
+    Camera.DoFade(1000, Fade.In)
+    wait 1000
+    Text.PrintBig("XSM0101", 10000, TextStyle.Middle) // X-Files IV
+    wait 3000
+    Text.PrintNow("XSM0102", 7000, 2) // By james227uk
+    wait 5000
+    Camera.PointAtPoint({Pos3:}-90361.820312, 702.167358, 44183.246094, SwitchType.JumpCut)
+    wait 2000
+    Camera.DoFade({Time:}3000, {Direction:}Fade.Out)
+    wait 5000
+
+//--- Part 2: A walk in the woods
+//    Several hikers walk through the woods, and are then attacked when the Bloodpool opens.
+//------------------------------------------------------------------------------------------------------
+:Mission_Introduction_Scene2    
+skip_cutscene_end
+skip_cutscene_start_internal @Mission_Introduction_Scene3
+
+// Load collision. Load models.
+Char.SetCoordinates($scplayer, {Pos3:}-636.7043, -1926.9922, 19.1481)
+Streaming.RequestCollision({Pos2:}-636.7043, -1926.9922)
+Streaming.RequestModel(#DWMYLC1) // Cowboy hat male
+Streaming.RequestModel(#CWFYHB)  // Country Female
+Streaming.RequestModel(#CWMYFR)  // Country Male
+Streaming.RequestModel(#DNFYLC)  // Country female - Eve's Mom
+Streaming.RequestModel(#SADLER)  // Family car
+Streaming.RequestAnimation("ON_LOOKERS")
+Streaming.LoadAllModelsNow()
+Audio.LoadMissionAudio(MissionAudioSlot.Slot1, 15018) // Get a move on there.
+Audio.LoadMissionAudio(MissionAudioSlot.Slot2, 66032) // Hey! Don't be so rude!  | SPC_GA, Bank 39, Sound 033
+wait 0
+Char.SetCoordinates($scplayer, -636.7043, -1926.9922, -100.0)
+
+// Create scene
+Char cIntroMale1 = Char.Create(PedType.Special, #DWMYLC1, {Pos3:}-695.3566, -1853.7377, -100.0)
+cIntroMale1.SetHeading(96.1941)
+Char cIntroFemale1 = Char.Create(PedType.Special, #CWFYHB, {Pos3:}-693.2648, -1853.0255, -100.0)
+cIntroFemale1.SetHeading(83.3473)
+Char cIntroMale2 = Char.Create(PedType.Special, #CWMYFR, {Pos3:}-693.4182, -1854.9003, -100.0)
+cIntroMale2.SetHeading(97.7608)
+Char cIntroFemale2 = Char.Create(PedType.Special, #DNFYLC, {Pos3:}-689.09, -1851.6373, -100.0)
+cIntroMale1.SetHeading(101.2076)
+Car vIntroCar = Car.Create(#SADLER, {Pos3:}-798.6021, -1875.5094, 11.6531)
+vIntroCar.SetHeading(125.3343)
+
+// Camera tracks down the Bloodpool stream.
+Camera.SetVectorMove({From Pos3:}-496.417419, -1891.682373, 15.819115, {To Pos3:}-620.647827, -1892.692871, 16.613722, {Time:}10000, {Ease:}False)
+Camera.SetVectorTrack({From Pos3:}-1495.541504, -1883.166504, 40.493820, {To Pos3:}-1559.366089, -1945.964966, -1.184813, {Time:}10000, {Ease:}False)
+Camera.DoFade(3000, Fade.In)
+wait 8000
+Task.CharSlideToCoord(cIntroMale1,   {Pos3:}-719.0985, -1853.6321, 14.2191,  {Stop Heading:}93.5026, {Stop Radius:}0.1)
+Task.CharSlideToCoord(cIntroFemale1, {Pos3:}-717.6971, -1853.2827, 14.2098,  {Stop Heading:}97.9547, {Stop Radius:}0.1)
+Task.CharSlideToCoord(cIntroMale2,   {Pos3:}-717.6265, -1854.2914, 14.2069,  {Stop Heading:}89.1087, {Stop Radius:}0.1)
+Task.CharSlideToCoord(cIntroFemale2, {Pos3:}-715.8428, -1851.1246, 14.1354,  {Stop Heading:}94.1221, {Stop Radius:}0.1)
+wait 2000
+
+// Camera watches hikes pass by.
+Camera.ResetNewScriptables()
+Camera.SetFixedPosition({Pos3:}-702.045349, -1857.600098, 13.582462, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}519.739014, -1251.781250, 250.245667, SwitchType.JumpCut)
+
+wait 1000
+Audio.PlayMissionAudio(MissionAudioSlot.Slot1) // Male 1: Get a move on there!
+repeat
+    wait 250
+until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
+Audio.PlayMissionAudio(MissionAudioSlot.Slot2) // Female 2: Hey, don't be so rude!
+repeat
+    wait 0
+until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot2)
+wait 2000
+Audio.ClearMissionAudio(MissionAudioSlot.Slot1)
+Audio.ClearMissionAudio(MissionAudioSlot.Slot2)
+Audio.LoadMissionAudio(MissionAudioSlot.Slot1, 67617) // This weather is bullshit!  | SPC_GA, Bank 47, 018
+Audio.LoadMissionAudio(MissionAudioSlot.Slot2, 7835) // What in tarnation?!
+
+// Camera pans up, and a storm suddenly starts.
+Camera.SetFixedPosition({Pos3:} -791.940979, -1870.594116, 12.865604, {Offset Pos3:}0.0, 0.0,0.0)
+Camera.SetVectorTrack({From Pos3:}-751.5968, -1929.5527, 6.9112, {To Pos3:}-701.2754, -2036.588, 110.6604, {Time:}10000, {Ease:}False)
+wait 5000
+Weather.ForceNow(WeatherType.RainySf)
+cIntroMale1.SetCoordinates(-719.0985, -1853.6321, 14.2191)
+cIntroFemale1.SetCoordinates(-717.6971, -1853.2827, 14.2098)
+cIntroMale2.SetCoordinates(-717.6265, -1854.2914, 14.2069)
+cIntroFemale2.SetCoordinates(-715.8428, -1851.1246, 14.1354)
+cIntroMale1.SetHeading(93.5026)
+cIntroFemale1.SetHeading(97.9547)
+cIntroMale2.SetHeading(89.1087)
+cIntroFemale2.SetHeading(94.1221)
+wait 5000
+Camera.ResetNewScriptables()
+
+// Hikers moan about the weather
+Camera.SetFixedPosition({Pos3:}-714.767578, -1856.230347, 14.612205, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}-1826.590576, -146.726013, -363.410858, SwitchType.JumpCut)
+Task.TurnCharToFaceChar({Target:}cIntroFemale1, {Turn To:}cIntroMale1)
+wait 500
+Task.PlayAnim({Char:}cIntroFemale2, {Anim:}"IDLE_CHAT", {Anim File:}"PED", {Speed:}4.0, {Loop:}True, {Lock X:}True, {Lock Y:}True, {Freeze Last Frame:}False, {Duration:}-1)
+cIntroFemale2.StartFacialTalk({Duration:}-1)
+Audio.PlayMissionAudio(MissionAudioSlot.Slot1) // Female 2: This weather is bullshit!
+repeat
+    wait 0
+until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
+cIntroFemale2.StopFacialTalk()
+cIntroFemale2.ClearTasksImmediately()
+wait 2000
+
+// Bloodpool opens
+Particle pBloodpoolSplash = Particle.Create("CARWASHSPRAY", {Pos3:}-725.0519,  -1882.1888, 6.0388, {Ignore Bounding Checks:}True)
+pBloodpoolSplash.Play()
+
+if not Streaming.HasAnimationLoaded("ON_LOOKERS")
+then
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Introduction] [WARN] Animation 'ON_LOOKERS' did not load when requested. Forcing load.")
+    repeat
+        wait 0
+        Streaming.RequestAnimation("ON_LOOKERS")
+    until Streaming.HasAnimationLoaded("ON_LOOKERS")
+end
+
+// Camera in front of male2, who turns to see the Bloodpool open
+Camera.SetFixedPosition({Pos3:}-718.554016, -1857.553467, 14.159953, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}-258.711670, 138.304016, 164.619583, SwitchType.JumpCut)
+AudioStream asRoar = AudioStream.Load("root:\modloader\a X-Files IV\audio\fx\zapslat_roar.mp3")
+repeat
+    wait 0
+until AudioStream.Load("root:\modloader\a X-Files IV\audio\fx\zapslat_roar.mp3", asRoar)
+
+wait 1000
+Task.TurnCharToFaceCoord({Char:}cIntroMale2, {Pos3:}-725.0519,  -1882.1888, 6.0388)
+wait 1000
+Sequence seqAnimPoint = Sequence.Open()
+    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_IN", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_LOOP", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_POINT", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_LOOP", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
+Sequence.Close(seqAnimPoint)
+Audio.PlayMissionAudio(MissionAudioSlot.Slot2) // Male 2: What in tarnation?!
+Char.PerformSequence({Char:}cIntroMale2, {Sequence:}seqAnimPoint)
+wait 1000
+Camera.SetFixedPosition({Pos3:}-713.672913, -1849.339844, 16.056463, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}-839.196655, -2067.679443, -57.418488, SwitchType.JumpCut)
+Task.TurnCharToFaceCoord(cIntroMale1, -725.0519,  -1882.1888, 6.0388)
+Task.TurnCharToFaceCoord(cIntroFemale1, -725.0519,  -1882.1888, 6.0388)
+Task.TurnCharToFaceCoord(cIntroFemale2, -725.0519,  -1882.1888, 6.0388)
+wait 2000
+asRoar.SetState(AudioStreamAction.Play)
+wait 500
+Camera.DoFade(0, Fade.Out)
+
+Char.Delete(cIntroMale1)
+Char.Delete(cIntroMale2)
+Char.Delete(cIntroFemale1)
+Char.Delete(cIntroFemale2)
+Car.Delete(vIntroCar)
+wait 5000
+
+//--- Part 3: The Bar
+//    CJ is at a bar enjoying his day off.
+//------------------------------------------------------------------------------------------------------
+:Mission_Introduction_Scene3
+skip_cutscene_end
+skip_cutscene_start_internal @Mission_Introduction_Scene4
+{
+Streaming.RequestAnimation("BAR")
+Streaming.RequestAnimation("DANCING"
+Streaming.RequestAnimation("RUNNINGMAN"
+Streaming.RequestAnimation("GANGS")
+Streaming.RequestModel(#WMYVA) // Bartender
+Streaming.RequestModel(#DNMOLC1)
+Streaming.RequestModel(#SWFYRI)
+Streaming.RequestModel(#CELLPHONE)
+}
+Clock.SetTimeOfDay(21, 0)
+
+Char.SetCoordinates($scplayer, {Pos3:}2503.3049, 1213.2024, 10.8203)
+Streaming.RequestCollision({Pos2:}2503.3049, 1213.2024)
+Streaming.RequestModel(#INFERNUS)
+Streaming.LoadAllModelsNow()
+wait 0
+Char.SetCoordinates($scplayer, 2503.3049, 1213.2024, -100.0)
+
+Car.CustomPlateForNextCar(#INFERNUS, "XFILES4")
+Car vIntroInfernus = Car.Create(#INFERNUS, {Pos3:}2497.2319, 1247.0275, 10.8203)
+Car.SetHeading(vIntroInfernus, 270.0)
+Car.ChangeColor(vIntroInfernus, 0, 0)
+wait 0
+Car.MarkAsNoLongerNeeded(vIntroInfernus)
+
+Camera.SetVectorMove({From Pos3:}2446.416504, 1301.942505, 29.584843, {To Pos3:}2495.787598, 1258.685791, 13.387424, {Duration:}10000, {Ease:}False)
+Camera.SetVectorTrack({To Pos3:}2468.504395, 1275.212402, 29.296982, {To Pos3:}2546.237061, 1168.128540, 21.925793, {Duration:}10000, {Ease:}False)
+
+
+:Mission_Introduction_Scene4 // Bar Interior
+skip_cutscene_end
+skip_cutscene_start_internal @Mission_Introduction_Cleanup
+
+
+{ Cleanup todo list:
+
+}
+
+
+
+{
+       SET_TIME_OF_DAY 21 0
+        LOAD_SCENE (92489.9751, 1261.0487, 10.8203)
+        SET_CHAR_COORDINATES scplayer, (2480.5012, 1268.8696, 10.8125)
+        SET_FIXED_CAMERA_POSITION (2489.9751, 1261.0487, 10.8203), (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (2507.0688, 1243.4644, 15.0516), 2
+        CUSTOM_PLATE_FOR_NEXT_CAR infernus, "XFILES4"
+        CREATE_CAR infernus (2496.5117, 1247.4625, 10.8203), vehIntroInfernus
+        SET_CAR_HEADING vehIntroInfernus, 268.8425
+        CHANGE_CAR_COLOUR vehIntroInfernus, (0, 0)
+        DO_FADE 5000 FADE_IN
+        PRINT_BIG XSM0103 5000, 1 // Two Weeks Later...
+        WAIT 4000
+        DO_FADE 1000 FADE_OUT
+        WAIT 1000
+        SET_AREA_VISIBLE 17 // 04BB: select_interior analog
+        SET_CHAR_AREA_VISIBLE scplayer, 17
+        SET_CHAR_COORDINATES scplayer (499.9697, -20.6059, 1000.6168)
+        SET_CHAR_HEADING scplayer, 270.0
+        CREATE_OBJECT 1484, 0.0, 0.0, 0.0, oBottle
+        SET_OBJECT_AREA_VISIBLE oBottle 17
+        TASK_PICK_UP_OBJECT scplayer, oBottle, 0.0, 0.0, 0.0, 6, 16, "NULL", "NULL", -1
+
+        OPEN_SEQUENCE_TASK animBartender
+            TASK_PLAY_ANIM -1 "barserve_bottle" bar, 4.0, FALSE, TRUE, TRUE, FALSE, -1
+            TASK_PLAY_ANIM -1 "barserve_in" bar, 4.0, FALSE, TRUE, TRUE, FALSE, -1 
+            TASK_PLAY_ANIM -1 "barserve_loop" bar, 4.0, FALSE, TRUE, TRUE, FALSE, -1
+        CLOSE_SEQUENCE_TASK animBartender
+        CREATE_CHAR 23, wmyva, (501.8349, -18.6194, 1000.6), cClubBartender
+        SET_CHAR_HEADING cClubBartender, 86.0
+        SET_CHAR_AREA_VISIBLE cClubBartender, 17
+        PERFORM_SEQUENCE_TASK cClubBartender, animBartender
+        CLEAR_SEQUENCE_TASK animBartender
+
+        OPEN_SEQUENCE_TASK animDanceEpicA1
+            TASK_PLAY_ANIM -1 "dance_b1" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b2" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b3" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b4" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b5" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b6" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b7" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b8" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+        CLOSE_SEQUENCE_TASK animDanceEpicA1
+        OPEN_SEQUENCE_TASK animDanceEpicA2
+            TASK_PLAY_ANIM -1 "dance_b9" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b10" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b11" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b12" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b13" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b14" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b15" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_b16" "runningman" 4.0, FALSE, FALSE, FALSE, FALSE, -1
+        CLOSE_SEQUENCE_TASK animDanceEpicA2
+        CREATE_CHAR 22, dnmolc1, (487.8065, -15.0321, 1000.6), cClubEpicDancerA
+        SET_CHAR_HEADING cClubEpicDancerA, 0.0
+        SET_CHAR_AREA_VISIBLE cClubEpicDancerA, 17
+
+        OPEN_SEQUENCE_TASK animDanceEpicB1
+            TASK_PLAY_ANIM -1 "dance_g1" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g2" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g3" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g4" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g5" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g6" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g7" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g8" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+        CLOSE_SEQUENCE_TASK animDanceEpicB1
+        OPEN_SEQUENCE_TASK animDanceEpicB2
+            TASK_PLAY_ANIM -1 "dance_g9" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g10" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g11" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g12" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g13" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g14" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g15" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+            TASK_PLAY_ANIM -1 "dance_g16" "runningman", 4.0, FALSE, FALSE, FALSE, FALSE, -1
+        CLOSE_SEQUENCE_TASK animDanceEpicB2  
+        CREATE_CHAR 22, swfyri, (487.6528, -14.023, 1000.6797), cClubEpicDancerB
+        SET_CHAR_HEADING cClubEpicDancerB, 173.0
+        SET_CHAR_AREA_VISIBLE cClubEpicDancerB, 17
+
+        CREATE_RANDOM_CHAR 490.1774 -21.2311 1000.6797 cClubRandom1
+        SET_CHAR_HEADING cClubRandom1 17.4743
+        TASK_PLAY_ANIM cClubRandom1 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
+
+        CREATE_RANDOM_CHAR 482.7841 -18.0025 1000.6797 cClubRandom2    
+        SET_CHAR_HEADING cClubRandom2 306.057
+        TASK_PLAY_ANIM cClubRandom2 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
+
+        CREATE_RANDOM_CHAR 482.7142 -12.7037 1000.6797 cClubRandom3 
+        SET_CHAR_HEADING cClubRandom3 246.2098 
+        TASK_PLAY_ANIM cClubRandom3 "dance_loop" "dancing" 4.0, TRUE, FALSE, FALSE, FALSE, -1
+
+        CREATE_RANDOM_CHAR 481.9807 -8.0222 1000.6797 cClubRandom4
+        SET_CHAR_HEADING cClubRandom4 222.3963
+        TASK_PLAY_ANIM cClubRandom4 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
+        
+        CREATE_RANDOM_CHAR 485.569 -7.8098 1000.6719 cClubRandom5
+        SET_CHAR_HEADING cClubRandom5 268.7701
+        TASK_PLAY_ANIM cClubRandom5 "dance_loop" "runningman" 4.0, TRUE, FALSE, FALSE, FALSE, -1
+
+        CREATE_RANDOM_CHAR 481.9807 -8.0222 1000.6797 cClubRandom6
+        SET_CHAR_HEADING cClubRandom6 222.3963
+        TASK_PLAY_ANIM cClubRandom6 "dance_loop" "dancing" 4.0, TRUE, FALSE, FALSE, FALSE, -1
+        
+        // Camera: Behind-left of CJ, facing towards bar corner
+        SET_FIXED_CAMERA_POSITION (495.2984, -16.1996, 1000.2106) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (502.326, -23.1769, 1001.4701), 2
+        WAIT 2000
+        DO_FADE 1000 FADE_IN
+        WAIT 1000
+        TASK_PLAY_ANIM scplayer, "drnkbr_prtl", "GANGS", 4.0, FALSE, FALSE, FALSE, FALSE -1
+        WAIT 2000
+
+        // Camera: Close-up on epic dancing duo
+        SET_FIXED_CAMERA_POSITION (490.0669 -16.97 1000.6797) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (484.8581 -12.8829 1001.3391), 2
+        PERFORM_SEQUENCE_TASK cClubEpicDancerA animDanceEpicA1
+        PERFORM_SEQUENCE_TASK cClubEpicDancerB animDanceEpicB1
+        TASK_TURN_CHAR_TO_FACE_CHAR scplayer, cClubEpicDancerA
+        WAIT 3000
+
+        // Camera: Close to CJ, facing bar
+        SET_FIXED_CAMERA_POSITION (497.6537 -17.303 1001.0566) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (502.7314, -19.4638, 1000.8315), 2
+        TASK_TURN_CHAR_TO_FACE_CHAR scplayer, cClubBartender
+        WAIT 250
+        TASK_PLAY_ANIM scplayer, "drnkbr_prtl", "GANGS", 4.0, FALSE, FALSE, FALSE, FALSE -1    
+        WAIT 5000
+        TASK_PLAY_ANIM scplayer, "idle_chat", "ped", 4.0, FALSE, FALSE, FALSE, FALSE 2500  
+        PRINT_NOW XSM0104 2500, 1 // ~y~CJ: ~w~Hey bartender, can I get another one?
+        TASK_TURN_CHAR_TO_FACE_CHAR cClubBartender, scplayer
+        WAIT 2500 
+        PRINT_NOW XSM0105 2500, 1 // ~y~Bartender:~w~ Coming right up, CJ.
+        TASK_PLAY_ANIM cClubBartender, "idle_chat", "ped", 4.0, FALSE, FALSE, FALSE, FALSE 2500
+        WAIT 2500
+        TASK_PLAY_ANIM cClubBartender, "barserve_loop", "bar", 4.0, TRUE, FALSE, FALSE, FALSE -1
+
+        // Camera: Close-up on epic dancing duo
+        SET_FIXED_CAMERA_POSITION (490.0669 -16.97 1000.6797) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (484.8581 -12.8829 1001.3391), 2
+        DELETE_OBJECT oBottle
+        PERFORM_SEQUENCE_TASK cClubEpicDancerA animDanceEpicA2
+        PERFORM_SEQUENCE_TASK cClubEpicDancerB animDanceEpicB2
+        TASK_TURN_CHAR_TO_FACE_CHAR scplayer, cClubEpicDancerA
+        LOAD_MISSION_AUDIO 1 23000
+        WAIT 3000
+        
+        // Camera: Close to CJ, facing bar
+        SET_FIXED_CAMERA_POSITION (498.5305 -20.0609 1001.7631) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (500.5666 -21.1248 1001.3734), 2
+        WAIT 500
+        PLAY_MISSION_AUDIO 1
+        WAIT 2000
+        TASK_USE_MOBILE_PHONE scplayer, TRUE
+        CLEAR_MISSION_AUDIO 1
+        WAIT 500
+
+        // Camera: Close to CJ, facing bar
+        SET_FIXED_CAMERA_POSITION (497.0972, -20.7016, 1000.7) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (501.132, -20.7632, 1000.7), 2
+        SET_CHAR_HEADING scplayer, 93.0318
+        WAIT 2000
+
+        // Dialogue Bracket
+            sndDialogue1ID = 29801 // Truth: Carl!
+            sndDialogue1SUB = XSM0106
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+        
+            sndDialogue1ID = 29802 // CJ: Who's this?
+            sndDialogue1SUB = XSM0107
+            inputChar = scplayer
+            flag_doDialogueAnims = 0
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+
+            sndDialogue1ID = 29803 // Truth: You know me, this is The Truth
+            sndDialogue1SUB = XSM0108 
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+        
+            sndDialogue1ID = 29804 // CJ: No, I don't.
+            sndDialogue1SUB = XSM0109
+            inputChar = scplayer
+            flag_doDialogueAnims = 0
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+
+            sndDialogue1ID = 29807 // Truth: Okay, you can drop the act now kid.
+            sndDialogue1SUB = XSM0110
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+
+            sndDialogue1ID = 29822 // Truth: Carl. It's me. The Truth. We got a date with destiny, man.
+            sndDialogue1SUB = XSM0111
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+
+            sndDialogue1ID = 29823 // Truth: In about five minutes.
+            sndDialogue1SUB = XSM0112
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime        
+
+            sndDialogue1ID = 29814 // Truth: Make sure nobody follows you.
+            sndDialogue1SUB = XSM0113
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+
+            sndDialogue1ID = 16488 // CJ: I think you popped another microdot
+            sndDialogue1SUB = XSM0114
+            inputChar = scplayer
+            flag_doDialogueAnims = 0
+            GOSUB Function_PlayDialogue
+            WAIT defaultDialogueWaitTime
+
+            sndDialogue1ID = 37866 // CJ: What are you talking about?!
+            sndDialogue1SUB = XSM0115
+            inputChar = scplayer
+            flag_doDialogueAnims = 0
+            GOSUB Function_PlayDialogue
+            WAIT 1000
+
+            sndDialogue1ID = 16480 // CJ: Look, what's going on, Truth? This is my day off man! Cut the bullshit!
+            sndDialogue1SUB = XSM0116
+            inputChar = scplayer
+            flag_doDialogueAnims = 0
+            GOSUB Function_PlayDialogue
+            WAIT 2000
+
+            sndDialogue1ID = 12814 // CJ: Hello?
+            sndDialogue1SUB = XSM0117
+            inputChar = scplayer
+            flag_doDialogueAnims = 0
+            GOSUB Function_PlayDialogue
+            WAIT 2000
+
+            sndSoundID = 4203 // SFX: Cellphone hanging up
+            GOSUB Function_PlaySound
+            WAIT 1000
+
+        TASK_USE_MOBILE_PHONE scplayer, FALSE
+        WAIT 1000
+        SET_CURRENT_CHAR_WEAPON scplayer WEAPONTYPE_UNARMED
+        TASK_PLAY_ANIM scplayer, endchat_02, ped, 4.0, FALSE, FALSE, FALSE, FALSE, -1
+
+        sndDialogue1ID = 25030 // CJ: Damn! Gotta change my number!
+        sndDialogue1SUB = XSM0118
+        inputChar = scplayer
+        GOSUB Function_PlayDialogue
+        WAIT 1000
+
+        TASK_CHAR_SLIDE_TO_COORD scplayer, (494.2325, -22.9685, 1000.6797) 146.9256, 0.1
+        SET_FIXED_CAMERA_POSITION (491.7581 -22.401 1000.7379) (0.0, 0.0, 0.0)
+        POINT_CAMERA_AT_POINT (502.1483, -19.0472, 1001.3437), 2
+    SKIP_CUTSCENE_END
+        
+    DO_FADE 2000 FADE_OUT           
+    WAIT 2000
+    TASK_USE_MOBILE_PHONE scplayer, FALSE
+    MARK_MODEL_AS_NO_LONGER_NEEDED cellphone
+    DELETE_CHAR cClubBartender
+    DELETE_CHAR cClubEpicDancerA
+    DELETE_CHAR cClubEpicDancerB
+    DELETE_CHAR cClubRandom1
+    DELETE_CHAR cClubRandom2  
+    DELETE_CHAR cClubRandom3 
+    DELETE_CHAR cClubRandom4
+    DELETE_CHAR cClubRandom5
+    DELETE_CHAR cClubRandom6
+    DELETE_CAR vehIntroInfernus
+}
+
+
+
+
+
+// Mission cleanup.
+:Mission_Introduction_Cleanup
+skip_cutscene_end
+Streaming.MarkModelAsNoLongerNeeded(#DWMYLC1) // Cowboy hat male
+Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)  // Country Female
+Streaming.MarkModelAsNoLongerNeeded(#CWMYFR)  // Country Male
+Streaming.MarkModelAsNoLongerNeeded(#DNFYLC)  // Country female - Eve's Mom
+Streaming.MarkModelAsNoLongerNeeded(#SADLER)  // Family car
+Streaming.MarkModelAsNoLongerNeeded(#INFERNUS)
+Streaming.RemoveAnimation("ON_LOOKERS")
+AudioStream.Remove(asRoar)
+Sequence.Clear(seqAnimPoint)
+$flagMissionIntroductionCompleted = True
+$ONMISSION = False
+Mission.Finish()
+terminate_this_script

@@ -8,6 +8,8 @@
 // Trigger:     Upon Storymode selected.
 // Notes:       
 //==========================================================================================================================================================================================================
+:Mission_Arrival_Header
+script_name 'arrival'
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Arrival] [INFO] Loaded mission 'arrival'.")
 
 // Start the mssion
@@ -24,189 +26,8 @@ terminate_this_script
 //      Main Mission Body
 //------------------------------------------------------------------------------------------------------
 :Mission_Arrival_Start
-script_name 'arrival'
 
-//--- Part 1: Title card
-//    A simple title card displaying X-Files IV.
-Weather.ForceNow(WeatherType.ExtraSunnySf)
-Clock.SetTimeOfDay(12, 0)
-
-skip_cutscene_start_internal @Mission_Arrival_Scene2
-    Char.SetCoordinates($scplayer, {Pos3:}-1351.6396, 900.3057, 46.8549)
-    Camera.SetFixedPosition({Pos3:}-1290.726562, 799.381958, 1.0, {Offset Pos3:}0.0, 0.0, 0.0)
-    Camera.PointAtPoint({Pos3:}-90361.820312, 702.167358, 44183.246094, SwitchType.JumpCut)
-    Camera.SetVectorTrack({From Pos3:}-50716.812500, 83541.726562, 17745.085938, {To Pos3:}-90361.820312, 702.167358, 44183.246094, {Time:}9000, {Ease:}False)
-    Streaming.RequestCollision({Pos2:}-1351.6396, 900.3057)
-    Streaming.LoadAllModelsNow()  
-    Camera.DoFade(1000, Fade.In)
-    wait 1000
-    Text.PrintBig("XSM0101", 10000, TextStyle.Middle) // X-Files IV
-    wait 3000
-    Text.PrintNow("XSM0102", 7000, 2) // By james227uk
-    wait 5000
-    Camera.PointAtPoint({X:}-90361.820312, {Y:}702.167358, {Z:}44183.246094, SwitchType.JumpCut)
-    wait 2000
-    Camera.DoFade({Time:}3000, {Direction:}Fade.Out)
-    wait 5000
-
-//--- Part 2: A walk in the woods
-//    Several hikers walk through the woods, and are then attacked when the Bloodpool opens.
-:Mission_Arrival_Scene2    
-skip_cutscene_end
-skip_cutscene_start_internal @Mission_Arrival_Scene3   - TEMP MOVED DOWN FOR DEVELOPMENT
-
-// Load collision. Load models.
-Char.SetCoordinates($scplayer, {Pos3:}-636.7043, -1926.9922, 19.1481)
-Streaming.RequestCollision({Pos2:}-636.7043, -1926.9922)
-Streaming.RequestModel(#DWMYLC1) // Cowboy hat male
-Streaming.RequestModel(#CWFYHB)  // Country Female
-Streaming.RequestModel(#CWMYFR)  // Country Male
-Streaming.RequestModel(#DNFYLC)  // Country female - Eve's Mom
-Streaming.RequestModel(#SADLER)  // Family car
-Streaming.RequestAnimation("ON_LOOKERS")
-Streaming.LoadAllModelsNow()
-Audio.LoadMissionAudio(MissionAudioSlot.Slot1, 15018) // Get a move on there.
-Audio.LoadMissionAudio(MissionAudioSlot.Slot2, 66032) // Hey! Don't be so rude!  | SPC_GA, Bank 39, Sound 033
-wait 0
-Char.SetCoordinates($scplayer, -636.7043, -1926.9922, -100.0)
-
-// Create scene
-Char cIntroMale1 = Char.Create(PedType.Special, #DWMYLC1, {Pos3:}-695.3566, -1853.7377, -100.0)
-cIntroMale1.SetHeading(96.1941)
-Char cIntroFemale1 = Char.Create(PedType.Special, #CWFYHB, {Pos3:}-693.2648, -1853.0255, -100.0)
-cIntroFemale1.SetHeading(83.3473)
-Char cIntroMale2 = Char.Create(PedType.Special, #CWMYFR, {Pos3:}-693.4182, -1854.9003, -100.0)
-cIntroMale2.SetHeading(97.7608)
-Char cIntroFemale2 = Char.Create(PedType.Special, #DNFYLC, {Pos3:}-689.09, -1851.6373, -100.0)
-cIntroMale1.SetHeading(101.2076)
-Car vIntroCar = Car.Create(#SADLER, {Pos3:}-798.6021, -1875.5094, 11.6531)
-vIntroCar.SetHeading(125.3343)
-
-// Camera tracks down the Bloodpool stream.
-Camera.SetVectorMove({From Pos3:}-496.417419, -1891.682373, 15.819115, {To Pos3:}-620.647827, -1892.692871, 16.613722, {Time:}10000, {Ease:}False)
-Camera.SetVectorTrack({From Pos3:}-1495.541504, -1883.166504, 40.493820, {To Pos3:}-1559.366089, -1945.964966, -1.184813, {Time:}10000, {Ease:}False)
-Camera.DoFade(3000, Fade.In)
-wait 8000
-Task.CharSlideToCoord(cIntroMale1,   {Pos3:}-719.0985, -1853.6321, 14.2191,  {Stop Heading:}93.5026, {Stop Radius:}0.1)
-Task.CharSlideToCoord(cIntroFemale1, {Pos3:}-717.6971, -1853.2827, 14.2098,  {Stop Heading:}97.9547, {Stop Radius:}0.1)
-Task.CharSlideToCoord(cIntroMale2,   {Pos3:}-717.6265, -1854.2914, 14.2069,  {Stop Heading:}89.1087, {Stop Radius:}0.1)
-Task.CharSlideToCoord(cIntroFemale2, {Pos3:}-715.8428, -1851.1246, 14.1354,  {Stop Heading:}94.1221, {Stop Radius:}0.1)
-wait 2000
-
-// Camera watches hikes pass by.
-Camera.ResetNewScriptables()
-Camera.SetFixedPosition({Pos3:}-702.045349, -1857.600098, 13.582462, {Offset Pos3:}0.0, 0.0, 0.0)
-Camera.PointAtPoint({Pos3:}519.739014, -1251.781250, 250.245667, SwitchType.JumpCut)
-
-wait 1000
-Audio.PlayMissionAudio(MissionAudioSlot.Slot1) // Male 1: Get a move on there!
-repeat
-    wait 250
-until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
-Audio.PlayMissionAudio(MissionAudioSlot.Slot2) // Female 2: Hey, don't be so rude!
-repeat
-    wait 0
-until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot2)
-wait 2000
-Audio.ClearMissionAudio(MissionAudioSlot.Slot1)
-Audio.ClearMissionAudio(MissionAudioSlot.Slot2)
-Audio.LoadMissionAudio(MissionAudioSlot.Slot1, 67617) // This weather is bullshit!  | SPC_GA, Bank 47, 018
-Audio.LoadMissionAudio(MissionAudioSlot.Slot2, 7835) // What in tarnation?!
-
-// Camera pans up, and a storm suddenly starts.
-Camera.SetFixedPosition({Pos3:} -791.940979, -1870.594116, 12.865604, {Offset Pos3:}0.0, 0.0,0.0)
-Camera.SetVectorTrack({From Pos3:}-751.5968, -1929.5527, 6.9112, {To Pos3:}-701.2754, -2036.588, 110.6604, {Time:}10000, {Ease:}False)
-wait 5000
-Weather.ForceNow(WeatherType.RainySf)
-cIntroMale1.SetCoordinates(-719.0985, -1853.6321, 14.2191)
-cIntroFemale1.SetCoordinates(-717.6971, -1853.2827, 14.2098)
-cIntroMale2.SetCoordinates(-717.6265, -1854.2914, 14.2069)
-cIntroFemale2.SetCoordinates(-715.8428, -1851.1246, 14.1354)
-cIntroMale1.SetHeading(93.5026)
-cIntroFemale1.SetHeading(97.9547)
-cIntroMale2.SetHeading(89.1087)
-cIntroFemale2.SetHeading(94.1221)
-wait 5000
-Camera.ResetNewScriptables()
-
-// Hikers moan about the weather
-Camera.SetFixedPosition({Pos3:}-714.767578, -1856.230347, 14.612205, {Offset Pos3:}0.0, 0.0, 0.0)
-Camera.PointAtPoint({Pos3:}-1826.590576, -146.726013, -363.410858, SwitchType.JumpCut)
-Task.TurnCharToFaceChar({Target:}cIntroFemale1, {Turn To:}cIntroMale1)
-wait 500
-Task.PlayAnim({Char:}cIntroFemale2, {Anim:}"IDLE_CHAT", {Anim File:}"PED", {Speed:}4.0, {Loop:}True, {Lock X:}True, {Lock Y:}True, {Freeze Last Frame:}False, {Duration:}-1)
-cIntroFemale2.StartFacialTalk({Duration:}-1)
-Audio.PlayMissionAudio(MissionAudioSlot.Slot1) // Female 2: This weather is bullshit!
-repeat
-    wait 0
-until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
-cIntroFemale2.StopFacialTalk()
-cIntroFemale2.ClearTasksImmediately()
-wait 2000
-
-// Bloodpool opens
-Particle pBloodpoolSplash = Particle.Create("CARWASHSPRAY", {Pos3:}-725.0519,  -1882.1888, 6.0388, {Ignore Bounding Checks:}True)
-pBloodpoolSplash.Play()
-
-if not Streaming.HasAnimationLoaded("ON_LOOKERS")
-then
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Arrival] [WARN] Animation 'ON_LOOKERS' did not load when requested. Forcing load.")
-    repeat
-        wait 0
-        Streaming.RequestAnimation("ON_LOOKERS")
-    until Streaming.HasAnimationLoaded("ON_LOOKERS")
-end
-
-// Camera in front of male2, who turns to see the Bloodpool open
-Camera.SetFixedPosition({Pos3:}-718.554016, -1857.553467, 14.159953, {Offset Pos3:}0.0, 0.0, 0.0)
-Camera.PointAtPoint({Pos3:}-258.711670, 138.304016, 164.619583, SwitchType.JumpCut)
-AudioStream asRoar = AudioStream.Load("root:\modloader\a X-Files IV\audio\fx\zapslat_roar.mp3")
-repeat
-    wait 0
-until AudioStream.Load("root:\modloader\a X-Files IV\audio\fx\zapslat_roar.mp3", asRoar)
-
-wait 1000
-Task.TurnCharToFaceCoord({Char:}cIntroMale2, {Pos3:}-725.0519,  -1882.1888, 6.0388)
-wait 1000
-Sequence seqAnimPoint = Sequence.Open()
-    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_IN", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_LOOP", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_POINT", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"PANIC_LOOP", {Anim File:}"ON_LOOKERS", {Speed:}4.0, {Loop:}False, {Lock X:}False, {Lock Y:}False, {Freeze Frame:}False, {Duration:}-1)
-Sequence.Close(seqAnimPoint)
-Audio.PlayMissionAudio(MissionAudioSlot.Slot2) // Male 2: What in tarnation?!
-Char.PerformSequence({Char:}cIntroMale2, {Sequence:}seqAnimPoint)
-wait 1000
-Camera.SetFixedPosition({Pos3:}-713.672913, -1849.339844, 16.056463, {Offset Pos3:}0.0, 0.0, 0.0)
-Camera.PointAtPoint({Pos3:}-839.196655, -2067.679443, -57.418488, SwitchType.JumpCut)
-Task.TurnCharToFaceCoord(cIntroMale1, -725.0519,  -1882.1888, 6.0388)
-Task.TurnCharToFaceCoord(cIntroFemale1, -725.0519,  -1882.1888, 6.0388)
-Task.TurnCharToFaceCoord(cIntroFemale2, -725.0519,  -1882.1888, 6.0388)
-wait 2000
-asRoar.SetState(AudioStreamAction.Play)
-wait 500
-
-:Mission_Arrival_Scene3
-skip_cutscene_end
-Camera.DoFade(0, Fade.Out)
-
-
-
-
-
-
-
-//:Mission_Arrival_Scene3
-//skip_cutscene_end
-Camera.ResetNewScriptables()
-Camera.RestoreJumpcut()
-Hud.SwitchWidescreen(False)
-
-repeat
-    wait 0
-until Pad.IsKeyPressed(KeyCode.Y)
-jump @Mission_Arrival_Passed
-
+return
 
 
 //------------------------------------------------------------------------------------------------------
@@ -230,14 +51,7 @@ return
 
 // Mission cleanup.
 :Mission_Arrival_Cleanup
-Streaming.MarkModelAsNoLongerNeeded(#DWMYLC1) // Cowboy hat male
-Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)  // Country Female
-Streaming.MarkModelAsNoLongerNeeded(#CWMYFR)  // Country Male
-Streaming.MarkModelAsNoLongerNeeded(#DNFYLC)  // Country female - Eve's Mom
-Streaming.MarkModelAsNoLongerNeeded(#SADLER)  // Family car
-Streaming.RemoveAnimation("ON_LOOKERS")
-AudioStream.Remove(asRoar)
-Sequence.Clear(seqAnimPoint)
+
 $ONMISSION = False
 Mission.Finish()
 return

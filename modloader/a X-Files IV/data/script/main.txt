@@ -12,9 +12,10 @@
 //========================================================================================================================================================================================================
 
 //--- Primary header
-DEFINE MISSIONS 2
-DEFINE MISSION 0 AT @Mission_Initial // 1. Initialisation Script
-DEFINE MISSION 1 AT @Mission_Arrival // 2. Storymode: Arrival
+DEFINE MISSIONS 3
+DEFINE MISSION 0 AT @Mission_Initial        // 1. Initialisation Script
+DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
+DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 
 DEFINE EXTERNAL_SCRIPTS 2 // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCAMS AT @External_CameraHelper
@@ -37,6 +38,8 @@ var
     $mission_trigger_wait_time: Int = 250
     $flagGamemodeChoice: Int = 0
     $flagMissionInitialCompleted: Int = False
+    $flagMissionIntroductionCompleted: Int = False
+    $flagMissionArrivalCompleted: Int = False
     $flagDebugConsoleOpen: Int = 0
 end
 const
@@ -140,13 +143,13 @@ Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Ret
 if $flagGamemodeChoice == gmStorymode // Storymode
 then
     wait 0
-    Mission.LoadAndLaunchInternal(Mission_Arrival)
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'arrival'...")
+    Mission.LoadAndLaunchInternal(Mission_Introduction)
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'introduction'...")
     $ONMISSION = True
-    while $flagMissionArrivalCompleted == False
+    while $flagMissionIntroductionCompleted == False
         wait 0
     end
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrival'.") 
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.") 
 else
     // Freemode
     Camera.RestoreJumpcut()
@@ -359,8 +362,15 @@ end
 {$INCLUDE_ONCE main\missions\Mission-Initial.txt}
 
 //------------------------------------------------------------------------------------------------------
-//      Missions | Mission 1: Arrival
-//      - Intro cinematic and CJ arriving at Prospero H.Q.
+//      Missions | Mission 1: Introduction
+//      - Intro cinematic where the Bloodpool opens and CJ is at the bar.
+//------------------------------------------------------------------------------------------------------
+:Mission_Introduction
+{$INCLUDE_ONCE main\missions\Mission-Introduction.txt}
+
+//------------------------------------------------------------------------------------------------------
+//      Missions | Mission 2: Arrival
+//      - CJ goes to Prospero H.Q. and is given his first task.
 //------------------------------------------------------------------------------------------------------
 :Mission_Arrival
 {$INCLUDE_ONCE main\missions\Mission-Arrival.txt}
