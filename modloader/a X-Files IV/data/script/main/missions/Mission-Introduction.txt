@@ -197,6 +197,7 @@ wait 5000
 //------------------------------------------------------------------------------------------------------
 :Mission_Introduction_Scene3
 skip_cutscene_end
+Text.ClearPrints()
 Streaming.MarkModelAsNoLongerNeeded(#DWMYLC1) // Cowboy hat male
 Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)  // Country Female
 Streaming.MarkModelAsNoLongerNeeded(#CWMYFR)  // Country Male
@@ -236,8 +237,10 @@ Camera.DoFade(1000, Fade.Out)
 //------------------------------------------------------------------------------------------------------
 :Mission_Introduction_Scene4 // Bar Interior
 skip_cutscene_end
+Text.ClearThisPrintBigNow(TextStyle.Middle)
 Text.ClearPrints()
 wait 1000
+Camera.DoFade(0, Fade.Out)
 skip_cutscene_start_internal @Mission_Introduction_Cleanup
 
 // Load models and bar area.
@@ -477,6 +480,7 @@ Streaming.RemoveAnimation("RUNNINGMAN")
 Streaming.RemoveAnimation("GANGS")
 Streaming.RemoveAnimation("MISC")
 AudioStream.Remove(asRoar)
+Text.ClearPrints()
 $flagMissionIntroductionCompleted = True
 $ONMISSION = False
 Mission.Finish()

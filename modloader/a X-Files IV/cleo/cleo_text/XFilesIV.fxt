@@ -9,7 +9,6 @@ XSM0002 Select Game Mode
 XSM0003 Storymode
 XSM0004 Freemode
 
-
 # Storymode | Mission 1 | Introduction
 # ----------------------------
 XSM0101 X-Files IV
@@ -20,3 +19,9 @@ XSM0105 ~y~Bartender:~w~ Coming right up, CJ.
 XSM0106 ~y~CJ: ~w~Hello?
 XSM0107 ~y~?: ~w~This is an automated message. Directive 665 has been issued. All Prospero agents are to attend Prospero H.Q. immediately. Message repeating.
 XSM0108 ~y~CJ: ~w~Well, so much for my day off...
+
+# Storymode | Mission 2 | Arrival
+# ----------------------------
+XSM0201 Arrival
+XSM0202 Youve been called to ~y~Prospero H.Q.~w~
+XSM0203 Better head there immediately.

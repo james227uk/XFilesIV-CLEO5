@@ -26,7 +26,37 @@ terminate_this_script
 //      Main Mission Body
 //------------------------------------------------------------------------------------------------------
 :Mission_Arrival_Start
+Streaming.RequestModel(#INFERNUS)
+Streaming.LoadAllModelsNow()
 
+Player.SetControl($player1, False)
+Hud.SwitchWidescreen(True)
+Text.ClearPrints()
+func_teleportSafe({Pos3:}2507.5505, 1243.2896, 10.8203, {Area:}0)
+
+// Spawn CJ's car outside the club.
+Car.CustomPlateForNextCar(#INFERNUS, "XFILES4")
+Car vArrivalInfernus = Car.Create(#INFERNUS, {Pos3:}2497.2319, 1247.0275, 10.8203)
+Car.SetHeading(vArrivalInfernus, 270.0)
+Car.ChangeColor(vArrivalInfernus, 0, 0)
+wait 0
+Car.MarkAsNoLongerNeeded(vArrivalInfernus)
+
+Task.CharSlideToCoord($scplayer, {Pos3:}2506.3557, 1244.9331, 10.8203, {Heading:}66.7372, {Stop Radius:}0.1)
+wait 100
+Camera.SetFixedPosition({Pos3:}2489.7852, 1263.7706, 16.2844, 0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}2490.3862, 1262.9851, 16.1372, SwitchType.Jumpcut)
+Camera.DoFade(2000, Fade.In)
+Text.PrintBig("XSM0201", 5000, TextStyle.BottomRight) // Arrival
+wait 5000
+Camera.SetFixedPosition({Pos3:}2504.9265, 1245.6149, 11.3290, {Offset Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint(2505.7896, 1245.1124, 11.2789, SwitchType.Interpolation)
+Text.PrintNow("XSM0202", 5000, 1) // You've been called to ~y~Prospero H.Q.~w~
+wait 5500
+Camera.SetFixedPosition({Pos3:}2493.1143, 1248.8131, 11.4501, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2493.9338, 1248.3096, 11.1768, SwitchType.Interpolation) 
+Text.PrintNow("XSM0203", 5000, 1) // You've been called to ~y~Prospero H.Q.~w~
+wait 5500
 return
 
 
@@ -37,6 +67,10 @@ return
 
 :Mission_Arrival_Passed
 $flagMissionArrivalCompleted = True
+Player.SetControl($player1, True)
+Camera.RestoreJumpcut()
+Camera.DoFade(0, Fade.In)
+Hud.SwitchWidescreen(False)
 return
 
 

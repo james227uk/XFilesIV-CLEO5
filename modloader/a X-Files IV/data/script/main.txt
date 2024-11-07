@@ -41,9 +41,13 @@ var
     $flagMissionIntroductionCompleted: Int = False
     $flagMissionArrivalCompleted: Int = False
     $flagDebugConsoleOpen: Int = 0
+    $flagProsperoHQGatesLocked: Int = False
+    $flagFollowerActive: Int = False
 end
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
+    On = 1
+    Off = 0
     gmStorymode = 0
     gmFreemode = 1
 end
@@ -51,8 +55,7 @@ end
 //--- External Script Name Mappings
 const
     externalCameraHelper = 0
-    externalDebugConsole = 1
-    
+    externalDebugConsole = 1    
 end
 
 script_name 'MAIN'
@@ -142,6 +145,7 @@ Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Ret
 // Pick what to do next based on gamemode choice.
 if $flagGamemodeChoice == gmStorymode // Storymode
 then
+    // Launch Introduction cutscene
     wait 0
     Mission.LoadAndLaunchInternal(Mission_Introduction)
     Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'introduction'...")
@@ -149,7 +153,19 @@ then
     while $flagMissionIntroductionCompleted == False
         wait 0
     end
+    $ONMISSION = False
     Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.")
+    
+    // Launch 'Arrival' mission    
+    wait 0
+    Mission.LoadAndLaunchInternal(Mission_Arrival)
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'arrival'...")
+    $ONMISSION = True
+    while $flagMissionArrivalCompleted == False
+        wait 0
+    end
+    $ONMISSION = False
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrrival'.")    
 else
     // Freemode
     Camera.RestoreJumpcut()
@@ -161,6 +177,8 @@ end
 //Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
+start_new_script @Script_Universal_ProsperoHQ_Gates
+
 Player.SetControl({Player:} $player1, {State:} True)
 Camera.RestoreJumpcut()
 Hud.SwitchWidescreen(False)
@@ -180,6 +198,74 @@ end
 //      6. Universal Scripts
 //      Scripts that run in both Storymode and Freemode.
 //========================================================================================================================================================================================================
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Base Gates
+//      - Create the base gates and then open/close them based on proximity.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_Gates
+script_name 'PHQGATE'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.")    
+
+// Create gate objects
+Streaming.RequestModel(#GATE_AUTOR)
+Streaming.RequestModel(#GATE_AUTOL)
+Streaming.LoadAllModelsNow()
+0@ = Object.Create(#GATE_AUTOL, {Pos3:}2497.41, 2777.07, 9.8)
+1@ = Object.Create(#GATE_AUTOR, {Pos3:}2497.41, 2769.11, 9.8)
+Object.SetHeading(0@, 90.0)
+Object.SetHeading(1@, 90.0)
+Object.SetDynamic(0@, True)
+Object.SetDynamic(1@, True)
+Streaming.MarkModelAsNoLongerNeeded(#GATE_AUTOR)
+Streaming.MarkModelAsNoLongerNeeded(#GATE_AUTOL)
+
+// Reduce polling rate until player is within a decent range of the gates.
+:Script_Universal_ProsperoHQ_Gates_Loop_FarRange
+wait 5000
+if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
+jf @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Switched to quicker polling rate.")  
+
+// Quicker polling if the player is close to the gates.
+:Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
+wait 0 // If the player is near the gates,
+if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
+then // then loop the open command.
+    gosub @Script_Universal_ProsperoHQ_Gates_Open
+else // If they're not, then check is a follower is active.
+    if $flagFollowerActive == True
+    then // If they are, then check if the follower is in range of the gate.
+        if Char.LocateAnyMeans3D($follower, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
+        then // If they are, then loop the open command.
+            gosub @Script_Universal_ProsperoHQ_Gates_Open
+        end  
+    else // If no follower is active or neither char is in range, then loop the close command.
+        gosub @Script_Universal_ProsperoHQ_Gates_Close
+    end
+end
+
+// Check if the player is still within a decent range of the gates.
+if not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
+then
+    // If they're not, then reduce polling rate again.
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Switched to reduced polling rate.")  
+    jump @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
+end
+// If they are, loop the quicker checks above.
+jump @Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
+
+:Script_Universal_ProsperoHQ_Gates_Open
+Object.Slide(0@, {From Pos3:}2497.41, 2784.77, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, {Collision Check:}False)
+Object.Slide(1@, {From Pos3:}2497.41, 2761.41, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, {Collision Check:}False)
+return
+
+:Script_Universal_ProsperoHQ_Gates_Close
+Object.Slide(0@, {From Pos3:}2497.41, 2777.07, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, {Collision Check:}False)
+Object.Slide(1@, {From Pos3:}2497.41, 2769.11, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, {Collision Check:}False)
+return
+
+
 
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Debug | CameraHelper

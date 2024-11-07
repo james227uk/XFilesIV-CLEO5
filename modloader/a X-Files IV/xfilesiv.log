@@ -1,9 +1,8 @@
-06/11/2024 21:58:54.099 [Main] [INFO] Launching mission 'initial'...
-06/11/2024 21:58:54.157 [Mission-Initial] [INFO] Loaded mission 'initial'.
-06/11/2024 21:58:55.489 [Mission-Initial] [INFO] Selected gamemode 'Storymode'.
-06/11/2024 21:59:02.502 [Main] [INFO] Returned from mission 'initial'.
-06/11/2024 21:59:02.519 [Main] [INFO] Launching mission 'introduction'...
-06/11/2024 21:59:02.536 [Mission-Introduction] [INFO] Loaded mission 'introduction'.
-06/11/2024 22:00:36.171 [JAFFA] [INFO] AS Length Is: 9, Duration Is: 0.000000
-06/11/2024 22:00:58.139 [Main] [INFO] Returned from mission 'introduction'.
-06/11/2024 22:00:59.139 [JAFFA] [INFO] Does exist.
+07/11/2024 17:34:09.883 [Main] [INFO] Launching mission 'initial'...
+07/11/2024 17:34:09.922 [Mission-Initial] [INFO] Loaded mission 'initial'.
+07/11/2024 17:34:10.772 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
+07/11/2024 17:34:14.172 [Main] [INFO] Returned from mission 'initial'.
+07/11/2024 17:34:14.189 [PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.
+07/11/2024 17:34:19.206 [PHQGATE] [INFO] Switching to quicker polling rate.
+07/11/2024 17:34:39.948 [PHQGATE] [INFO] Switching to reduced polling rate.
+07/11/2024 17:35:09.975 [PHQGATE] [INFO] Switching to quicker polling rate.
