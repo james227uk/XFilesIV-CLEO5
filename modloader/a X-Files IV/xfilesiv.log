@@ -1,8 +1,6 @@
-07/11/2024 17:34:09.883 [Main] [INFO] Launching mission 'initial'...
-07/11/2024 17:34:09.922 [Mission-Initial] [INFO] Loaded mission 'initial'.
-07/11/2024 17:34:10.772 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
-07/11/2024 17:34:14.172 [Main] [INFO] Returned from mission 'initial'.
-07/11/2024 17:34:14.189 [PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.
-07/11/2024 17:34:19.206 [PHQGATE] [INFO] Switching to quicker polling rate.
-07/11/2024 17:34:39.948 [PHQGATE] [INFO] Switching to reduced polling rate.
-07/11/2024 17:35:09.975 [PHQGATE] [INFO] Switching to quicker polling rate.
+08/11/2024 11:29:28.260 [Main] [INFO] Launching mission 'initial'...
+08/11/2024 11:29:28.316 [Mission-Initial] [INFO] Loaded mission 'initial'.
+08/11/2024 11:29:29.715 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
+08/11/2024 11:29:30.591 [Main] [INFO] Returned from mission 'initial'.
+08/11/2024 11:29:30.611 [PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.
+08/11/2024 11:29:35.612 [PHQGATE] [INFO] Switched to quicker polling rate.
