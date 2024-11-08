@@ -120,11 +120,8 @@ Player.IncreaseMaxArmor($player1,                   {Value:}  5000)
 Player.AddScore        ($player1,                   {Value:}  5000)
 Game.SetMaxWantedLevel (                            {Value:}     6)
 Char.SetCanBeKnockedOffBike($scplayer, false)
-
 Game.AllowPauseInWidescreen(True)
 set_deatharrest_state 0
-
-
 
 //========================================================================================================================================================================================================
 //      4. Final Initialisation
@@ -173,6 +170,9 @@ else
     func_giveAgentOutfit()
     Camera.DoFade(1000, Fade.In)
     Hud.SwitchWidescreen(False)
+    wait 1000
+    Char.SetCoordinates($scplayer, 2590.947, 2790.5645, 10.8203)
+    Char.SetHeading($scplayer, 90.0)
 end   
 //Audio.PlayMissionPassedTune(2) // Debug
 
