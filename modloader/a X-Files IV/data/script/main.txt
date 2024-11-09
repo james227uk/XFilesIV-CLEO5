@@ -43,6 +43,7 @@ var
     $flagDebugConsoleOpen: Int = 0
     $flagProsperoHQGatesLocked: Int = False
     $flagFollowerActive: Int = False
+    $flagProsperoHQGatesLocked: Int = False
 end
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
@@ -178,6 +179,7 @@ end
 
 //--- Create universal scripts
 start_new_script @Script_Universal_ProsperoHQ_Gates
+start_new_script @Debug_Follower
 
 Player.SetControl({Player:} $player1, {State:} True)
 Camera.RestoreJumpcut()
@@ -223,36 +225,31 @@ Streaming.MarkModelAsNoLongerNeeded(#GATE_AUTOL)
 // Reduce polling rate until player is within a decent range of the gates.
 :Script_Universal_ProsperoHQ_Gates_Loop_FarRange
 wait 5000
+gosub @Script_Universal_ProsperoHQ_Gates_Lock
 if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
 jf @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Switched to quicker polling rate.")  
 
-// Quicker polling if the player is close to the gates.
 :Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
-wait 0 // If the player is near the gates,
-if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
-then // then loop the open command.
-    gosub @Script_Universal_ProsperoHQ_Gates_Open
-else // If they're not, then check is a follower is active.
-    if $flagFollowerActive == True
-    then // If they are, then check if the follower is in range of the gate.
-        if Char.LocateAnyMeans3D($follower, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
-        then // If they are, then loop the open command.
-            gosub @Script_Universal_ProsperoHQ_Gates_Open
-        end  
-    else // If no follower is active or neither char is in range, then loop the close command.
-        gosub @Script_Universal_ProsperoHQ_Gates_Close
+wait 0
+gosub @Script_Universal_ProsperoHQ_Gates_Lock
+if $flagFollowerActive == True
+then
+    if or
+        Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
+        Char.LocateAnyMeans3D($cFollower, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
+        then gosub @Script_Universal_ProsperoHQ_Gates_Open
+        else gosub @Script_Universal_ProsperoHQ_Gates_Close
+    end
+else
+    if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
+        then gosub @Script_Universal_ProsperoHQ_Gates_Open
+        else gosub @Script_Universal_ProsperoHQ_Gates_Close
     end
 end
-
-// Check if the player is still within a decent range of the gates.
 if not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
-then
-    // If they're not, then reduce polling rate again.
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Switched to reduced polling rate.")  
-    jump @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
+    then jump @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
 end
-// If they are, loop the quicker checks above.
 jump @Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
 
 :Script_Universal_ProsperoHQ_Gates_Open
@@ -263,6 +260,15 @@ return
 :Script_Universal_ProsperoHQ_Gates_Close
 Object.Slide(0@, {From Pos3:}2497.41, 2777.07, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, {Collision Check:}False)
 Object.Slide(1@, {From Pos3:}2497.41, 2769.11, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, {Collision Check:}False)
+return
+
+:Script_Universal_ProsperoHQ_Gates_Lock
+if $flagProsperoHQGatesLocked == True
+then
+    repeat 
+        wait 0
+    until $flagProsperoHQGatesLocked == False
+end
 return
 
 
@@ -305,6 +311,62 @@ while true
     end
     StreamedScript.MarkAsNoLongerNeeded(externalDebugConsole)
 end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Debug | Debug Follower
+//      - A quick and dirty follower script to test interactions with other scripts.
+//------------------------------------------------------------------------------------------------------
+:Debug_Follower
+script_name 'DBGFLWR'
+{
+    0@: Player X
+    1@: Player Y
+    2@: Player Z
+    3@: Proximity Radius
+}
+3@ = 150.0
+
+:Debug_Follower_Open
+repeat
+    wait 0
+until Pad.TestCheat("FOLLOW")
+Streaming.RequestModel(#WFYST)
+Streaming.RequestModel(#M4)
+Streaming.LoadAllModelsNow()
+Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
+Char $cFollower = Char.Create(PedType.Gang10, #WFYST, 0@, 1@, -100.0)
+Char.GiveWeapon($cFollower, 31, 99999)
+Char.ShutUp($cFollower, True)
+Char.SetSuffersCriticalHits($cFollower, False)
+Char.SetProofs($cFollower, True, True, True, True, True)
+Group.SetMember($playerGroup, $cFollower)
+Char.SetNeverLeavesGroup($cFollower, True)
+$flagFollowerActive = True
+Streaming.MarkModelAsNoLongerNeeded(#WFYST)
+Streaming.MarkModelAsNoLongerNeeded(#M4)
+
+:Debug_Follower_Loop
+wait 0
+if or
+    Player.IsDead($player1)
+    Pad.TestCheat("FOLLOW")
+then
+    Char.RemoveElegantly($cFollower)
+    Char.MarkAsNoLongerNeeded($cFollower)
+    wait 1000
+    jump @Debug_Follower_Open
+end
+
+if not Char.LocateAnyMeansChar3D($cFollower, $scplayer, 3@, 3@, 3@, False)
+then
+    Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
+    Char.SetCoordinates($cFollower, 0@, 1@, -100.0)
+end
+jump @Debug_Follower_Loop
+    
+
 
 
 //========================================================================================================================================================================================================

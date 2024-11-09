@@ -35,7 +35,7 @@ while true
 
         ImGui.BeginChild("WindowChild")
 
-        int iTab = ImGui.Tabs("TabBar", "Teleports,Spawning,World")
+        int iTab = ImGui.Tabs("TabBar", "Teleports,Spawning,World,Settings")
 
         // Teleports
         if iTab == 0
@@ -119,6 +119,23 @@ while true
             then
                 Weather.ForceNow(78)
             end    
+        end
+        
+        if iTab == 3 // Settings
+        then
+            ImGui.Spacing()
+            ImGui.GetScalingSize("S5", 3, 0, fSzX, fSzY)
+            if ImGui.Button("Lock H.Q> Gates", fSzX, fSzY)
+            then
+                if $flagProsperoHQGatesLocked == False
+                then 
+                    $flagProsperoHQGatesLocked = True
+                    Text.PrintStringNow("H.Q. Gates Locked", 1000)
+                else 
+                    $flagProsperoHQGatesLocked = False
+                    Text.PrintStringNow("H.Q. Gates Unlocked", 1000)
+                end
+            end   
         end        
         ImGui.EndChild()
 
