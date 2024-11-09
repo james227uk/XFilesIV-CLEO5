@@ -471,6 +471,22 @@ end
 
 
 //------------------------------------------------------------------------------------------------------
+//      Functions | Equip Casual Outfit
+//      - This function puts CJ in his normal casual outfit.
+//------------------------------------------------------------------------------------------------------
+function func_giveCasualOutfit()
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Player_Face",    {Model:}"HEAD",   {Body Part:}BodyPart.Head)
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Tshirtmaddgrey", {Model:}"Tshirt", {Body Part:}BodyPart.Torso)
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Worktrgrey",     {Model:}"Worktr", {Body Part:}BodyPart.Legs)
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"ShoeDressBlk",   {Model:}"Shoe",   {Body Part:}BodyPart.Shoes)
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}0,                {Model:}0,        {Body Part:} 14)
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}0,                {Model:}0,        {Body Part:}BodyPart.Glasses)
+    Player.BuildModel($player1)
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
 //      Functions | Clear Camera Vector
 //      - This function clears stubborn camera vector movements.
 //------------------------------------------------------------------------------------------------------
@@ -558,8 +574,6 @@ AudioStream streamID
         until AudioStream.Load(asPath, streamID)
         AudioStream.GetLength(streamID, streamLength)
         streamLength *= 1000
-        //subtitleDisplayTime = streamLength
-        //subtitleDisplayTime += 500
         streamLength += 1000
         AudioStream.SetState(streamID, AudioStreamAction.Play)
         Text.PrintNow(subID, streamLength, 1)  
@@ -578,6 +592,19 @@ AudioStream streamID
             Char.StopFacialTalk(forChar)
         end 
     end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Restore Camera
+//      - This function resets the camera from cutscene mode back to normal mode
+//------------------------------------------------------------------------------------------------------
+function func_restoreCamera()
+    Camera.ResetNewScriptables()
+    Camera.RestoreJumpcut()
+    Hud.SwitchWidescreen(False)
+    Text.ClearThisPrintBigNow(TextStyle.BottomRight)
 end
 
 

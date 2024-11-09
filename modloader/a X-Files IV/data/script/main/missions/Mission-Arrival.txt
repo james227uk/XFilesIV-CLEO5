@@ -42,6 +42,7 @@ Car.ChangeColor(vArrivalInfernus, 0, 0)
 wait 0
 Car.MarkAsNoLongerNeeded(vArrivalInfernus)
 
+skip_cutscene_start_internal @Mission_Arrival_HQCheck
 Task.CharSlideToCoord($scplayer, {Pos3:}2506.3557, 1244.9331, 10.8203, {Heading:}66.7372, {Stop Radius:}0.1)
 wait 100
 Camera.SetFixedPosition({Pos3:}2489.7852, 1263.7706, 16.2844, 0.0, 0.0, 0.0)
@@ -57,6 +58,16 @@ Camera.SetFixedPosition({Pos3:}2493.1143, 1248.8131, 11.4501, 0.0, 0.0, 0.0)
 Camera.PointAtPoint({Pos3:}2493.9338, 1248.3096, 11.1768, SwitchType.Interpolation) 
 Text.PrintNow("XSM0203", 5000, 1) // You've been called to ~y~Prospero H.Q.~w~
 wait 5500
+
+:Mission_Arrival_HQCheck
+Char.ClearTasksImmediately($scplayer)
+Player.SetControl($player1, True)
+func_restoreCamera()
+Blip blipHQMarker = Blip.AddSpriteForCoord(2486.3984, 2773.1958, 10.7757, RadarSprite.Crash1)
+
+repeat
+    wait 250
+until Pad.IsKeyPressed(KeyCode.Y)
 return
 
 
