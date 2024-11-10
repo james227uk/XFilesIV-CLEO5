@@ -17,8 +17,7 @@ DEFINE MISSION 0 AT @Mission_Initial        // 1. Initialisation Script
 DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
 DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 
-DEFINE EXTERNAL_SCRIPTS 2 // Use -1 in order not to compile AAA script
-DEFINE SCRIPT DBGCAMS AT @External_CameraHelper
+DEFINE EXTERNAL_SCRIPTS 1 // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCONS AT @External_DebugConsole
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
@@ -55,8 +54,7 @@ end
 
 //--- External Script Name Mappings
 const
-    externalCameraHelper = 0
-    externalDebugConsole = 1    
+    externalDebugConsole = 0   
 end
 
 script_name 'MAIN'
@@ -129,9 +127,11 @@ set_deatharrest_state 0
 //      Final initialisation steps, launch the initial 'mission', then create initial threads.
 //========================================================================================================================================================================================================
 wait 0
-start_new_script @Debug_CameraHelper
+
+//--- Early Loaders
 start_new_script @Debug_DebugConsole
 start_new_script @Script_Universal_ProsperoHQ_Gates
+
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
@@ -271,22 +271,6 @@ then
 end
 return
 
-
-
-//------------------------------------------------------------------------------------------------------
-//      Universal Scripts | Debug | CameraHelper
-//      - A debug tool used to obtain accurate camera angles.
-//------------------------------------------------------------------------------------------------------
-:Debug_CameraHelper
-script_name 'DBGCAML'
-
-while true
-    wait 0
-    if Pad.TestCheat("[")
-    then
-        func_runExternalScript(externalCameraHelper, "External-CameraHelper")
-    end
-end
 
 
 //------------------------------------------------------------------------------------------------------
