@@ -131,6 +131,7 @@ set_deatharrest_state 0
 wait 0
 start_new_script @Debug_CameraHelper
 start_new_script @Debug_DebugConsole
+start_new_script @Script_Universal_ProsperoHQ_Gates
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
@@ -178,7 +179,6 @@ end
 //Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
-start_new_script @Script_Universal_ProsperoHQ_Gates
 start_new_script @Debug_Follower
 
 Player.SetControl({Player:} $player1, {State:} True)
@@ -589,7 +589,9 @@ AudioStream streamID
             repeat
                 wait 0
             until not AudioStream.IsPlaying(streamID)
-            Char.StopFacialTalk(forChar)
+            if Char.DoesExist(forChar)
+            then Char.StopFacialTalk(forChar)
+            end
         end 
     end
 end
@@ -603,6 +605,7 @@ end
 function func_restoreCamera()
     Camera.ResetNewScriptables()
     Camera.RestoreJumpcut()
+    Camera.DoFade(0, Fade.In)
     Hud.SwitchWidescreen(False)
     Text.ClearThisPrintBigNow(TextStyle.BottomRight)
 end

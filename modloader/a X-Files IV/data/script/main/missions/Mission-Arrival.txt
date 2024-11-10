@@ -15,10 +15,6 @@ Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Arrival]
 // Start the mssion
 register_mission_given
 gosub @Mission_Arrival_Start
-if has_deatharrest_been_executed
-then
-    gosub @Mission_Arrival_Failed
-end
 gosub @Mission_Arrival_Cleanup
 terminate_this_script
 
@@ -42,7 +38,7 @@ Car.ChangeColor(vArrivalInfernus, 0, 0)
 wait 0
 Car.MarkAsNoLongerNeeded(vArrivalInfernus)
 
-skip_cutscene_start_internal @Mission_Arrival_HQCheck
+skip_cutscene_start_internal @Mission_Arrival_SkipIntro
 Task.CharSlideToCoord($scplayer, {Pos3:}2506.3557, 1244.9331, 10.8203, {Heading:}66.7372, {Stop Radius:}0.1)
 wait 100
 Camera.SetFixedPosition({Pos3:}2489.7852, 1263.7706, 16.2844, 0.0, 0.0, 0.0)
@@ -59,12 +55,95 @@ Camera.PointAtPoint({Pos3:}2493.9338, 1248.3096, 11.1768, SwitchType.Interpolati
 Text.PrintNow("XSM0203", 5000, 1) // You've been called to ~y~Prospero H.Q.~w~
 wait 5500
 
-:Mission_Arrival_HQCheck
+:Mission_Arrival_SkipIntro
 Char.ClearTasksImmediately($scplayer)
 Player.SetControl($player1, True)
 func_restoreCamera()
-Blip blipHQMarker = Blip.AddSpriteForCoord(2486.3984, 2773.1958, 10.7757, RadarSprite.Crash1)
+Blip blipHQMarker = Blip.AddSpriteForCoord(2485.9832, 2770.8528, 10.7738, RadarSprite.Crash1)
+$flagProsperoHQGatesLocked = True
 
+:Mission_Arrival_HQCheck
+wait 0
+if and
+    Char.LocateAnyMeans3D({Char:} $scplayer, {Pos3:}2485.9832, 2770.8528, 10.7738, {Radius Pos3:}3.0, 3.0, 3.0, {Draw Sphere:}True)
+    not Char.IsInFlyingVehicle($scplayer)
+    not Char.IsInAnyBoat($scplayer)
+jf @Mission_Arrival_HQCheck
+
+if Char.IsInAnyCar($scplayer)
+then
+    Car vehPlayerCar = Char.GetCarIsUsing($scplayer)
+    Car.Fix(vehPlayerCar)
+    Car.SetProofs(vehPlayerCar, True, True, True, True, True)
+    Player.SetControl($player1, False)
+    Camera.DoFade(2000, Fade.Out)
+    wait 2000
+    Hud.SwitchWidescreen(True)
+    jump @Mission_Arrival_CarPath
+else jump @Mission_Arrival_OnFootPath
+end
+
+:Mission_Arrival_CarPath
+skip_cutscene_start_internal @Mission_Arrival_CarPath_FinalDriveIn
+Car.SetCoordinates(vehPlayerCar, {Pos3:}2485.9832, 2770.8528, 10.7738)
+Car.SetHeading(vehPlayerCar, 270.0)
+Car.SetProofs(vehPlayerCar, False, False, False, False, False)
+Task.CarDriveToCoord($scplayer, $playerCar, 2493.7676, 2771.2607, 10.3291, 5.0, DriveMode.Accurate, 0, 0)
+Camera.SetFixedPosition({Pos3:}2496.0444, 2766.5220, 10.5723, {Rot Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint(2495.3728, 2767.2578, 10.6588, SwitchType.JumpCut)
+wait 1000
+Camera.DoFade(2000, Fade.In)
+wait 3000
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+// XSM0204 ~y~Guard: ~w~Johnson? Didn't expect you today.
+func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0204.mp3", {scmSoundID:}-1, {subID:}"XSM0204", {doAnims:}False, -1, {waitUntilFinished:}True)
+
+Camera.SetFixedPosition({Pos3:}2496.8340, 2771.3616, 11.5209, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2495.8513, 2771.3833, 11.3368, SwitchType.Jumpcut) 
+// XSM0205 ~y~CJ: ~w~Neither did I. Apparently something's going down?
+func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0205.mp3", {scmSoundID:}-1, {subID:}"XSM0205", {doAnims:}False, -1, {waitUntilFinished:}True)
+
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+// XSM0206 ~y~Guard:~w~ Something big. I've been letting agents in all hour.
+func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0206.mp3", {scmSoundID:}-1, {subID:}"XSM0206", {doAnims:}False, -1, {waitUntilFinished:}True)
+// XSM0207 You'd better head on in pronto.
+func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0207.mp3", {scmSoundID:}-1, {subID:}"XSM0207", {doAnims:}False, -1, {waitUntilFinished:}True)
+wait 1000
+$flagProsperoHQGatesLocked = False
+Camera.SetFixedPosition({Pos3:}2512.8057, 2766.4810, 10.0373, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2511.9309, 2766.9207, 10.2409, SwitchType.Jumpcut)
+wait 1000
+Task.CarDriveToCoord($scplayer, $playerCar, 2529.2754, 2778.8267, 10.3386, 10.0, DriveMode.Accurate, 0, 0)
+wait 5000
+
+:Mission_Arrival_CarPath_FinalDriveIn
+skip_cutscene_end
+Camera.DoFade(0, Fade.In)
+Car.SetCoordinates(vehPlayerCar, 2574.1794, 2781.0142, 10.3386)
+Car.SetHeading(vehPlayerCar, 0.0)
+Task.CarDriveToCoord($scplayer, $playerCar, 2574.2756, 2791.1113, 10.3397, 5.0, DriveMode.Accurate, 0, 0)
+wait 1000
+Camera.SetFixedPosition({Pos3:}2571.0701, 2786.2444, 10.2688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2571.8677, 2786.8335, 10.3983, SwitchType.Jumpcut) 
+wait 3000
+Camera.SetFixedPosition({Pos3:}2570.9578, 2792.9136, 10.2431, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2571.8213, 2792.4312, 10.3902, SwitchType.Jumpcut)
+Task.LeaveCar($scplayer, vehPlayerCar)
+repeat
+    wait 0
+until not Char.IsDoingAnyImportantTask($scplayer)
+Task.CharSlideToCoord($scplayer, {Pos3:}2572.8162, 2794.8711, 10.8203, {Heading:}270.0, {Stop Radius:}0.1)
+
+jump @Mission_Arrival_UnifiedPath
+
+
+:Mission_Arrival_OnFootPath
+jump @Mission_Arrival_UnifiedPath
+
+
+:Mission_Arrival_UnifiedPath
 repeat
     wait 250
 until Pad.IsKeyPressed(KeyCode.Y)
@@ -79,19 +158,9 @@ return
 :Mission_Arrival_Passed
 $flagMissionArrivalCompleted = True
 Player.SetControl($player1, True)
-Camera.RestoreJumpcut()
-Camera.DoFade(0, Fade.In)
-Hud.SwitchWidescreen(False)
+func_restoreCamera()
 return
 
-
-//------------------------------------------------------------------------------------------------------
-//      Mission Failed
-//      - Actions performed if the mission is failed.
-//------------------------------------------------------------------------------------------------------
-
-:Mission_Arrival_Failed
-return
 
 
 // Mission cleanup.
