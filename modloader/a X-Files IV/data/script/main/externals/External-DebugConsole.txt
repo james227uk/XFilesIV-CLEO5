@@ -81,22 +81,56 @@ while true
         //Char.GiveWeapon(0, WeaponType.)
         then
             ImGui.Spacing()
-            ImGui.Text("Frequent")
-            ImGui.GetScalingSize("S3", 3, 0, fSzX, fSzY)
-            if ImGui.Button("M4", fSzX, fSzY)
+            if ImGui.CollapsingHeader("Weapons")
             then
-                func_giveWeaponSafely($scplayer, #M4, 31, 99999)
+                ImGui.Text("Frequent")
+                ImGui.GetScalingSize("S3", 3, 0, fSzX, fSzY)
+                if ImGui.Button("M4", fSzX, fSzY)
+                then
+                    func_giveWeaponSafely($scplayer, #M4, 31, 99999)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("DEagle", fSzX, fSzY)
+                then
+                    func_giveWeaponSafely($scplayer, #DESERT_EAGLE, 24, 99999)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("RLauncher", fSzX, fSzY)
+                then
+                    func_giveWeaponSafely($scplayer, #HEATSEEK, 36, 99999)
+                end
             end
-            ImGui.SameLine()
-            if ImGui.Button("DEagle", fSzX, fSzY)
+            ImGui.Spacing()
+            if ImGui.CollapsingHeader("Vehicles")
             then
-                func_giveWeaponSafely($scplayer, #DESERT_EAGLE, 24, 99999)
+                ImGui.Text("Frequent")
+                ImGui.GetScalingSize("S4", 3, 0, fSzX, fSzY)
+                if ImGui.Button("Infernus", fSzX, fSzY)
+                then
+                    Car vehSpawnedCar = func_spawnInCar($scplayer, #INFERNUS)
+                    Car.SetModelAlpha(vehSpawnedCar, 150)
+                    Car.MarkAsNoLongerNeeded(vehSpawnedCar)
+                end
             end
-            ImGui.SameLine()
-            if ImGui.Button("RLauncher", fSzX, fSzY)
+            ImGui.Spacing()
+            if ImGui.CollapsingHeader("Entities")
             then
-                func_giveWeaponSafely($scplayer, #HEATSEEK, 36, 99999)
-            end    
+                ImGui.Text("Debug")
+                ImGui.GetScalingSize("S5", 3, 0, fSzX, fSzY)
+                if ImGui.Button("Follower", fSzX, fSzY)
+                then
+                    if $flagFollowerActive == False
+                    then start_new_script @Debug_Follower
+                    end
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Myth", fSzX, fSzY)
+                then
+                    if $flagDebugMythActive == False
+                    then start_new_script @Debug_Myth
+                    end
+                end
+            end  
         end
         
         
@@ -104,7 +138,7 @@ while true
         then
             ImGui.Spacing()
             ImGui.Text("Weather")
-            ImGui.GetScalingSize("S4", 3, 0, fSzX, fSzY)
+            ImGui.GetScalingSize("S6", 3, 0, fSzX, fSzY)
             if ImGui.Button("Sunny", fSzX, fSzY)
             then
                 Weather.ForceNow(WeatherType.ExtraSunnyLa)
@@ -124,8 +158,8 @@ while true
         if iTab == 3 // Settings
         then
             ImGui.Spacing()
-            ImGui.GetScalingSize("S5", 3, 0, fSzX, fSzY)
-            if ImGui.Button("Lock H.Q> Gates", fSzX, fSzY)
+            ImGui.GetScalingSize("S7", 3, 0, fSzX, fSzY)
+            if ImGui.Button("Lock H.Q. Gates", fSzX, fSzY)
             then
                 if $flagProsperoHQGatesLocked == False
                 then 

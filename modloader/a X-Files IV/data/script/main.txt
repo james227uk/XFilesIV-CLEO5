@@ -40,6 +40,7 @@ var
     $flagMissionIntroductionCompleted: Int = False
     $flagMissionArrivalCompleted: Int = False
     $flagDebugConsoleOpen: Int = 0
+    $flagDebugMythActive: Int = False
     $flagProsperoHQGatesLocked: Int = False
     $flagFollowerActive: Int = False
     $flagProsperoHQGatesLocked: Int = False
@@ -179,7 +180,7 @@ end
 //Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
-start_new_script @Debug_Follower
+
 
 Player.SetControl({Player:} $player1, {State:} True)
 Camera.RestoreJumpcut()
@@ -304,18 +305,15 @@ end
 //------------------------------------------------------------------------------------------------------
 :Debug_Follower
 script_name 'DBGFLWR'
-{
+{   -- Var Mapping --
     0@: Player X
     1@: Player Y
     2@: Player Z
     3@: Proximity Radius
+    4@: Blip
 }
 3@ = 150.0
 
-:Debug_Follower_Open
-repeat
-    wait 0
-until Pad.TestCheat("FOLLOW")
 Streaming.RequestModel(#WFYST)
 Streaming.RequestModel(#M4)
 Streaming.LoadAllModelsNow()
@@ -327,9 +325,14 @@ Char.SetSuffersCriticalHits($cFollower, False)
 Char.SetProofs($cFollower, True, True, True, True, True)
 Group.SetMember($playerGroup, $cFollower)
 Char.SetNeverLeavesGroup($cFollower, True)
+Char.SetRelationship($cFollower, RelationshipType.Like, PedType.Player1)  // Loves player
+Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang9) // Hates GANG9 (Myths)
 $flagFollowerActive = True
 Streaming.MarkModelAsNoLongerNeeded(#WFYST)
 Streaming.MarkModelAsNoLongerNeeded(#M4)
+Blip.AddForChar($cFollower, 4@)
+Blip.SetAsFriendly(4@, True)
+Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
 
 :Debug_Follower_Loop
 wait 0
@@ -339,8 +342,10 @@ if or
 then
     Char.RemoveElegantly($cFollower)
     Char.MarkAsNoLongerNeeded($cFollower)
+    Blip.Remove(4@)
     wait 1000
-    jump @Debug_Follower_Open
+    $flagFollowerActive = False
+    terminate_this_script
 end
 
 if not Char.LocateAnyMeansChar3D($cFollower, $scplayer, 3@, 3@, 3@, False)
@@ -349,6 +354,57 @@ then
     Char.SetCoordinates($cFollower, 0@, 1@, -100.0)
 end
 jump @Debug_Follower_Loop
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Debug | Debug Myth
+//      - A quick and dirty myth script to test interactions with other scripts.
+//------------------------------------------------------------------------------------------------------
+:Debug_Myth
+script_name 'DBGMYTH'
+{   -- Var Mapping --
+    0@: Player X
+    1@: Player Y
+    2@: Player Z
+    3@: Myth
+    4@: Blip
+}
+
+Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
+Streaming.LoadSpecialCharacter(1, "BIGFOOT")
+Streaming.LoadAllModelsNow()
+wait 0
+Char.Create(PedType.Gang9, #SPECIAL01, 0@, 1@, 2@, 3@)
+func_applyMythTemplate(3@)
+Task.KillCharOnFoot(3@, $scplayer)
+Char.SetAnimGroup(3@, "oldman")
+Char.SetDecisionMaker(3@, 2)
+Char.SetRelationship(3@, RelationShipType.Hate, PedType.Player1)  // Myth hates player
+Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang10) // Myth hates GANG10 (Followers, Prospero etc)
+$flagDebugMythActive = True
+Streaming.UnloadSpecialCharacter(1)
+Blip.AddForChar(3@, 4@)
+Blip.SetAsFriendly(4@, False)
+Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
+
+:Debug_Myth_Loop
+wait 0
+if or
+    Char.IsDead(3@)
+    not Char.LocateAnyMeansChar2D($scplayer, 3@, 500.0, 500.0, False)
+    Pad.TestCheat("MYTH")
+then
+    Char.RemoveElegantly(3@)
+    Char.MarkAsNoLongerNeeded(3@)
+    Blip.Remove(4@)
+    wait 1000
+    $flagDebugMythActive = False
+    terminate_this_script
+else
+    jump @Debug_Myth_Loop
+end
+
     
 
 
@@ -522,7 +578,7 @@ end
 
 //------------------------------------------------------------------------------------------------------
 //      Functions | Load AudioStream safely.
-//      - 
+//      - This function requests an AudioStream and check's its loaded before playing.
 //------------------------------------------------------------------------------------------------------
 function func_playAudioStreamSafely(streamID: AudioStream, soundPath: string, waitUntilFinished: int)
     repeat
@@ -596,6 +652,44 @@ end
 
 
 
+//------------------------------------------------------------------------------------------------------
+//      Functions | Basic Myth Setup
+//      - This function applies 'core' properties to myths. Override and extend as required.
+//------------------------------------------------------------------------------------------------------
+function func_applyMythTemplate(mythChar: Char)
+    mythChar.SetDropsWeaponsWhenDead(False)
+    mythChar.SetSuffersCriticalHits(False)
+    mythChar.SetHealth(20000)
+    mythChar.SetMoney(0)
+    mythChar.SetUsesUpperbodyDamageAnimsOnly(True)
+    mythChar.ShutUp(True)
+    mythChar.SetDrownsInWater(False)
+    mythChar.SetDecisionMaker(2)
+    mythChar.SetRelationship(4, 0)  // Myth hates player
+    mythChar.SetRelationship(4, 16) // Myth hates GANG10 (Followers, Prospero etc)
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Spawn In Car
+//      - This function spawns a car and puts the player in the driver seat. Output handle is returned.
+//------------------------------------------------------------------------------------------------------
+function func_spawnInCar(targetChar: Char, carModel: Int): int
+    float posX, posY, posZ   
+    
+    Streaming.RequestModel(carModel)
+    Streaming.LoadAllModelsNow()
+    Char.GetCoordinates(targetChar, {Pos3:}posX, posY, posZ)
+    Path.GetClosestCarNode({Input Pos3:}posX, posY, posZ, {Output Pos3:}posX, posY, posZ)
+    
+    Car c = Car.Create(carModel, {Pos3:}posX, posY, posZ)
+    Char.WarpIntoCar(targetChar, c)
+    return c
+end
+
+
+
 //========================================================================================================================================================================================================
 //      10. Missions
 //      All missions go here. They are only loaded into memory when called.
@@ -626,14 +720,6 @@ end
 //      11. External Scripts
 //      All external scripts go here. They are only loaded into memory when called.
 //========================================================================================================================================================================================================
-
-//------------------------------------------------------------------------------------------------------
-//      External Scripts | Debug Camera Helper
-//      - A debug script used to get accurate camera angles.
-//------------------------------------------------------------------------------------------------------
-:External_CameraHelper
-{$INCLUDE_ONCE main\externals\External-CameraHelper.txt}
-
 
 //------------------------------------------------------------------------------------------------------
 //      External Scripts | Debug Console
