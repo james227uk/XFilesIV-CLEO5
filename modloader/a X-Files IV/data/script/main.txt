@@ -318,15 +318,15 @@ Streaming.RequestModel(#WFYST)
 Streaming.RequestModel(#M4)
 Streaming.LoadAllModelsNow()
 Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
-Char $cFollower = Char.Create(PedType.Gang10, #WFYST, 0@, 1@, -100.0)
+Char $cFollower = Char.Create(PedType.Gang9, #WFYST, 0@, 1@, -100.0)
 Char.GiveWeapon($cFollower, 31, 99999)
 Char.ShutUp($cFollower, True)
 Char.SetSuffersCriticalHits($cFollower, False)
 Char.SetProofs($cFollower, True, True, True, True, True)
 Group.SetMember($playerGroup, $cFollower)
 Char.SetNeverLeavesGroup($cFollower, True)
-Char.SetRelationship($cFollower, RelationshipType.Like, PedType.Player1)  // Loves player
-Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang9) // Hates GANG9 (Myths)
+Char.SetRelationship($cFollower, RelationshipType.Respect, PedType.Player1)
+Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang10) // Myths
 $flagFollowerActive = True
 Streaming.MarkModelAsNoLongerNeeded(#WFYST)
 Streaming.MarkModelAsNoLongerNeeded(#M4)
@@ -375,13 +375,13 @@ Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
 Streaming.LoadSpecialCharacter(1, "BIGFOOT")
 Streaming.LoadAllModelsNow()
 wait 0
-Char.Create(PedType.Gang9, #SPECIAL01, 0@, 1@, 2@, 3@)
+Char.Create(PedType.Special, #SPECIAL01, 0@, 1@, 2@, 3@)
 func_applyMythTemplate(3@)
 Task.KillCharOnFoot(3@, $scplayer)
 Char.SetAnimGroup(3@, "oldman")
 Char.SetDecisionMaker(3@, 2)
-Char.SetRelationship(3@, RelationShipType.Hate, PedType.Player1)  // Myth hates player
-Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang10) // Myth hates GANG10 (Followers, Prospero etc)
+Char.SetRelationship(3@, RelationShipType.Hate, PedType.Player1)
+Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang9) // Followers, Prospero etc
 $flagDebugMythActive = True
 Streaming.UnloadSpecialCharacter(1)
 Blip.AddForChar(3@, 4@)
