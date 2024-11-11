@@ -1,8 +1,7 @@
-11/11/2024 14:30:53.477 [Main] [INFO] Launching mission 'initial'...
-11/11/2024 14:30:53.532 [Mission-Initial] [INFO] Loaded mission 'initial'.
-11/11/2024 14:30:53.539 [PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.
-11/11/2024 14:30:58.537 [PHQGATE] [INFO] Switched to quicker polling rate.
-11/11/2024 14:30:58.887 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
-11/11/2024 14:30:59.021 [Main] [INFO] Returned from mission 'initial'.
-11/11/2024 14:31:00.692 [Main] [INFO] Began external script 'External-DebugConsole'.
-11/11/2024 14:31:00.890 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.
+11/11/2024 16:19:54.265 [Main] [INFO] Launching mission 'initial'...
+11/11/2024 16:19:54.316 [Mission-Initial] [INFO] Loaded mission 'initial'.
+11/11/2024 16:19:54.324 [PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.
+11/11/2024 16:19:55.049 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
+11/11/2024 16:19:55.133 [Main] [INFO] Returned from mission 'initial'.
+11/11/2024 16:20:01.577 [PHQGATE] [INFO] Switched to quicker polling rate.
+11/11/2024 16:20:21.784 [PHQGATE] [INFO] Switched to quicker polling rate.

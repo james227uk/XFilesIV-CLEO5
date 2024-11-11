@@ -64,6 +64,9 @@ Fs.DeleteFile(logPath)
 
 
 
+
+
+
 //========================================================================================================================================================================================================
 //      2. Initialise World
 //      Initialise the world and set initial properties such as weather.
@@ -165,7 +168,7 @@ then
         wait 0
     end
     $ONMISSION = False
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrrival'.")    
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrival'.")    
 else
     // Freemode
     Camera.RestoreJumpcut()
@@ -180,9 +183,13 @@ end
 //Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
+start_new_script @Script_Universal_HQSavePoint
+
+Zone.SetPopulationType('KACC', 17) // 'GOLF_CLUB' in popcycl.dat
+Zone.SetGangStrength('KACC', GangType.Gang9, 100)
 
 
-Player.SetControl({Player:} $player1, {State:} True)
+Player.SetControl({Player:} $player1, {State:}True)
 Camera.RestoreJumpcut()
 Hud.SwitchWidescreen(False)
 
@@ -201,6 +208,51 @@ end
 //      6. Universal Scripts
 //      Scripts that run in both Storymode and Freemode.
 //========================================================================================================================================================================================================
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Save Point
+//      - Adds a save pickup at Prospero H.Q. by the front door.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_HQSavePoint
+script_name 'HQSAVE'
+0@ = 2592.0503  // Pickup X
+1@ = 2783.4104  // Pickup Y
+2@ = 10.9844    // Pickup Z
+{
+3@: Save Pickup
+}
+
+:Script_Universal_HQSavePoint_Loop
+World.ClearArea({Pos3:}0@, 1@, 2@, {Radius:}1.0, {Clear Particles:}True)
+Pickup.Create(#PICKUPSAVE, PickupType.Once, {Pos3:}0@, 1@, 2@, {Handle:}3@)
+repeat
+    wait 100
+until Pickup.HasBeenCollected(3@)
+$ONMISSION = 1
+Player.SetControl($player1, False)
+Game.ActivateSaveMenu()
+
+repeat
+    wait 100
+until Game.HasSaveGameFinished()
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Player saved game successfully.") 
+Pickup.Remove(3@)
+
+repeat
+    wait 100
+until Player.IsPlaying($player1)
+Camera.RestoreJumpcut()
+Camera.SetBehindPlayer()
+Player.SetControl($player1, True)
+$ONMISSION = 0
+
+repeat
+    wait 0
+until not Char.LocateAnyMeans2D($scplayer, {Pos2:}0@, 1@, {Radius Pos2:}2.0, 2.0, {Draw Sphere:}False)
+jump @Script_Universal_HQSavePoint_Loop
+terminate_this_script
+
+
 
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Prospero H.Q. | Base Gates
@@ -318,7 +370,7 @@ Streaming.RequestModel(#WFYST)
 Streaming.RequestModel(#M4)
 Streaming.LoadAllModelsNow()
 Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
-Char $cFollower = Char.Create(PedType.Gang9, #WFYST, 0@, 1@, -100.0)
+Char $cFollower = Char.Create(PedType.Gang10, #WFYST, 0@, 1@, -100.0)
 Char.GiveWeapon($cFollower, 31, 99999)
 Char.ShutUp($cFollower, True)
 Char.SetSuffersCriticalHits($cFollower, False)
@@ -326,13 +378,15 @@ Char.SetProofs($cFollower, True, True, True, True, True)
 Group.SetMember($playerGroup, $cFollower)
 Char.SetNeverLeavesGroup($cFollower, True)
 Char.SetRelationship($cFollower, RelationshipType.Respect, PedType.Player1)
-Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang10) // Myths
+Char.SetRelationship($cFollower, RelationshipType.Like, PedType.Gang9) // Prospero
+Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang8) // Myths
 $flagFollowerActive = True
 Streaming.MarkModelAsNoLongerNeeded(#WFYST)
 Streaming.MarkModelAsNoLongerNeeded(#M4)
 Blip.AddForChar($cFollower, 4@)
 Blip.SetAsFriendly(4@, True)
 Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Spawned debug follower.") 
 
 :Debug_Follower_Loop
 wait 0
@@ -345,6 +399,7 @@ then
     Blip.Remove(4@)
     wait 1000
     $flagFollowerActive = False
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Removed debug follower.") 
     terminate_this_script
 end
 
@@ -375,18 +430,20 @@ Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
 Streaming.LoadSpecialCharacter(1, "BIGFOOT")
 Streaming.LoadAllModelsNow()
 wait 0
-Char.Create(PedType.Special, #SPECIAL01, 0@, 1@, 2@, 3@)
+Char.Create(PedType.Gang8, #SPECIAL01, 0@, 1@, 2@, 3@)
 func_applyMythTemplate(3@)
 Task.KillCharOnFoot(3@, $scplayer)
 Char.SetAnimGroup(3@, "oldman")
 Char.SetDecisionMaker(3@, 2)
 Char.SetRelationship(3@, RelationShipType.Hate, PedType.Player1)
-Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang9) // Followers, Prospero etc
+Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang9) // Prospero
+Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang10) // Followers
 $flagDebugMythActive = True
 Streaming.UnloadSpecialCharacter(1)
 Blip.AddForChar(3@, 4@)
 Blip.SetAsFriendly(4@, False)
 Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGMYTH] [INFO] Spawned debug myth.") 
 
 :Debug_Myth_Loop
 wait 0
@@ -400,6 +457,7 @@ then
     Blip.Remove(4@)
     wait 1000
     $flagDebugMythActive = False
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Removed debug myth.") 
     terminate_this_script
 else
     jump @Debug_Myth_Loop
