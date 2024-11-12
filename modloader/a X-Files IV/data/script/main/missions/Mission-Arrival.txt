@@ -10,7 +10,7 @@
 //==========================================================================================================================================================================================================
 :Mission_Arrival_Header
 script_name 'arrival'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Arrival] [INFO] Loaded mission 'arrival'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Arrival] [INFO] Loaded mission 'arrival'.")
 
 // Start the mssion
 register_mission_given

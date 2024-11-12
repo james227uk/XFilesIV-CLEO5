@@ -1,8 +1,0 @@
-{$CLEO .cs}
-0000:
-
-for 0@ = 354164 to 354188
-	&0(0@,1i) = 16843009
-end
-
-0A93: terminate_this_custom_script

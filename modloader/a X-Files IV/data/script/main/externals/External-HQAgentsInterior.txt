@@ -9,37 +9,56 @@
 //==========================================================================================================================================================================================================
 {$USE CLEO}
 {$USE NewOpcodes}
+script_name 'HQAGTIS'
+Float fRandomX, fRandomY, fRandomZ
+int iRandomModelFlip = 165
+int iArrayAgentsIndex = 0
+var cArrayAgents: array 25 of Char
 
-script_name 'HQAGTES'
-var fSpawnX: array 3 of Float
-var fSpawnY: array 3 of Float
-var fSpawnZ: array 3 of Float
+Streaming.RequestModel(#BMYMIB)
+Streaming.RequestModel(#WMOMIB)
+Streaming.LoadAllModelsNow()
 
-fSpawnX[0] = 0.0
-fSpawnX[1] = 1.0
-fSpawnX[2] = 2.0
+repeat
+    wait 0
+    repeat
+        wait 0
+        fRandomX = Math.RandomFloatInRange(379.1938, 320.3315)
+        fRandomY = Math.RandomFloatInRange(152.7112, 191.714) 
+        fRandomZ = Math.RandomFloatInRange(1008.3828, 1025.7891)        
+        World.GetGroundZFor3DCoord(fRandomX, fRandomY, fRandomZ, fRandomZ)      
+        if or
+            fRandomZ == 1007.382812
+            fRandomZ == 1013.187500
+            fRandomZ == 1018.984375
+            fRandomZ == 1024.789062
+        then
+            Break
+        end
+    until False
+    Char.Create(PedType.Gang9, iRandomModelFlip, fRandomX, fRandomY, fRandomZ, cArrayAgents[iArrayAgentsIndex])
+    fRandomZ = Math.RandomFloatInRange(0.0, 360.0)
+    Char.SetHeading(cArrayAgents[iArrayAgentsIndex], fRandomZ)
+    Task.WanderStandard(cArrayAgents[iArrayAgentsIndex])
+    if iRandomModelFlip == 165
+    then iRandomModelFlip = 166
+    else iRandomModelFlip = 165
+    end       
+    iArrayAgentsIndex += 1    
+until iArrayAgentsIndex == 25
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Interior agents populated.")
+Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+Streaming.MarkModelAsNoLongerNeeded(#WMOMIB)
+iArrayAgentsIndex = 0
 
-fSpawnY[0] = 0.0
-fSpawnY[1] = 1.0
-fSpawnY[2] = 2.0
-
-fSpawnZ[0] = 0.0
-fSpawnZ[1] = 1.0
-fSpawnZ[2] = 2.0
-
-
-Int iRandomIndex = Math.RandomIntInRange(0, 2)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
-wait 10
-iRandomIndex = Math.RandomIntInRange(0, 2)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
-wait 10
-iRandomIndex = Math.RandomIntInRange(0, 2)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
-wait 10
-iRandomIndex = Math.RandomIntInRange(0, 2)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
-wait 10
-iRandomIndex = Math.RandomIntInRange(0, 2)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
+repeat
+    wait 1000
+until not $playerArea == 3
+repeat
+    Char.ClearTasksImmediately(cArrayAgents[iArrayAgentsIndex])
+    Char.Delete(cArrayAgents[iArrayAgentsIndex])
+    Char.MarkAsNoLongerNeeded(cArrayAgents[iArrayAgentsIndex])
+    iArrayAgentsIndex += 1
+until iArrayAgentsIndex == 25
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] No longer in area 3. Cleared all interior agents from memory.")   
 terminate_this_script

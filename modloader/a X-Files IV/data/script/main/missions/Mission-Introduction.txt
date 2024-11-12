@@ -10,7 +10,7 @@
 //==========================================================================================================================================================================================================
 :Mission_Introduction_Header
 script_name 'introd'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Introduction] [INFO] Loaded mission 'introduction'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Introduction] [INFO] Loaded mission 'introduction'.")
 
 
 //------------------------------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ pBloodpoolSplash.Play()
 
 if not Streaming.HasAnimationLoaded("ON_LOOKERS")
 then
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Introduction] [WARN] Animation 'ON_LOOKERS' did not load when requested. Forcing load.")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Introduction] [WARN] Animation 'ON_LOOKERS' did not load when requested. Forcing load.")
     repeat
         wait 0
         Streaming.RequestAnimation("ON_LOOKERS")

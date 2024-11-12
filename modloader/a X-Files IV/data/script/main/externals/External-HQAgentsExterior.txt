@@ -7,44 +7,66 @@
 // Path:        main\externals\External-HQAgentsExterior.txt
 // Trigger:     Upon getting close to Prospero H.Q.
 //==========================================================================================================================================================================================================
+NOP
 {$USE CLEO}
+{$USE CLEO+}
 {$USE NewOpcodes}
 
 script_name 'HQAGTES'
-Int iIndex = 0
-Int iRandomModelFlip = 0
-Int iRandomModelID = 0
-Float fMinX = 2501.3345
-Float fMinY = 2707.2166
-Float fMaxX = 2748.1208
-Float fMaxY = 2855.9119
-Float fGroundZ = 10.8203
-Float fRandomX, fRandomY
+NOP
+var cArrayAgents: array 25 of Char 
+Int iArrayAgentsIndex = 0
+Int iRandomModelFlip = 165
+Float fRandomX, fRandomY, fRandomZ
+
 Streaming.RequestModel(#BMYMIB)
 Streaming.RequestModel(#WMOMIB)
 repeat
     wait 0
     if and
-        Streaming.IsModelAvailable(#BMYMIB)
-        Streaming.IsModelAvailable(#WMOMIB)
+        Streaming.HasModelLoaded(#BMYMIB)
+        Streaming.HasModelLoaded(#WMOMIB)
     then
         Break
     end
-until False
+until False 
 
 repeat
-    iRandomModelFlip = Math.RandomIntInRange(0, 1)
-    fRandomX = Math.RandomFloatInRange(fMinX, fMaxX)
-    fRandomY = Math.RandomFloatInRange(fMinY, fMaxY)   
-    if iRandomModelFlip == 0
-    then iRandomModelID = 166
-    else iRandomModelID = 165
-    end    
-    Char randomAgent = Char.Create(PedType.Gang9, iRandomModelID, fRandomX, fRandomY, 10.0)
-    Char.MarkAsNoLongerNeeded(randomAgent)
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[HQAGTES] [Info] Generated 25 random exterior agents.")
-    iIndex += 1  
-until iIndex == 25
-Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
-Streaming.MarkModelAsNoLongerNeeded(#WMOMIB)
+    gosub @GenerateRandomCoords
+    Blip testMarker = Blip.AddForCoord(fRandomX, fRandomY, fRandomZ)
+    Char.Create(PedType.Gang9, iRandomModelFlip, fRandomX, fRandomY, 9.820312, cArrayAgents[iArrayAgentsIndex])
+    Task.WanderStandard(cArrayAgents[iArrayAgentsIndex])
+    //Blip testMarker = Blip.AddForChar(cArrayAgents[iArrayAgentsIndex])
+    if iRandomModelFlip == 165
+    then iRandomModelFlip = 166
+    else iRandomModelFlip = 165
+    end
+    iArrayAgentsIndex += 1
+until iArrayAgentsIndex == 10
+PLAY_MISSION_PASSED_TUNE 2
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[External|HQAGTES] [INFO] Index now: %i", iArrayAgentsIndex)
+iArrayAgentsIndex = 25
+
+repeat
+    wait 1000
+until not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
+
+repeat
+    Char.ClearTasksImmediately(cArrayAgents[iArrayAgentsIndex])
+    Char.MarkAsNoLongerNeeded(cArrayAgents[iArrayAgentsIndex])
+    iArrayAgentsIndex += 1
+until iArrayAgentsIndex == 25
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[External|HQAGTES] [INFO] Distance exceeded. Cleared all exterior agents from memory.")
 terminate_this_script
+
+
+:GenerateRandomCoords
+fRandomX = Math.RandomFloatInRange(2500.0, 2748.22)
+fRandomY = Math.RandomFloatInRange(2705.1375, 2848.2803)  
+fRandomZ = Math.RandomFloatInRange(10.8203, 21.2580)
+fRandomZ = World.GetGroundZFor3DCoord(fRandomX, fRandomY, fRandomZ)
+if fRandomZ < 12.0
+then return
+else jump @GenerateRandomCoords
+end 
+return

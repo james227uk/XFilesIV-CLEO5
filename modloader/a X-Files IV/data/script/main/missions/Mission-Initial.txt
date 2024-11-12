@@ -10,7 +10,7 @@
 //==========================================================================================================================================================================================================
 :Mission_Initial_Header
 script_name 'initial'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Loaded mission 'initial'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Initial] [INFO] Loaded mission 'initial'.")
 
 
 int iRandomSceneChoice
@@ -50,6 +50,7 @@ AudioStream.SetState(mainTheme, AudioStreamAction.Play)
 
 // Pick a random 'scene' that will be behind the main menu.
 gosub @Mission_Initial_SceneSelecter
+Camera.DoFade(1000, Fade.In)
 
 // Draw the main menu and handle the picked choice.
 Menu.Create("XSM0001", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False, {Handle:}mainMenu)
@@ -67,12 +68,12 @@ while true
         switch iMainMenuChoice
             case 0 // Storymode
                 $flagGamemodeChoice = gmStorymode
-                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Selected gamemode 'Storymode'.")
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Initial] [INFO] Selected gamemode 'Storymode'.")
                 break
             
             case 1 // Freemode
                 $flagGamemodeChoice = gmFreemode
-                Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Initial] [INFO] Selected gamemode 'Freemode'.")
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Initial] [INFO] Selected gamemode 'Freemode'.")
                 break
         end
         //break
@@ -136,9 +137,9 @@ switch iRandomSceneChoice
         Car.FreezePosition(custodianSceneHeli, True)
         
         Char.CreateInsideCar(custodianSceneHeli, PedType.Special, #BMYMIB, custodianSceneHeliPilot)
-        Char.Create(PedType.Special, #SPECIAL01, 2618.1626, 2723.8647, 36.5386, custodianSceneCustodian)
-        Char.Create(PedType.Special, #SPECIAL02, 2618.9534, 2724.5115, 36.5386, custodianSceneCarter)
-        Char.Create(PedType.Special, #SPECIAL03, 2617.0742, 2724.3591, 36.5386, custodianSceneDavis)
+        Char.Create(PedType.Special, #SPECIAL01, 2618.1626, 2723.8647, -100.0, custodianSceneCustodian)
+        Char.Create(PedType.Special, #SPECIAL02, 2618.9534, 2724.5115, -100.0, custodianSceneCarter)
+        Char.Create(PedType.Special, #SPECIAL03, 2617.0742, 2724.3591, -100.0, custodianSceneDavis)
         Char.SetHeading(custodianSceneCustodian, 358.7)
         Char.SetHeading(custodianSceneCarter, 356.7)
         Char.SetHeading(custodianSceneDavis, 0.0)
@@ -149,7 +150,7 @@ switch iRandomSceneChoice
 
         // Facing The Custodian and the heli.
         Camera.SetFixedPosition(2616.405029, 2727.775635, 36.538643, 0.0, 0.0, 0.0)
-        Camera.PointAtPoint(2820.191650, 2213.777588, 114.439705, SwitchType.Interpolation)      
+        Camera.PointAtPoint(2820.191650, 2213.777588, 114.439705, SwitchType.JumpCut)      
 
     case 1
     

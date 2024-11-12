@@ -17,10 +17,11 @@ DEFINE MISSION 0 AT @Mission_Initial        // 1. Initialisation Script
 DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
 DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 
-DEFINE EXTERNAL_SCRIPTS 2
+DEFINE EXTERNAL_SCRIPTS 3
  // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCONS AT @External_DebugConsole
 DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior
+DEFINE SCRIPT HQAGTIS AT @External_HQAgentsInterior
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
@@ -36,6 +37,7 @@ var
     $player1: Player         // gta3sc/SBL analogue of PLAYER_CHAR
     $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
     $playerGroup: Group
+    $playerArea: Int
     $mission_trigger_wait_time: Int = 250
     $flagGamemodeChoice: Int = 0
     $flagMissionInitialCompleted: Int = False
@@ -59,14 +61,12 @@ end
 const
     externalDebugConsole = 0   
     externalHQAgentsExterior = 1
+    externalHQAgentsInterior = 2
 end
 
 script_name 'MAIN'
 declare_mission_flag {Name:} $ONMISSION
 Fs.DeleteFile(logPath)
-
-
-
 
 
 
@@ -130,11 +130,12 @@ Char.SetCanBeKnockedOffBike($scplayer, false)
 Game.AllowPauseInWidescreen(True)
 set_deatharrest_state 0
 
+
+
 //========================================================================================================================================================================================================
 //      4. Final Initialisation
 //      Final initialisation steps, launch the initial 'mission', then create initial threads.
 //========================================================================================================================================================================================================
-wait 0
 
 //--- Early Loaders
 start_new_script @Debug_DebugConsole
@@ -142,56 +143,52 @@ start_new_script @Script_Universal_ProsperoHQ_Gates
 
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
 $ONMISSION = True
 while $flagMissionInitialCompleted == False
     wait 0
 end
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'initial'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'initial'.")
 
 // Pick what to do next based on gamemode choice.
 if $flagGamemodeChoice == gmStorymode // Storymode
 then
     // Launch Introduction cutscene
-    wait 0
     Mission.LoadAndLaunchInternal(Mission_Introduction)
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'introduction'...")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'introduction'...")
     $ONMISSION = True
     while $flagMissionIntroductionCompleted == False
         wait 0
     end
     $ONMISSION = False
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.")
     
     // Launch 'Arrival' mission    
-    wait 0
     Mission.LoadAndLaunchInternal(Mission_Arrival)
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'arrival'...")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'arrival'...")
     $ONMISSION = True
     while $flagMissionArrivalCompleted == False
         wait 0
     end
     $ONMISSION = False
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrival'.")    
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrival'.")    
 else
     // Freemode
     Camera.RestoreJumpcut()
     Player.SetControl($player1, True)
     func_giveAgentOutfit()
+    Text.ClearHelp()
     Camera.DoFade(1000, Fade.In)
     Hud.SwitchWidescreen(False)
-    wait 1000
-    Char.SetCoordinates($scplayer, 2590.947, 2790.5645, 10.8203)
+    Char.SetCoordinates($scplayer, 2590.947, 2790.5645, -100.0)
     Char.SetHeading($scplayer, 90.0)
+    
 end   
-//Audio.PlayMissionPassedTune(2) // Debug
 
 //--- Create universal scripts
 start_new_script @Script_Universal_HQSavePoint
 start_new_script @Script_Universal_ProsperoHQ_Agents_External
-
-//Zone.SetPopulationType('HAUL', 17) // 'GOLF_CLUB' in popcycl.dat
-Zone.SetGangStrength('HAUL', GangType.Gang9, 100)
+start_new_script @Script_Universal_ProsperoHQ_Agents_Interior
 
 Player.SetControl({Player:} $player1, {State:}True)
 Camera.RestoreJumpcut()
@@ -205,6 +202,7 @@ Hud.SwitchWidescreen(False)
 while true
     wait $mission_trigger_wait_time
     Clock.GetTimeOfDay({Hours Var:} $TIME_HOURS, {Minutes Var:} $TIME_MINS)
+    Char.GetAreaVisible($scplayer, $playerArea)
 end
 
 
@@ -219,13 +217,11 @@ end
 //------------------------------------------------------------------------------------------------------
 :Script_Universal_HQSavePoint
 script_name 'HQSAVE'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[HQSAVE] [INFO] Script started.")  
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVE] [INFO] Script started.")  
 0@ = 2592.0503  // Pickup X
 1@ = 2783.4104  // Pickup Y
 2@ = 10.9844    // Pickup Z
-{
-3@: Save Pickup
-}
+// 3@: Save Pickup
 
 :Script_Universal_HQSavePoint_Loop
 World.ClearArea({Pos3:}0@, 1@, 2@, {Radius:}1.0, {Clear Particles:}True)
@@ -240,7 +236,7 @@ Game.ActivateSaveMenu()
 repeat
     wait 100
 until Game.HasSaveGameFinished()
-//Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Player saved game successfully.") 
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVE] [INFO] Player saved game successfully.") 
 Pickup.Remove(3@)
 
 repeat
@@ -265,7 +261,7 @@ terminate_this_script
 //------------------------------------------------------------------------------------------------------
 :Script_Universal_ProsperoHQ_Gates
 script_name 'PHQGATE'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Script started.")     
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO] Script started.")     
 
 // Create gate objects
 Streaming.RequestModel(#GATE_AUTOR)
@@ -286,7 +282,7 @@ wait 5000
 gosub @Script_Universal_ProsperoHQ_Gates_Lock
 if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
 jf @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[PHQGATE] [INFO] Switched to quicker polling rate.")  
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO] Switched to quicker polling rate.")  
 
 :Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
 wait 0
@@ -324,20 +320,20 @@ return
 if $flagProsperoHQGatesLocked == True
 then
     repeat 
-        wait 0
+        wait $mission_trigger_wait_time
     until $flagProsperoHQGatesLocked == False
 end
 return
-
+terminate_this_script
 
 
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Prospero H.Q. | External Agents (Loader)
-//      - Creates a random assortmment of agents roaming the grounds. Loader script.
+//      - Creates a random assortmment of agents roaming the H.Q. grounds. Loader script.
 //------------------------------------------------------------------------------------------------------
 :Script_Universal_ProsperoHQ_Agents_External
 script_name 'HQAGTEL'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[HQAGTEL] [INFO] Script started.")  
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script started.")  
 0@ = 2497.2947  // HQ Center X
 1@ = 2773.2153  // HQ Center Y
 2@ = 10.8262    // HQ Ground Z
@@ -346,14 +342,42 @@ Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[HQAGTEL] [INFO] 
 while true
     wait 1000
     if Char.LocateAnyMeans3D($scplayer, {Pos3:}0@, 1@, 2@, 3@, 3@, 3@, False)
-    then 
+    then
         func_runExternalScript(externalHQAgentsExterior, "External-HQAgentsExterior")
         repeat
             wait 1000
         until not Char.LocateAnyMeans3D($scplayer, {Pos3:}0@, 1@, 2@, 3@, 3@, 3@, False) 
-        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[HQAGTEL] [INFO] Script ended. Restarting loader script.")
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script ended. Restarting loader script.")
+        StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsExterior)
     end
 end
+terminate_this_script
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Interior Agents (Loader)
+//      - Creates a random assortmment of agents roaming the H.Q. interior. Loader script.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_Agents_Interior
+script_name 'HQAGTIL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Script started.")  
+
+while true
+    wait 1000
+    if $playerArea == 3
+    then 
+        func_runExternalScript(externalHQAgentsInterior, "External-HQAgentsInterior")
+        repeat
+            wait 1000
+            Char.GetAreaVisible($scplayer, 0@)
+        until not $playerArea == 3
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Script ended. Restarting loader script.")
+        StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsInterior)
+        
+    end
+end
+terminate_this_script
 
 
 
@@ -365,7 +389,7 @@ end
 
 :Debug_DebugConsole
 script_name 'DBGCONL' 
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGCONL] [INFO] Script started.")  
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGCONL] [INFO] Script started.")  
 
 while true
     wait 0
@@ -382,6 +406,7 @@ while true
     end
     StreamedScript.MarkAsNoLongerNeeded(externalDebugConsole)
 end
+terminate_this_script
 
 
 
@@ -391,7 +416,7 @@ end
 //------------------------------------------------------------------------------------------------------
 :Debug_Follower
 script_name 'DBGFLWR'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Script started.")  
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGFLWR] [INFO] Script started.")  
 {   -- Var Mapping --
     0@: Player X
     1@: Player Y
@@ -421,7 +446,7 @@ Streaming.MarkModelAsNoLongerNeeded(#M4)
 Blip.AddForChar($cFollower, 4@)
 Blip.SetAsFriendly(4@, True)
 Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
-//Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Spawned debug follower.") 
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGFLWR] [INFO] Spawned debug follower.") 
 
 :Debug_Follower_Loop
 wait 0
@@ -434,7 +459,7 @@ then
     Blip.Remove(4@)
     wait 1000
     $flagFollowerActive = False
-    //Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Removed debug follower.") 
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGFLWR] [INFO] Removed debug follower.") 
     terminate_this_script
 end
 
@@ -444,6 +469,7 @@ then
     Char.SetCoordinates($cFollower, 0@, 1@, -100.0)
 end
 jump @Debug_Follower_Loop
+terminate_this_script
 
 
 
@@ -453,7 +479,7 @@ jump @Debug_Follower_Loop
 //------------------------------------------------------------------------------------------------------
 :Debug_Myth
 script_name 'DBGMYTH'
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGMYTH] [INFO] Script started.")  
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGMYTH] [INFO] Script started.")  
 {   -- Var Mapping --
     0@: Player X
     1@: Player Y
@@ -478,7 +504,7 @@ Streaming.UnloadSpecialCharacter(1)
 Blip.AddForChar(3@, 4@)
 Blip.SetAsFriendly(4@, False)
 Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
-Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGMYTH] [INFO] Spawned debug myth.") 
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGMYTH] [INFO] Spawned debug myth.") 
 
 :Debug_Myth_Loop
 wait 0
@@ -492,11 +518,12 @@ then
     Blip.Remove(4@)
     wait 1000
     $flagDebugMythActive = False
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[DBGFLWR] [INFO] Removed debug myth.") 
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGMYTH] [INFO] Removed debug myth.") 
     terminate_this_script
 else
     jump @Debug_Myth_Loop
 end
+terminate_this_script
 
     
 
@@ -504,7 +531,7 @@ end
 
 //========================================================================================================================================================================================================
 //      7. Storymode Scripts
-//      Scripts that run exclusively in Storymode.
+//      Scripts that run exc lusively in Storymode.
 //========================================================================================================================================================================================================
 
  
@@ -548,8 +575,7 @@ end
 //------------------------------------------------------------------------------------------------------
 function func_loadModel(modelID: int, forceLoad: int)
     Streaming.RequestModel(modelID)
-    if
-        forceLoad == 1
+    if forceLoad == 1
     then
         Streaming.LoadAllModelsNow()
         return
@@ -824,8 +850,17 @@ end
 
 
 //------------------------------------------------------------------------------------------------------
-//      External Scripts | 1 | Debug Console
+//      External Scripts | 1 | Agents: Exterior
 //      - Spawns a random assortment of agents around Prospero H.Q.'s exterior.
 //------------------------------------------------------------------------------------------------------
 :External_HQAgentsExterior
 {$INCLUDE_ONCE main\externals\External-HQAgentsExterior.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 2 | Agents: Interior
+//      - Spawns a random assortment of agents inside Prospero H.Q.'s exterior.
+//------------------------------------------------------------------------------------------------------
+:External_HQAgentsInterior
+{$INCLUDE_ONCE main\externals\External-HQAgentsInterior.txt}
