@@ -1,0 +1,45 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        Interior Agents
+// Description: This script generates random agents within the Prospero H.Q. interior.
+// Path:        main\externals\External-HQAgentsInterior.txt
+// Trigger:     Upon entering the Prospero H.Q. interior.
+//==========================================================================================================================================================================================================
+{$USE CLEO}
+{$USE NewOpcodes}
+
+script_name 'HQAGTES'
+var fSpawnX: array 3 of Float
+var fSpawnY: array 3 of Float
+var fSpawnZ: array 3 of Float
+
+fSpawnX[0] = 0.0
+fSpawnX[1] = 1.0
+fSpawnX[2] = 2.0
+
+fSpawnY[0] = 0.0
+fSpawnY[1] = 1.0
+fSpawnY[2] = 2.0
+
+fSpawnZ[0] = 0.0
+fSpawnZ[1] = 1.0
+fSpawnZ[2] = 2.0
+
+
+Int iRandomIndex = Math.RandomIntInRange(0, 2)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
+wait 10
+iRandomIndex = Math.RandomIntInRange(0, 2)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
+wait 10
+iRandomIndex = Math.RandomIntInRange(0, 2)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
+wait 10
+iRandomIndex = Math.RandomIntInRange(0, 2)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
+wait 10
+iRandomIndex = Math.RandomIntInRange(0, 2)
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Coords: %f %f %f.", fSpawnX[iRandomIndex], fSpawnY[iRandomIndex], fSpawnZ[iRandomIndex])
+terminate_this_script

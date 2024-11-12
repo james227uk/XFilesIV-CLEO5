@@ -1,0 +1,50 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        Exterior Agents
+// Description: This script generates random agents within the Prospero H.Q. exterior grounds.
+// Path:        main\externals\External-HQAgentsExterior.txt
+// Trigger:     Upon getting close to Prospero H.Q.
+//==========================================================================================================================================================================================================
+{$USE CLEO}
+{$USE NewOpcodes}
+
+script_name 'HQAGTES'
+Int iIndex = 0
+Int iRandomModelFlip = 0
+Int iRandomModelID = 0
+Float fMinX = 2501.3345
+Float fMinY = 2707.2166
+Float fMaxX = 2748.1208
+Float fMaxY = 2855.9119
+Float fGroundZ = 10.8203
+Float fRandomX, fRandomY
+Streaming.RequestModel(#BMYMIB)
+Streaming.RequestModel(#WMOMIB)
+repeat
+    wait 0
+    if and
+        Streaming.IsModelAvailable(#BMYMIB)
+        Streaming.IsModelAvailable(#WMOMIB)
+    then
+        Break
+    end
+until False
+
+repeat
+    iRandomModelFlip = Math.RandomIntInRange(0, 1)
+    fRandomX = Math.RandomFloatInRange(fMinX, fMaxX)
+    fRandomY = Math.RandomFloatInRange(fMinY, fMaxY)   
+    if iRandomModelFlip == 0
+    then iRandomModelID = 166
+    else iRandomModelID = 165
+    end    
+    Char randomAgent = Char.Create(PedType.Gang9, iRandomModelID, fRandomX, fRandomY, 10.0)
+    Char.MarkAsNoLongerNeeded(randomAgent)
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[HQAGTES] [Info] Generated 25 random exterior agents.")
+    iIndex += 1  
+until iIndex == 25
+Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+Streaming.MarkModelAsNoLongerNeeded(#WMOMIB)
+terminate_this_script

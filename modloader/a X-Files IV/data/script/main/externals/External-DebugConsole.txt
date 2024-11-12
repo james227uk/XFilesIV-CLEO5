@@ -137,28 +137,75 @@ while true
         if iTab == 2 // World
         then
             ImGui.Spacing()
-            ImGui.Text("Weather")
-            ImGui.GetScalingSize("S6", 3, 0, fSzX, fSzY)
-            if ImGui.Button("Sunny", fSzX, fSzY)
+            if ImGui.CollapsingHeader("Weather")
             then
-                Weather.ForceNow(WeatherType.ExtraSunnyLa)
+                ImGui.GetScalingSize("S6", 3, 0, fSzX, fSzY)
+                if ImGui.Button("Sunny", fSzX, fSzY)
+                then
+                    Weather.ForceNow(WeatherType.ExtraSunnyLa)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Stormy", fSzX, fSzY)
+                then
+                    Weather.ForceNow(WeatherType.RainySf)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Foggy", fSzX, fSzY)
+                then
+                    Weather.ForceNow(78)
+                end 
             end
-            ImGui.SameLine()
-            if ImGui.Button("Stormy", fSzX, fSzY)
+            ImGui.Spacing()
+            if ImGui.CollapsingHeader("Time")
             then
-                Weather.ForceNow(WeatherType.RainySf)
-            end
-            ImGui.SameLine()
-            if ImGui.Button("Foggy", fSzX, fSzY)
-            then
-                Weather.ForceNow(78)
-            end    
+                ImGui.GetScalingSize("S7", 4, 0, fSzX, fSzY)
+
+                if ImGui.Button("Dawn", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(6, 0)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Morning", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(9, 0)
+                end
+                ImGui.SameLine() 
+                if ImGui.Button("Noon", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(12, 0)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Afternoon", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(15, 0)
+                end                
+
+                if ImGui.Button("Evening", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(18, 0)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Night", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(21, 0)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Midight", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(0, 0)
+                end
+                ImGui.SameLine()
+                if ImGui.Button("Twilight", fSzX, fSzY)
+                then
+                    Clock.SetTimeOfDay(3, 0)
+                end                
+            end               
         end
         
         if iTab == 3 // Settings
         then
             ImGui.Spacing()
-            ImGui.GetScalingSize("S7", 3, 0, fSzX, fSzY)
+            ImGui.GetScalingSize("S8", 3, 0, fSzX, fSzY)
             if ImGui.Button("Lock H.Q. Gates", fSzX, fSzY)
             then
                 if $flagProsperoHQGatesLocked == False

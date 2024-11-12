@@ -1,7 +1,96 @@
-11/11/2024 16:19:54.265 [Main] [INFO] Launching mission 'initial'...
-11/11/2024 16:19:54.316 [Mission-Initial] [INFO] Loaded mission 'initial'.
-11/11/2024 16:19:54.324 [PHQGATE] [INFO] Universal script 'Prospero H.Q. Gates' loaded at 'PHQGATE'.
-11/11/2024 16:19:55.049 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
-11/11/2024 16:19:55.133 [Main] [INFO] Returned from mission 'initial'.
-11/11/2024 16:20:01.577 [PHQGATE] [INFO] Switched to quicker polling rate.
-11/11/2024 16:20:21.784 [PHQGATE] [INFO] Switched to quicker polling rate.
+11/11/2024 22:52:40.255 [Main] [INFO] Launching mission 'initial'...
+11/11/2024 22:52:40.329 [Mission-Initial] [INFO] Loaded mission 'initial'.
+11/11/2024 22:52:40.336 [PHQGATE] [INFO] Script started.
+11/11/2024 22:52:40.336 [DBGCONL] [INFO] Script started.
+11/11/2024 22:52:42.295 [Mission-Initial] [INFO] Selected gamemode 'Freemode'.
+11/11/2024 22:52:42.451 [Main] [INFO] Returned from mission 'initial'.
+11/11/2024 22:52:43.497 [HQAGTEL] [INFO] Script started.
+11/11/2024 22:52:43.497 [HQSAVE] [INFO] Script started.
+11/11/2024 22:52:44.531 [Main] [INFO] Began external script 'External-HQAgentsExterior'.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2504.204102 2801.706055.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2592.300537 2821.273682.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2745.273926 2784.756592.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2715.629639 2780.817627.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2735.098877 2848.991455.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2651.882568 2732.030029.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2631.645508 2728.404297.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2668.911621 2777.754639.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2515.441162 2711.704590.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2535.768799 2785.183105.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2562.513184 2827.840088.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2540.325439 2721.057373.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2571.927734 2752.060547.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2538.954590 2826.800781.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2552.330566 2771.728271.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2531.671631 2820.438721.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2740.145020 2805.458740.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2703.767578 2806.525146.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2532.808838 2788.641113.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2725.593994 2850.402832.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2632.662109 2757.270264.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2693.577393 2708.414551.
+11/11/2024 22:52:44.565 [HQAGTES] [Info] Generated random agent at: 2727.913574 2820.520264.
+11/11/2024 22:52:44.566 [HQAGTES] [Info] Generated random agent at: 2542.840820 2833.952637.
+11/11/2024 22:52:44.566 [HQAGTES] [Info] Generated random agent at: 2708.143311 2840.827637.
+11/11/2024 22:52:45.347 [PHQGATE] [INFO] Switched to quicker polling rate.
+11/11/2024 22:53:08.600 [Main] [INFO] Began external script 'External-DebugConsole'.
+11/11/2024 22:53:09.317 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.
+11/11/2024 22:53:11.558 [HQAGTEL] [INFO] Script ended. Restarting loader script.
+11/11/2024 22:53:13.563 [Main] [INFO] Began external script 'External-HQAgentsExterior'.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2725.428223 2729.684082.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2617.139648 2827.477051.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2636.925049 2849.567871.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2515.199951 2735.746582.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2646.753662 2756.144775.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2747.247070 2773.402588.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2744.949951 2785.210449.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2525.638672 2719.228516.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2609.352051 2815.769043.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2520.818604 2756.657715.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2723.628174 2795.525146.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2535.090820 2790.034424.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2526.625488 2833.340088.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2643.613037 2780.019043.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2572.530273 2733.173584.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2504.128662 2820.211670.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2503.812256 2851.523682.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2545.243408 2792.344238.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2556.826904 2732.783447.
+11/11/2024 22:53:13.597 [HQAGTES] [Info] Generated random agent at: 2721.828125 2850.080566.
+11/11/2024 22:53:13.598 [HQAGTES] [Info] Generated random agent at: 2623.089600 2824.627197.
+11/11/2024 22:53:13.598 [HQAGTES] [Info] Generated random agent at: 2547.367432 2784.389160.
+11/11/2024 22:53:13.598 [HQAGTES] [Info] Generated random agent at: 2637.595215 2753.789551.
+11/11/2024 22:53:13.598 [HQAGTES] [Info] Generated random agent at: 2534.239746 2710.052734.
+11/11/2024 22:53:13.598 [HQAGTES] [Info] Generated random agent at: 2512.563965 2802.745117.
+11/11/2024 22:53:16.064 [PHQGATE] [INFO] Switched to quicker polling rate.
+11/11/2024 22:53:25.465 [Main] [ERROR] Failed to start external script 'External-DebugConsole'. Active instances already 1.
+11/11/2024 22:53:27.575 [HQAGTEL] [INFO] Script ended. Restarting loader script.
+11/11/2024 22:53:31.579 [Main] [INFO] Began external script 'External-HQAgentsExterior'.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2741.327393 2825.775391.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2621.297119 2748.135254.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2532.500000 2774.015381.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2558.883057 2721.234375.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2580.099365 2792.970459.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2519.026123 2814.906982.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2516.307129 2742.803223.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2565.864746 2792.185303.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2532.070801 2752.687012.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2638.822998 2740.284668.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2614.247559 2759.643555.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2744.362549 2816.903564.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2544.738770 2751.629639.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2618.013184 2764.535400.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2700.378418 2753.054443.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2684.426514 2795.833740.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2606.957031 2854.682129.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2590.538086 2769.268555.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2715.659912 2772.236328.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2594.650391 2745.140381.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2653.486816 2722.609375.
+11/11/2024 22:53:31.613 [HQAGTES] [Info] Generated random agent at: 2605.654053 2733.395996.
+11/11/2024 22:53:31.614 [HQAGTES] [Info] Generated random agent at: 2649.660889 2722.799805.
+11/11/2024 22:53:31.614 [HQAGTES] [Info] Generated random agent at: 2674.643066 2790.193115.
+11/11/2024 22:53:31.614 [HQAGTES] [Info] Generated random agent at: 2623.835205 2844.063232.
+11/11/2024 22:53:31.862 [External-DebugConsole] [INFO] Script ending...
+11/11/2024 22:53:31.862 [Main] [INFO] Began external script 'External-DebugConsole'.
+11/11/2024 22:53:31.896 [PHQGATE] [INFO] Switched to quicker polling rate.
