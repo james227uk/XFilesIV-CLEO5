@@ -16,6 +16,7 @@
 
 /logs/
 
+/MapEditorSA/
 /models/
 /movies/*
 /text/*
@@ -33,5 +34,6 @@
 /scrlog.log
 /_Git Toolbox.bat
 /cameraCoordinates.txt
+/MapEditorSA.asi
 
 /!audio/customaudio/

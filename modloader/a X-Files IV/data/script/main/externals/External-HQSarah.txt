@@ -1,0 +1,144 @@
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
+// Name:        HQ Sarah
+// Description: This script creates Sarah at the front desk, and handles her menu/dialogue options.
+// Path:        main\externals\External-HQSarah.txt
+// Trigger:     Upon entering the Prospero H.Q. interior.
+//========================================================================================================================================================================================================
+{$USE CLEO}
+{$USE CLEO+}
+{$USE NewOpcodes}
+script_name 'HQSARAS'
+Char cSarah
+var seqSarahPC: array 5 of Sequence
+Int iSeqSarahPCIndex = 0
+Int iSeqProgress
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQSARAS] [INFO] Script started.")
+Streaming.RequestModel(#WFYST)
+Streaming.RequestAnimation("Int_Office")
+
+repeat
+    wait 0
+    if and
+        Streaming.HasModelLoaded(#WFYST)
+        Streaming.HasAnimationLoaded("Int_Office")
+    then Break
+    end
+until False
+gosub @External_HQSarah_CreateSequences
+Char.Create(PedType.Special, #WFYST, 359.6, 173.6855, 1007.4, cSarah)
+Char.SetHeading(cSarah, 270.0)
+Char.PerformSequence(cSarah, seqSarahPC[0])
+Char.SetCollision(cSarah, False)
+Char.ShutUp(cSarah, True)
+Char.SetProofs(cSarah, True, True, True, True, True)
+Char.SetHealth(cSarah, 99999)
+Char.SetIgnoreDamageAnims(cSarah, True)
+Char.SetSuffersCriticalHits(cSarah, False)
+repeat
+    wait 0
+until Char.DoesExist(cSarah)
+Streaming.MarkModelAsNoLongerNeeded(#WFYST)
+
+while true
+    wait 0
+    // Interact
+    if Char.LocateAnyMeans3D($scplayer, {Pos3:}362.242, 173.7583, 1008.3828, {Rad. Pos3:}1.0, 1.0, 1.0, {Draw Sphere:}True) 
+    then
+        Char.ClearTasksImmediately()
+        Task.PlayAnim({Char:}cSarah, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}True, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+        
+    end
+    
+    // Loop Anims
+    Char.GetSequenceProgress(cSarah, iSeqProgress)
+    Text.PrintWithNumberNow("XSM0005", iSeqProgress, 500, 1)
+    if iSeqProgress >= 4
+    then
+        Math.RandomIntInRange(0, 4, iSeqSarahPCIndex)
+        Text.PrintWithNumberBig("XSM0005", iSeqSarahPCIndex, 500, 1)
+        Char.PerformSequence(cSarah, seqSarahPC[iSeqSarahPCIndex])
+    end
+    
+    // Cleanup
+    if not $playerArea == 3
+    then Break
+    end
+end
+
+Char.Delete(cSarah)
+Char.MarkAsNoLongerNeeded(cSarah)
+Streaming.RemoveAnimation("Int_Office")
+Sequence.Clear(seqSarahPC[0])
+Sequence.Clear(seqSarahPC[1])
+Sequence.Clear(seqSarahPC[2])
+Sequence.Clear(seqSarahPC[3])
+Sequence.Clear(seqSarahPC[4])
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSARAS] [INFO] Script ending (Reason: Player left area 3).")
+terminate_this_script
+
+
+:External_HQSarah_CreateSequences
+Sequence.Open(seqSarahPC[0])
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+Sequence.Close(seqSarahPC[0])
+
+Sequence.Open(seqSarahPC[1])
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Watch",     {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+Sequence.Close(seqSarahPC[1])
+
+Sequence.Open(seqSarahPC[2])
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Bored_Loop",{Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+Sequence.Close(seqSarahPC[2])
+
+Sequence.Open(seqSarahPC[3])
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+Sequence.Close(seqSarahPC[3])
+
+Sequence.Open(seqSarahPC[4])
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Watch",     {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)    
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+Sequence.Close(seqSarahPC[4])
+return
+/*
+-- int_office --
+OFF_Sit_Bored_Loop
+OFF_Sit_Idle_Loop
+OFF_Sit_Type_Loop
+OFF_Sit_Watch
+
+
+Hello: Low relationship
+Story-based comments.
+Freemode last myth killed.
+
+
+
+
+
+
+*/
+
+
+

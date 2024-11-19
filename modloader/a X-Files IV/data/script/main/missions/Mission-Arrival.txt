@@ -1,16 +1,16 @@
-//==========================================================================================================================================================================================================
-//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
-//==========================================================================================================================================================================================================
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
 // Name:        1. Arrival
 // Description: Intro cinematic. CJ arrives at Prospero H.Q. and is given his mission.
 // Path:        main\missions\Mission-Arrival.txt
 // Trigger:     Upon Storymode selected.
 // Notes:       
-//==========================================================================================================================================================================================================
+//========================================================================================================================================================================================================
 :Mission_Arrival_Header
 script_name 'arrival'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Arrival] [INFO] Loaded mission 'arrival'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|ARRIVAL] [INFO] Loaded mission 'arrival'.")
 
 // Start the mssion
 register_mission_given
@@ -36,6 +36,7 @@ Car vArrivalInfernus = Car.Create(#INFERNUS, {Pos3:}2497.2319, 1247.0275, 10.820
 Car.SetHeading(vArrivalInfernus, 270.0)
 Car.ChangeColor(vArrivalInfernus, 0, 0)
 wait 0
+Streaming.MarkModelAsNoLongerNeeded(#INFERNUS)
 Car.MarkAsNoLongerNeeded(vArrivalInfernus)
 
 skip_cutscene_start_internal @Mission_Arrival_SkipIntro
@@ -69,16 +70,21 @@ if and
     not Char.IsInFlyingVehicle($scplayer)
     not Char.IsInAnyBoat($scplayer)
 jf @Mission_Arrival_HQCheck
+Player.SetControl($player1, False)
+Camera.DoFade(2000, Fade.Out)
+wait 2000
+Hud.SwitchWidescreen(True)
+Blip.Remove(blipHQMarker)
+
+Streaming.RequestModel(#BMYMIB)
+Streaming.LoadAllModelsNow()
+Char cNewsAgent = Char.Create(PedType.Special, #BMYMIB, 2595.2483, 2793.6978, 10.8203)
+Char.SetHeading(cNewsAgent, 85.9268)
 
 if Char.IsInAnyCar($scplayer)
 then
     Car vehPlayerCar = Char.GetCarIsUsing($scplayer)
     Car.Fix(vehPlayerCar)
-    Car.SetProofs(vehPlayerCar, True, True, True, True, True)
-    Player.SetControl($player1, False)
-    Camera.DoFade(2000, Fade.Out)
-    wait 2000
-    Hud.SwitchWidescreen(True)
     jump @Mission_Arrival_CarPath
 else jump @Mission_Arrival_OnFootPath
 end
@@ -88,42 +94,46 @@ skip_cutscene_start_internal @Mission_Arrival_CarPath_FinalDriveIn
 Car.SetCoordinates(vehPlayerCar, {Pos3:}2485.9832, 2770.8528, 10.7738)
 Car.SetHeading(vehPlayerCar, 270.0)
 Car.SetProofs(vehPlayerCar, False, False, False, False, False)
-Task.CarDriveToCoord($scplayer, $playerCar, 2493.7676, 2771.2607, 10.3291, 5.0, DriveMode.Accurate, 0, 0)
+Task.CarDriveToCoord($scplayer, vehPlayerCar, 2493.7676, 2771.2607, 10.3291, 5.0, DriveMode.Accurate, 0, 0)
 Camera.SetFixedPosition({Pos3:}2496.0444, 2766.5220, 10.5723, {Rot Pos3:}0.0, 0.0, 0.0)
 Camera.PointAtPoint(2495.3728, 2767.2578, 10.6588, SwitchType.JumpCut)
 wait 1000
 Camera.DoFade(2000, Fade.In)
 wait 3000
+
+// XSM0204 ~y~Guard: ~w~Johnson? Didn't expect you today. --- ELEVENLABS: BILL
 Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
-// XSM0204 ~y~Guard: ~w~Johnson? Didn't expect you today.
-func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0204.mp3", {scmSoundID:}-1, {subID:}"XSM0204", {doAnims:}False, -1, {waitUntilFinished:}True)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0204.mp3", {scmID:}-1, {subID:}"XSM0204", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
 
+// XSM0205 ~y~CJ: ~w~Neither did I. Apparently something's going down?
 Camera.SetFixedPosition({Pos3:}2496.8340, 2771.3616, 11.5209, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}2495.8513, 2771.3833, 11.3368, SwitchType.Jumpcut) 
-// XSM0205 ~y~CJ: ~w~Neither did I. Apparently something's going down?
-func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0205.mp3", {scmSoundID:}-1, {subID:}"XSM0205", {doAnims:}False, -1, {waitUntilFinished:}True)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0205.mp3", {scmID:}-1, {subID:}"XSM0205", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
 
+// XSM0206 ~y~Guard:~w~ Something big. I've been letting agents in all hour.
 Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
-// XSM0206 ~y~Guard:~w~ Something big. I've been letting agents in all hour.
-func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0206.mp3", {scmSoundID:}-1, {subID:}"XSM0206", {doAnims:}False, -1, {waitUntilFinished:}True)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0206.mp3", {scmID:}-1, {subID:}"XSM0206", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+
 // XSM0207 You'd better head on in pronto.
-func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\arrival\XSM0207.mp3", {scmSoundID:}-1, {subID:}"XSM0207", {doAnims:}False, -1, {waitUntilFinished:}True)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0207.mp3", {scmID:}-1, {subID:}"XSM0207", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+
 wait 1000
 $flagProsperoHQGatesLocked = False
-Camera.SetFixedPosition({Pos3:}2512.8057, 2766.4810, 10.0373, 0.0, 0.0, 0.0) 
+Camera.SetFixedPosition({Pos3:}2512.8057, 2766.4810, 10.0373, 0.0, 0.0, 0.0) // Camera: Inside gates, facing out to the road.
 Camera.PointAtPoint({Pos3:}2511.9309, 2766.9207, 10.2409, SwitchType.Jumpcut)
 wait 1000
-Task.CarDriveToCoord($scplayer, $playerCar, 2529.2754, 2778.8267, 10.3386, 10.0, DriveMode.Accurate, 0, 0)
+Task.CarDriveToCoord($scplayer, vehPlayerCar, 2529.2754, 2778.8267, 10.3386, 10.0, DriveMode.Accurate, 0, 0)
 wait 5000
 
 :Mission_Arrival_CarPath_FinalDriveIn
 skip_cutscene_end
+skip_cutscene_start_internal @Mission_Arrival_UnifiedPath
 Camera.DoFade(0, Fade.In)
 Car.SetCoordinates(vehPlayerCar, 2574.1794, 2781.0142, 10.3386)
 Car.SetHeading(vehPlayerCar, 0.0)
-Task.CarDriveToCoord($scplayer, $playerCar, 2574.2756, 2791.1113, 10.3397, 5.0, DriveMode.Accurate, 0, 0)
+Task.CarDriveToCoord($scplayer, vehPlayerCar, 2574.2756, 2791.1113, 10.3397, 5.0, DriveMode.Accurate, 0, 0)
 wait 1000
 Camera.SetFixedPosition({Pos3:}2571.0701, 2786.2444, 10.2688, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}2571.8677, 2786.8335, 10.3983, SwitchType.Jumpcut) 
@@ -133,21 +143,240 @@ Camera.PointAtPoint({Pos3:}2571.8213, 2792.4312, 10.3902, SwitchType.Jumpcut)
 Task.LeaveCar($scplayer, vehPlayerCar)
 repeat
     wait 0
-until not Char.IsDoingAnyImportantTask($scplayer)
+until not Char.IsInCar($scplayer, vehPlayerCar)
 Task.CharSlideToCoord($scplayer, {Pos3:}2572.8162, 2794.8711, 10.8203, {Heading:}270.0, {Stop Radius:}0.1)
-
 jump @Mission_Arrival_UnifiedPath
 
 
 :Mission_Arrival_OnFootPath
+skip_cutscene_start_internal @Mission_Arrival_UnifiedPath
+Char.SetCoordinates($scplayer, {Pos3:}2492.5205, 2770.9375, -100.0)
+Char.SetHeading($scplayer, 310.5888)
+Task.CharSlideToCoordAndPlayAnim($scplayer, {Pos3:}2496.502, 2774.3794, 10.8226, {Heading:}318.7356, {Stop Radius:}0.1, "endchat_03", "ped", 4.0, False, False, False, False, -1)
+Camera.SetFixedPosition({Pos3:}2492.6484, 2774.8501, 10.4374, 0.0, 0.0, 0.0) // Camera: On ground behind CJ facing gate.
+Camera.PointAtPoint({Pos3:}2493.6096, 2775.0781, 10.5927, SwitchType.Jumpcut) 
+Camera.DoFade(2000, Fade.In)
+wait 5000
+
+// XSM0226 ~y~Guard:~w~ Johnson? Interesting set of wheels you've got there.
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) // Camera: Facing guard booth. 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0226.mp3", {scmID:}-1, {subID:}"XSM0226", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+
+// XSM0227 ~y~CJ:~w~ Don't ask... mistakes were made.
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) // Camera: Facing guard booth. 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0227.mp3", {scmID:}-1, {subID:}"XSM0227", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+// XSM0228 ~y~Guard:~w~ I... see. Anyway, can't say I expected you here today.
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) // Camera: Facing guard booth. 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0228.mp3", {scmID:}-1, {subID:}"XSM0228", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+
+// XSM0205 ~y~CJ: ~w~Neither did I. Apparently something's going down?
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) // Camera: Facing guard booth. 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0205.mp3", {scmID:}-1, {subID:}"XSM0205", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+// XSM0206 ~y~Guard:~w~ Something big. I've been letting agents in all hour.
+Camera.SetFixedPosition({Pos3:}2509.7236, 2774.3154, 12.6546, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2508.7656, 2774.5784, 12.5401, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0206.mp3", {scmID:}-1, {subID:}"XSM0206", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+
+// XSM0207 You'd better head on in pronto.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0207.mp3", {scmID:}-1, {subID:}"XSM0207", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+
+wait 1000
+$flagProsperoHQGatesLocked = False
+Camera.SetFixedPosition({Pos3:}2512.8057, 2766.4810, 10.0373, 0.0, 0.0, 0.0) // Camera: Inside gates, facing out to the road.
+Camera.PointAtPoint({Pos3:}2511.9309, 2766.9207, 10.2409, SwitchType.Jumpcut)
+wait 1000
+Task.CharSlideToCoord($scplayer, {Pos3:}2510.9524, 2775.113, 10.8203, {Heading:}272.9885, {Radius:}0.1)
+wait 5000
 jump @Mission_Arrival_UnifiedPath
 
 
 :Mission_Arrival_UnifiedPath
+skip_cutscene_end
+skip_cutscene_start_internal @Mission_Arrival_OrdersChatEnd
+Streaming.RequestAnimation("MISC")
 repeat
-    wait 250
-until Pad.IsKeyPressed(KeyCode.Y)
-return
+    wait 0
+until Streaming.HasAnimationLoaded("MISC")
+Camera.SetFixedPosition({Pos3:}2586.3503, 2790.7810, 10.1781, {Rot. Pos3:}0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2587.0732, 2791.4541, 10.3341, SwitchType.Jumpcut)
+Char.SetCoordinates($scplayer, 2581.9521, 2793.3804, -100.0)
+Char.SetHeading($scplayer, 270.0)
+Task.CharSlideToCoord($scplayer, {Pos3:}2588.0889, 2793.6401, 10.8203, {Heading:}270.0, {Distance:}0.1)
+Task.CharSlideToCoord(cNewsAgent, {Pos3:}2589.9893, 2793.5408, 10.8203, {Heading:}91.7352, {Distance:}0.1)
+wait 5000
+
+// XSM0208 ~y~Agent:~w~ CJ, it's good you're here. //--- ELEVENLABS ERIC
+Camera.SetFixedPosition({Pos3:}2589.2439, 2793.5620, 11.4597, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2590.2424, 2793.5105, 11.4457, SwitchType.Jumpcut) 
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0208.mp3", {scmID:}-1, {subID:}"XSM0208", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0209 ~y~CJ:~w~ Can someone tell me what's going on?
+Camera.SetFixedPosition({Pos3:}2589.2620, 2793.6526, 11.4688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2588.2683, 2793.7336, 11.3912, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0209.mp3", {scmID:}-1, {subID:}"XSM0209", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0210 ~y~Agent:~w~ We've had reports of anomalous entities appearing all over San Andreas.
+Camera.SetFixedPosition({Pos3:}2589.2439, 2793.5620, 11.4597, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2590.2424, 2793.5105, 11.4457, SwitchType.Jumpcut) 
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0210.mp3", {scmID:}-1, {subID:}"XSM0210", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0211 ~y~CJ:~w~ This a joke?
+Camera.SetFixedPosition({Pos3:}2589.2620, 2793.6526, 11.4688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2588.2683, 2793.7336, 11.3912, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0211.mp3", {scmID:}-1, {subID:}"XSM0211", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0212 ~y~Agent:~w~ Wish it was. Your orders are to investigate Mount Chiliad immediately.
+Camera.SetFixedPosition({Pos3:}2589.2439, 2793.5620, 11.4597, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2590.2424, 2793.5105, 11.4457, SwitchType.Jumpcut) 
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0212.mp3", {scmID:}-1, {subID:}"XSM0212", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0213 ~y~CJ:~w~ Investigate for what?
+Camera.SetFixedPosition({Pos3:}2589.2620, 2793.6526, 11.4688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2588.2683, 2793.7336, 11.3912, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0213.mp3", {scmID:}-1, {subID:}"XSM0213", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0214 ~y~Agent:~w~ Any sign of anomalous activity.
+Camera.SetFixedPosition({Pos3:}2589.2439, 2793.5620, 11.4597, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2590.2424, 2793.5105, 11.4457, SwitchType.Jumpcut) 
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0214.mp3", {scmID:}-1, {subID:}"XSM0214", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+//XSM0215 20 minutes ago we received a distress call from the cabin up there.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0215.mp3", {scmID:}-1, {subID:}"XSM0215", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+//XSM0216 Their final words mentioned a 'yeti'...
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0216.mp3", {scmID:}-1, {subID:}"XSM0216", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+//XSM0217 Then the line went dead.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0217.mp3", {scmID:}-1, {subID:}"XSM0217", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0218 ~y~CJ:~w~ Sounds like a hoax to me.
+Camera.SetFixedPosition({Pos3:}2589.2620, 2793.6526, 11.4688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2588.2683, 2793.7336, 11.3912, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0218.mp3", {scmID:}-1, {subID:}"XSM0218", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0219 ~y~Agent:~w~ The Custodian disagrees. Gear up and head out as soon as possible.
+Camera.SetFixedPosition({Pos3:}2589.2439, 2793.5620, 11.4597, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2590.2424, 2793.5105, 11.4457, SwitchType.Jumpcut) 
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0219.mp3", {scmID:}-1, {subID:}"XSM0219", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+
+//XSM0220 ~y~CJ:~w~ Where do I start?
+Camera.SetFixedPosition({Pos3:}2589.2620, 2793.6526, 11.4688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2588.2683, 2793.7336, 11.3912, SwitchType.Jumpcut)
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0220.mp3", {scmID:}-1, {subID:}"XSM0220", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+
+// XSM0221 ~y~Agent:~w~ The Custodian wants the cabin searched as a priority. Check for any evidence or signs of survivors.
+Camera.SetFixedPosition({Pos3:}2589.2439, 2793.5620, 11.4597, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2590.2424, 2793.5105, 11.4457, SwitchType.Jumpcut) 
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0221.mp3", {scmID:}-1, {subID:}"XSM0221", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+// XSM0222 Help them if you can, but the entity is your primary objective.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0222.mp3", {scmID:}-1, {subID:}"XSM0222", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+// XSM0223 Good luck CJ.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0223.mp3", {scmID:}-1, {subID:}"XSM0223", {doAnims:}True, cNewsAgent, {waitToFinish:}True, {extraWaitTime:}500)
+
+Task.CharSlideToCoord(cNewsAgent, 2595.4448, 2790.4368, 10.8203, 235.734, 0.1)
+wait 1000
+
+// XSM0224 ~y~CJ:~w~ Climbing a mountain in the cold and dark...
+Char.Delete(cNewsAgent)
+Task.PlayAnim({Char:} $scplayer, {Anim Name:}"plyr_shkhead", {Anim File:}"misc", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+Camera.SetFixedPosition({Pos3:}2589.2620, 2793.6526, 11.4688, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2588.2683, 2793.7336, 11.3912, SwitchType.Jumpcut)
+wait 2000
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0224.mp3", {scmID:}-1, {subID:}"XSM0224", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+// XSM0225 What could go wrong?
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0225.mp3", {scmID:}-1, {subID:}"XSM0225", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+wait 1000
+
+// Pan to Prospero logo
+Camera.SetVectorMove({From Pos3:}2584.5508, 2791.9656, 11.5032, {To Pos3:}2584.5508, 2791.9656, 11.5032, 5000, False)
+Camera.SetVectorTrack({From Pos3:}2585.5439, 2792.0149, 11.3975, {To Pos3:}2585.4265, 2791.7917, 11.9536, 5000, False)
+wait 5000
+Camera.SetFixedPosition({Pos3:}2584.5508, 2791.9656, 11.5032, {Rot. Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint(2585.4265, 2791.7917, 11.9536, SwitchType.JumpCut)
+Camera.DoFade(3000, Fade.Out)
+wait 5000
+
+:Mission_Arrival_OrdersChatEnd
+skip_cutscene_end
+Camera.DoFade(0, Fade.Out)
+Char.ClearTasksImmediately($scplayer)
+Char.SetCoordinates($scplayer, {Pos3:}2588.0889, 2793.6401, -100.0)
+Char.SetHeading($scplayer, 270.0)
+if Char.DoesExist(cNewsAgent)
+then Char.Delete(cNewsAgent)
+end
+
+skip_cutscene_start_internal @Mission_Arrival_HQExtTourSkip
+// Distant HQ shot
+Camera.SetFixedPosition({Pos3:}2476.4109, 2726.3413, 31.8636, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2477.2285, 2726.8511, 31.5960, SwitchType.Jumpcut)
+Camera.DoFade(2000, Fade.In)
+wait 2500
+Text.PrintString("XSM0229", 5000) // XSM0229 Welcome to ~b~Prospero H.Q.~w~, home to San Andreas' leading paranatural investigation organisation.
+wait 5000
+Text.PrintString("XSM0230", 5000) // XSM0230 This is your central base of operations.
+wait 5000
+Camera.SetFixedPosition({Pos3:}2576.0359, 2785.4612, 13.8231, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}2577.0078, 2785.6775, 13.7298, SwitchType.Interpolation) 
+Text.PrintString("XSM0231", 5000) // XSM0231 Head inside to continue.
+wait 5000
+
+:Mission_Arrival_HQExtTourSkip
+skip_cutscene_end
+Player.SetControl($player1, True)
+func_restoreCamera()
+repeat
+    wait 0
+    Char.GetAreaVisible($scplayer, $playerArea)
+until $playerArea == 3
+
+Camera.DoFade(0, Fade.Out)
+Player.SetControl($player1, False)
+wait 2000
+
+skip_cutscene_start_internal @Mission_Arrival_HQIntTourSkip
+Task.CharSlideToCoord($scplayer, 378.7764, 173.7756, 1008.3828, 90.0, 0.1)
+Camera.DoFade(2000, Fade.In)
+Camera.SetVectorMove({From Pos3:}390.1941, 176.7417, 1008.2476, {To Pos3:}370.0411, 173.8476, 1009.2340, 10000, False)
+Camera.SetVectorTrack({From Pos3:}389.1949, 176.7005, 1008.2509, {To Pos3:}369.0413, 173.8660, 1009.2449, 10000, False)
+wait 3000
+Text.PrintString("XSM0232", 6000) // XSM0232 Prospero H.Q. offers everything you need for your missions.
+wait 7000
+Camera.SetFixedPosition({Pos3:}370.0411, 173.8476, 1009.2340, {Rot. Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}369.0413, 173.8660, 1009.2449, SwitchType.JumpCut)
+
+// Front Desk
+Camera.SetFixedPosition({Pos3:}364.4323, 173.7254, 1009.1994, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}363.4377, 173.7365, 1009.0966, SwitchType.JumpCut) 
+Text.PrintString("XSM0233", 6000) // XSM0233 ~y~Services~w~ and ~y~hints~w~ are offered at the front desk.
+wait 7000
+
+// Weapons room
+Camera.SetFixedPosition({Pos3:}364.3035, 191.5955, 1009.5892, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}365.1177, 192.1213, 1009.3428, SwitchType.Interpolation) 
+Text.PrintString("XSM0234", 6000) // XSM0234 ~y~Weapons~w~ can be purchased from the armoury.
+wait 7000
+
+// First Aid
+Camera.SetFixedPosition({Pos3:}349.6431, 167.4555, 1021.5146, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}350.2698, 166.7251, 1021.2430, SwitchType.Interpolation) 
+Text.PrintString("XSM0236", 6000) // XSM0236 ~y~Healthcare~w~ can be obtained in the clinic.
+wait 7000
+
+// Document Repository
+Camera.SetFixedPosition({Pos3:}364.6816, 188.2681, 1021.7971, 0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}363.9405, 188.9074, 1021.5920, SwitchType.Interpolation) 
+Text.PrintString("XSM0235", 6000) // XSM0235 ~y~Briefings~w~ and ~y~lore~w~ can be found in the Document Repository.
+wait 7000
+
+
+:Mission_Arrival_HQIntTourSkip
+skip_cutscene_end
+Text.ClearPrints()
+
 
 
 //------------------------------------------------------------------------------------------------------
@@ -163,9 +392,13 @@ return
 
 
 
-// Mission cleanup.
+//------------------------------------------------------------------------------------------------------
+//      Mission Cleanup
+//      - Cleanup actions performed however the mission ends.
+//------------------------------------------------------------------------------------------------------
 :Mission_Arrival_Cleanup
-
+Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+Streaming.RemoveAnimation("MISC")
 $ONMISSION = False
 Mission.Finish()
 return

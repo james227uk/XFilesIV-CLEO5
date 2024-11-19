@@ -10,7 +10,7 @@
 //==========================================================================================================================================================================================================
 :Mission_Initial_Header
 script_name 'initial'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Initial] [INFO] Loaded mission 'initial'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|Initial] [INFO] Loaded mission 'initial'.")
 
 
 int iRandomSceneChoice
@@ -23,6 +23,8 @@ Char custodianSceneHeliPilot
 Char custodianSceneCustodian
 Char custodianSceneCarter
 Char custodianSceneDavis
+Car CJSceneCar
+Char sarahSceneSarah
 
 //------------------------------------------------------------------------------------------------------
 //      Main Mission Body
@@ -40,10 +42,12 @@ Hud.SwitchWidescreen(True)
 Camera.DoFade({Duration:}0, {Direction:}Fade.In)
 Camera.SetFixedPosition(2488.501709, 2754.590332, 19.302280, 0.0, 0.0, 0.0)
 Camera.PointAtPoint(2498.143799, 2754.322021, 19.368336, SwitchType.JumpCut)
+Player.SetControl($player1, False)
+func_giveAgentOutfit()
 
 // Play the main theme.
-AudioStream.Load("root:\modloader\a X-Files IV\audio\soundtrack\maintheme.mp3", mainTheme)
-while not AudioStream.Load("root:\modloader\a X-Files IV\audio\soundtrack\maintheme.mp3", mainTheme)
+AudioStream.Load("modloader\a X-Files IV\audio\soundtrack\maintheme.mp3", mainTheme)
+while not AudioStream.Load("modloader\a X-Files IV\audio\soundtrack\maintheme.mp3", mainTheme)
     wait 0
 end
 AudioStream.SetState(mainTheme, AudioStreamAction.Play)
@@ -68,12 +72,12 @@ while true
         switch iMainMenuChoice
             case 0 // Storymode
                 $flagGamemodeChoice = gmStorymode
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Initial] [INFO] Selected gamemode 'Storymode'.")
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|INITIAL] [INFO] Selected gamemode 'Storymode'.")
                 break
             
             case 1 // Freemode
                 $flagGamemodeChoice = gmFreemode
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Initial] [INFO] Selected gamemode 'Freemode'.")
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|INITIAL] [INFO] Selected gamemode 'Freemode'.")
                 break
         end
         //break
@@ -83,17 +87,16 @@ Menu.Delete(mainMenu)
 
 // Now play out the scene as the screen fades to black.
 switch iRandomSceneChoice
-    // Custodian on helipad
-    case 0
+    case 0 // Custodian on helipad
         skip_cutscene_start_internal @Mission_Initial_Skip_Custodian
         Char.WarpIntoCarAsPassenger(custodianSceneCustodian, custodianSceneHeli, SeatId.RearRight)
         Char.WarpIntoCarAsPassenger(custodianSceneCarter, custodianSceneHeli, SeatId.FrontRight)
         Char.WarpIntoCarAsPassenger(custodianSceneDavis, custodianSceneHeli, SeatId.RearLeft)
         
-        Camera.SetFixedPosition(2634.081299, 2696.565430, 32.328850, 0.0, 0.0, 0.0)
+        Camera.SetFixedPosition({Pos3:}2634.081299, 2696.565430, 32.328850, 0.0, 0.0, 0.0)
         Camera.PointAtCar(custodianSceneHeli, CameraMode.Fixed, SwitchType.JumpCut)
         Car.FreezePosition(custodianSceneHeli, False)
-        Heli.GotoCoords(custodianSceneHeli, 2714.5808, 2629.2925, 50.0171, 10.0, 40.0)
+        Heli.GotoCoords(custodianSceneHeli, {Pos3:}2714.5808, 2629.2925, 50.0171, {Altitude:}10.0, 40.0)
         Camera.DoFade(5000, Fade.Out)
         gosub @Mission_Initial_SilenceTheme
         wait 7000        
@@ -103,9 +106,38 @@ switch iRandomSceneChoice
         gosub @Mission_Initial_Skip_Universal
         gosub @Mission_Initial_Cleanup_Custodian      
     
-    case 1
+    case 1 // CJ in car
+        skip_cutscene_start_internal @Mission_Initial_Skip_CJ
+        Car.SetEngineOn(CJSceneCar, True)
+        Task.CarDriveToCoord($scplayer, CJSceneCar, {Pos3:}2493.7676, 2771.2607, 10.3291, {Speed:}20.0, DriveMode.Accurate, 0, 0)
+        Camera.SetFixedPosition({Pos3:}2559.7412, 2769.2024, 10.2513, 0.0, 0.0, 0.0)
+        Camera.PointAtCar(CJSceneCar, CameraMode.Fixed, SwitchType.JumpCut)
+        Camera.DoFade(5000, Fade.Out)
+        gosub @Mission_Initial_SilenceTheme
+        wait 7000
+        
+        :Mission_Initial_Skip_CJ
+        skip_cutscene_end
+        gosub @Mission_Initial_Skip_Universal
+        gosub @Mission_Initial_Cleanup_CJ
     
-    case 2
+    case 2 // Sarah on roof
+        skip_cutscene_start_internal @Mission_Initial_Skip_Sarah
+        Camera.SetVectorMove({From Pos3:}2537.9917, 2803.1848, 27.5767, {To Pos3:}2535.6074, 2801.7209, 26.4563, {Duration:}5000, {Ease:}False)
+        Camera.SetVectorTrack({From Pos3:}2538.8501, 2803.6592, 27.7719, {To Pos3:}2536.4258, 2802.2051, 26.7660, {Duration:}5000, {Ease:}False)
+        Camera.DoFade(5000, Fade.Out)
+        gosub @Mission_Initial_SilenceTheme
+        wait 2000
+        Task.ShootAtCoord(sarahSceneSarah, {Pos3:}2503.989, 2756.4485, 10.8203, -1)
+        wait 3000
+        Camera.SetFixedPosition({Pos3:}2535.6074, 2801.7209, 26.4563, 0.0, 0.0, 0.0) 
+        Camera.PointAtPoint({Pos3:}2538.8501, 2803.6592, 27.7719, SwitchType.Jumpcut)
+        wait 2000
+        
+        :Mission_Initial_Skip_Sarah
+        skip_cutscene_end
+        gosub @Mission_Initial_Skip_Universal
+        gosub @Mission_Initial_Cleanup_Sarah
     
     case 3
     
@@ -117,7 +149,7 @@ jump @Mission_Initial_Cleanup_Universal
 
 :Mission_Initial_SceneSelecter
 // Randomly select a scene.
-Math.RandomIntInRange(0, 0, iRandomSceneChoice)
+Math.RandomIntInRange(0, 2, iRandomSceneChoice)
 
 switch iRandomSceneChoice
     case 0 // Custodian on helipad      
@@ -127,34 +159,50 @@ switch iRandomSceneChoice
         Streaming.LoadSpecialCharacter(1, "WUZIMU")
         Streaming.LoadSpecialCharacter(2, "CARTER")
         Streaming.LoadSpecialCharacter(3, "DAVIS")
-        Streaming.LoadAllModelsNow()
-        
-        Char.SetCoordinates($scplayer, 2606.1252, 2726.7412, 23.8222)
-        
-        Car.Create(#MAVERICK, 2618.4946, 2721.7166, 36.5386, custodianSceneHeli)
+        Streaming.LoadAllModelsNow()        
+        Char.SetCoordinates($scplayer, {Pos3:}2606.1252, 2726.7412, 23.8222)        
+        Car.Create(#MAVERICK, {Pos3:}2618.4946, 2721.7166, 36.5386, custodianSceneHeli)
         Car.SetHeading(custodianSceneHeli, 270.0)
         Heli.SetBladesFullSpeed(custodianSceneHeli)
-        Car.FreezePosition(custodianSceneHeli, True)
-        
+        Car.FreezePosition(custodianSceneHeli, True)        
         Char.CreateInsideCar(custodianSceneHeli, PedType.Special, #BMYMIB, custodianSceneHeliPilot)
-        Char.Create(PedType.Special, #SPECIAL01, 2618.1626, 2723.8647, -100.0, custodianSceneCustodian)
-        Char.Create(PedType.Special, #SPECIAL02, 2618.9534, 2724.5115, -100.0, custodianSceneCarter)
-        Char.Create(PedType.Special, #SPECIAL03, 2617.0742, 2724.3591, -100.0, custodianSceneDavis)
+        Char.Create(PedType.Special, #SPECIAL01, {Pos3:}2618.1626, 2723.8647, -100.0, custodianSceneCustodian)
+        Char.Create(PedType.Special, #SPECIAL02, {Pos3:}2618.9534, 2724.5115, -100.0, custodianSceneCarter)
+        Char.Create(PedType.Special, #SPECIAL03, {Pos3:}2617.0742, 2724.3591, -100.0, custodianSceneDavis)
         Char.SetHeading(custodianSceneCustodian, 358.7)
         Char.SetHeading(custodianSceneCarter, 356.7)
         Char.SetHeading(custodianSceneDavis, 0.0)
         Char.GiveWeapon(custodianSceneCarter, WeaponType.DesertEagle, 1)
         Char.GiveWeapon(custodianSceneDavis, WeaponType.DesertEagle, 1)
-        Task.AimGunAtCoord(custodianSceneCarter, 2616.405029, 2727.775635, 36.538643, -1)
-        Task.AimGunAtCoord(custodianSceneDavis, 2616.405029, 2727.775635, 36.538643, -1)
-
+        Task.AimGunAtCoord(custodianSceneCarter, {Pos3:}2616.405029, 2727.775635, 36.538643, -1)
+        Task.AimGunAtCoord(custodianSceneDavis, {Pos3:}2616.405029, 2727.775635, 36.538643, -1)
         // Facing The Custodian and the heli.
-        Camera.SetFixedPosition(2616.405029, 2727.775635, 36.538643, 0.0, 0.0, 0.0)
-        Camera.PointAtPoint(2820.191650, 2213.777588, 114.439705, SwitchType.JumpCut)      
-
-    case 1
-    
-    case 2
+        Camera.SetFixedPosition({Pos3:}2616.405029, 2727.775635, 36.538643, {Rot. Pos3:}0.0, 0.0, 0.0)
+        Camera.PointAtPoint({Pos3:}2820.191650, 2213.777588, 114.439705, SwitchType.JumpCut)      
+        
+    case 1 // CJ in car
+        Streaming.RequestModel(#INFERNUS)
+        Streaming.LoadAllModelsNow()       
+        Car.CustomPlateForNextCar(#INFERNUS, "XFILES4")
+        CJSceneCar = Car.Create(#INFERNUS, {Pos3:}2574.6357, 2791.7917, 10.8203)
+        Car.SetHeading(CJSceneCar, 180.0)
+        Car.SetEngineOn(CJSceneCar, False)
+        Car.ChangeColor(CJSceneCar, 0, 0)
+        Char.WarpIntoCar($scplayer, CJSceneCar) 
+        Audio.SetRadioChannel(RadioChannel.None)       
+        Camera.SetFixedPosition({Pos3:}2574.6807, 2788.3682, 11.3509, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Close-up facing windshield.
+        Camera.PointAtPoint({Pos3:}2574.6846, 2789.3538, 11.1819, SwitchType.Jumpcut) 
+        
+    case 2 // Sarah on roof
+        Streaming.RequestModel(#WFYST)
+        Streaming.RequestModel(#SNIPER)
+        Streaming.LoadAllModelsNow()
+        sarahSceneSarah = Char.Create(PedType.Special, #WFYST, {Pos3:}2540.1584, 2804.3604, -100.0)
+        Char.SetHeading(sarahSceneSarah, 135.7705)
+        Char.GiveWeapon(sarahSceneSarah, WeapoNType.Sniper, 1)
+        Task.AimGunAtCoord(sarahSceneSarah, {Pos3:}2503.989, 2756.4485, 10.8203, -1)   
+        Camera.SetFixedPosition({Pos3:}2537.9917, 2803.1848, 27.5767, 0.0, 0.0, 0.0) // Camera: Front facing Sarah aiming. 
+        Camera.PointAtPoint({Pos3:}2538.8501, 2803.6592, 27.7719, SwitchType.Jumpcut)
      
     case 3
      
@@ -170,26 +218,30 @@ $flagMissionInitialCompleted = True
 $ONMISSION = False
 terminate_this_script
 
-
-// Cleanup code unique to The Custodian's scene.
+// Cleanup code specific to each scene
 :Mission_Initial_Cleanup_Custodian
 Char.Delete(custodianSceneCustodian)
 Char.Delete(custodianSceneCarter)
 Char.Delete(custodianSceneDavis)
 Char.Delete(custodianSceneHeliPilot)
 Car.Delete(custodianSceneHeli)
-//Char.MarkAsNoLongerNeeded(custodianSceneCustodian)
-//Char.MarkAsNoLongerNeeded(custodianSceneCarter)
-//Char.MarkAsNoLongerNeeded(custodianSceneDavis)
-//Char.MarkAsNoLongerNeeded(custodianSceneHeliPilot)
-//Car.MarkAsNoLongerNeeded(custodianSceneHeli)
 Streaming.MarkModelAsNoLongerNeeded(#MAVERICK)
 Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
 Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
-//Streaming.UnloadSpecialCharacter(1)
-//Streaming.UnloadSpecialCharacter(2)
-//Streaming.UnloadSpecialCharacter(3) 
 return
+
+
+:Mission_Initial_Cleanup_CJ
+Char.RemoveFromCarMaintainPosition($scplayer, CJSceneCar)
+wait 0
+Car.Delete(CJSceneCar)
+Streaming.MarkModelAsNoLongerNeeded(#INFERNUS)
+
+
+:Mission_Initial_Cleanup_Sarah
+Char.Delete(sarahSceneSarah)
+Streaming.MarkModelAsNoLongerNeeded(#WFYST)
+Streaming.MarkModelAsNoLongerNeeded(#SNIPER)
 
 
 // A de-facto function for all scenes to fade out the main theme.

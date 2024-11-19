@@ -1,12 +1,12 @@
-//==========================================================================================================================================================================================================
-//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
-//==========================================================================================================================================================================================================
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
 // Name:        Interior Agents
 // Description: This script generates random agents within the Prospero H.Q. interior.
 // Path:        main\externals\External-HQAgentsInterior.txt
-// Trigger:     Upon entering the Prospero H.Q. interior.
-//==========================================================================================================================================================================================================
+// Trigger:     Upon entering the Prospero H.Q. interior. Called by HQ Master Loader.
+//========================================================================================================================================================================================================
 {$USE CLEO}
 {$USE NewOpcodes}
 script_name 'HQAGTIS'
@@ -14,13 +14,14 @@ Float fRandomX, fRandomY, fRandomZ
 int iRandomModelFlip = 165
 int iArrayAgentsIndex = 0
 var cArrayAgents: array 25 of Char
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTIS] [INFO] Script started.")
 
 Streaming.RequestModel(#BMYMIB)
 Streaming.RequestModel(#WMOMIB)
+Streaming.RequestModel(#DESERT_EAGLE)
 Streaming.LoadAllModelsNow()
 
 repeat
-    wait 0
     repeat
         wait 0
         fRandomX = Math.RandomFloatInRange(379.1938, 320.3315)
@@ -39,26 +40,50 @@ repeat
     Char.Create(PedType.Gang9, iRandomModelFlip, fRandomX, fRandomY, fRandomZ, cArrayAgents[iArrayAgentsIndex])
     fRandomZ = Math.RandomFloatInRange(0.0, 360.0)
     Char.SetHeading(cArrayAgents[iArrayAgentsIndex], fRandomZ)
+    Char.SetDecisionMaker(cArrayAgents[iArrayAgentsIndex], 4)
     Task.WanderStandard(cArrayAgents[iArrayAgentsIndex])
+    Char.GiveWeapon(cArrayAgents[iArrayAgentsIndex], WeaponType.DesertEagle, 200)
+    Char.SetCurrentWeapon(cArrayAgents[iArrayAgentsIndex], WeaponType.Unarmed)
     if iRandomModelFlip == 165
     then iRandomModelFlip = 166
     else iRandomModelFlip = 165
     end       
     iArrayAgentsIndex += 1    
 until iArrayAgentsIndex == 25
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Interior agents populated.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTIS] [INFO] Interior agents populated.")
 Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
 Streaming.MarkModelAsNoLongerNeeded(#WMOMIB)
 iArrayAgentsIndex = 0
 
+
 repeat
-    wait 1000
-until not $playerArea == 3
+    wait 0
+    if $flagProsperoHostile == 1
+    then
+        iArrayAgentsIndex = 0
+        repeat
+            Char.SetCurrentWeapon(cArrayAgents[iArrayAgentsIndex], WeaponType.DesertEagle)
+            Task.KillCharOnFoot(cArrayAgents[iArrayAgentsIndex], $scplayer)           
+            iArrayAgentsIndex += 1
+        until iArrayAgentsIndex == 25
+        
+        repeat
+            wait 0
+        until not $playerArea == 3
+        Break
+    end
+    
+    if not $playerArea == 3
+    then Break
+    end
+until False
+
+iArrayAgentsIndex = 0
 repeat
     Char.ClearTasksImmediately(cArrayAgents[iArrayAgentsIndex])
     Char.Delete(cArrayAgents[iArrayAgentsIndex])
     Char.MarkAsNoLongerNeeded(cArrayAgents[iArrayAgentsIndex])
     iArrayAgentsIndex += 1
 until iArrayAgentsIndex == 25
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] No longer in area 3. Cleared all interior agents from memory.")   
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTIS] [INFO] Script ending (Reason: Player left area 3).")   
 terminate_this_script

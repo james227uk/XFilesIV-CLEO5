@@ -8,7 +8,7 @@ XSM0001 X-Files IV
 XSM0002 Select Game Mode
 XSM0003 Storymode
 XSM0004 Freemode
-XSM0005 Fails: ~1~, Pass: ~1~
+XSM0005 Fails: ~1~
 
 # Storymode | Mission 1 | Introduction
 # ----------------------------
@@ -26,7 +26,129 @@ XSM0108 ~y~CJ: ~w~Well, so much for my day off...
 XSM0201 Arrival
 XSM0202 Youve been called to ~y~Prospero H.Q.~w~
 XSM0203 Better head there immediately.
-XSM0204 ~y~Guard: ~w~Johnson? Didn't expect you today.
-XSM0205 ~y~CJ: ~w~Neither did I. Apparently something's going down?
+XSM0204 ~y~Guard:~w~ Johnson? Didn't expect you today.
+XSM0205 ~y~CJ:~w~ Neither did I. Apparently something's going down?
 XSM0206 ~y~Guard:~w~ Something big. I've been letting agents in all hour.
 XSM0207 You'd better head on in pronto.
+XSM0208 ~y~Agent:~w~ CJ, it's good you're here.
+XSM0209 ~y~CJ:~w~ Can someone tell me what's going on?
+XSM0210 ~y~Agent:~w~ We've had reports of anomalous entities appearing all over San Andreas.
+XSM0211 ~y~CJ:~w~ This a joke?
+XSM0212 ~y~Agent:~w~ Wish it was. Your orders are to investigate Mount Chiliad immediately.
+XSM0213 ~y~CJ:~w~ Investigate for what?
+XSM0214 ~y~Agent:~w~ Any sign of anomalous activity.
+XSM0215 20 minutes ago we received a distress call from the cabin up there.
+XSM0216 Their final words mentioned a 'yeti'...
+XSM0217 Then the line went dead.
+XSM0218 ~y~CJ:~w~ Sounds like a hoax to me.
+XSM0219 ~y~Agent:~w~ The Custodian disagrees. Gear up and head out as soon as possible.
+XSM0220 ~y~CJ:~w~ Where do I start?
+XSM0221 ~y~Agent:~w~ The Custodian wants the cabin searched as a priority. Check for any evidence or signs of survivors.
+XSM0222 Help them if you can, but the entity is your primary objective.
+XSM0223 Good luck CJ.
+XSM0224 ~y~CJ:~w~ Climbing a mountain in the cold and dark...
+XSM0225 What could go wrong?
+XSM0226 ~y~Guard:~w~ Johnson? Interesting set of wheels you've got there.
+XSM0227 ~y~CJ:~w~ Don't ask... mistakes were made.
+XSM0228 ~y~Guard:~w~ I... see. Anyway, can't say I expected you here today.
+XSM0229 Welcome to ~b~Prospero H.Q.~w~, home to San Andreas' leading paranatural investigation organisation.
+XSM0230 This is your central base of operations.
+XSM0231 Head inside to continue.
+XSM0232 Prospero H.Q. offers everything you need for your missions.
+XSM0233 ~y~Services~w~ and ~y~hints~w~ are offered at the front desk.
+XSM0234 ~y~Weapons~w~ can be purchased from the armoury.
+XSM0235 ~y~Briefings~w~ and ~y~lore~w~ can be found in the Document Repository.
+XSM0236 ~y~Healthcare~w~ can be obtained in the clinic.
+
+# Universal | External | HQ Weapons Vendor
+# ----------------------------
+XWEP000 Price
+XWEP001 Free
+XWEP002 Your Jetpack is located outside the HQ main doors!
+XWEP003 You don't have enough money!
+XWEP004 Armour repaired for free!
+
+XWEP101 Armoury
+XWEP102 Categories
+XWEP103 Pistols
+XWEP104 SMGs
+XWEP105 Rifles
+XWEP106 Shotguns
+XWEP107 Heavy Weapons
+XWEP108 Projectiles
+XWEP109 Melee
+XWEP110 Gadgets
+
+XWEP201 M1911A1
+XWEP202 The venerable Colt M1911A1. Lightweight and fast firing.
+XWEP203 M1911A1 (Silenced)
+XWEP204 The venerable Colt M1911A1, this time with attached suppressor.
+XWEP205 Desert Eagle
+XWEP206 With incredible stopping power, the Desert Eagle is the pistol of choice for the sophisticated Agent.
+
+XWEP301 TEC-9
+XWEP302 Cheap, but effective and fast firing.
+XWEP303 Micro Uzi
+XWEP304 A sizeable punch in a not-so-sizeable package. Pack plenty of ammo.
+XWEP305 MP5A3
+XWEP306 The trusty MP5. Impressive fire rate, accuracy, and stopping power.
+
+XWEP401 AK-47 (Prospero)
+XWEP402 Prospero's own custom version of the well-known AK47, combining parts from many different AK models to create a cheap but effective workhorse rifle.
+XWEP403 Colt Model 733
+XWEP404 The assault rifle of choice for Prospero agents.
+XWEP405 Marlin Model 336
+XWEP406 Level-action rifle typically used b hunters. Packs a punch, just don't miss.
+XWEP407 Remington Model 700 (Scoped)
+XWEP408 Remington Model 700 outfitted with a high zoom scope for long distance engagements.
+
+XWEP501 Ithaca 37 Shotgun
+XWEP502 Pump-action shotgun. Fairly powerful, but inaccurate at anything other than the closest ranges.
+XWEP503 Colt Model 1883 Hammerless (Sawn-off)
+XWEP504 Small, powerful, and easy to wield.
+XWEP505 SPAS-12
+XWEP506 Semi-automatic, with high stopping power, and a good fire rate.
+
+XWEP601 RPG-7
+XWEP602 It blows stuff up. Use it in close quarters and it'll blow you up too. 
+XWEP603 SA-7 Grail
+XWEP604 Man-portable guided missile launcher, capable of locking onto the heat signatures of vehicles.
+XWEP605 Flamethrower
+XWEP606 Give a myth a fire, it'll be warm for the rest of the night. Light a myth on fire, it'll be warm for the rest of it's life.
+XWEP607 M134 Minigun
+XWEP608 Jokingly referred to as the 'Cheese Grater', the M134 Minigun pokes even the toughest myth full of a million holes in seconds with it's incredibly high fire rate.
+
+XWEP701 M67 Grenade
+XWEP702 Throw the grenade, not the pin. And think twice before throwing one up hill.
+XWEP703 Satchel Charge
+XWEP704 Throwable bombs that can be manually detonated at any time. Coated in a sticky subtance that can adhere to almost everything... including myths.
+XWEP705 Molotov Cocktail
+XWEP706 For when you DO want to set the world on fire.
+XWEP707 M7 CS Gas Grenade
+XWEP708 Typically used for riot control, this M7 grenade is filled with CS gas. Untested against myths.
+
+XWEP801 Brass Knuckles
+XWEP802 For when you absolutely have to slap a myth in the face with your bare hands.
+XWEP803 PR24 Control Device Baton
+XWEP804 Standard issue melee device used by law enforcement agencies. 
+XWEP805 SOG Seal Pup
+XWEP806 Small, sharp, and deadly.
+XWEP807 Baseball Bat
+XWEP808 A classic sports item. Neither glove nor ball included.
+XWEP809 Katana
+XWEP810 Incredibly sharp, handle with care.
+XWEP811 Chainsaw
+XWEP812 For when you have to fight fire with fire.
+
+XWEP901 Armour
+XWEP902 Heavy body armour. You need protection, everybody does.
+XWEP903 Photo Camera
+XWEP904 There's no guarantee the myths will yell 'cheese', but it's worth a shot.
+XWEP905 Night Vision Goggles
+XWEP906 If the myths can see in the dark, why shouldn't you?
+XWEP907 Thermal Goggles
+XWEP908 You can't shoot what you can't see- Oh wait. You can see it.
+XWEP909 Parachute
+XWEP910 Leaping out of a plane has never felt so safe. Warranty not included.
+XWEP911 X-07 Jetpack
+XWEP912 Fresh out of the Prospero labs, utilising ~r~REDACTED~w~ to enable aerial propulsion. Use with care.

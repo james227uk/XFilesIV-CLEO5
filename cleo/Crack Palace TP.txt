@@ -1,0 +1,25 @@
+{$CLEO .cs}
+
+script_name 'CRACKPL'
+
+:1
+wait 0
+if Pad.TestCheat("CRACK")
+jf @1
+Streaming.SetAreaVisible(2)
+Char.SetAreaVisible($scplayer, 2)
+Char.SetCoordinates($scplayer, 2567.8, -1292.1, 1037.59)
+Streaming.RequestCollision(2567.8, -1292.1)
+Streaming.LoadAllModelsNow()
+wait 0
+
+// put on loaded ground
+Char.SetCoordinates($scplayer, 2567.8, -1292.1, 1037.59)
+
+
+//Player is already at the waypoint
+Char.GetCoordinates($scplayer, 0@, 1@, 2@)
+//We're loading the scene
+Streaming.LoadScene(0@, 1@, 2@)
+Streaming.LoadAllModelsNow()
+terminate_this_custom_script

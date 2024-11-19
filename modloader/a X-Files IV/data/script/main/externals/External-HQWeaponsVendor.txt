@@ -1,0 +1,801 @@
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
+// Name:        HQ Weapons Vendor
+// Description: This script contains the Weapons Vendor menu.
+// Path:        main\externals\External-CameraHelper.txt
+// Trigger:     Upon pressing activation buttons.
+//========================================================================================================================================================================================================
+{$USE CLEO}
+{$USE CLEO+}
+{$USE NEWOPCODES}
+script_name 'HQWPNVS'
+Menu activeMenu
+Int iMenuChoice
+Int iFirstRun = 1
+Int iMenuHoverOld = 0
+Int iMenuHover = 0
+Char cWeaponsVendor
+$flagWeaponsVendorMenuOpen = True
+Object $objTableGun
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQWPNVS] [INFO] Script started.")
+
+Streaming.RequestModel(#BMYMIB)
+repeat
+    wait 0
+until Streaming.HasModelLoaded(#BMYMIB)
+Char.Create(PedType.Special, #BMYMIB, 364.726, 221.4466, 1018.8, cWeaponsVendor)
+Char.SetAreaVisible(cWeaponsVendor, 3)
+Char.SetHeading(cWeaponsVendor, 180.0)
+Char.ShutUp(cWeaponsVendor, True)
+Char.SetHealth(cWeaponsVendor, 99999)
+Char.SetProofs(cWeaponsVendor, True, True, True, True, True)
+Char.SetStayInSamePlace(cWeaponsVendor, True)
+Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+
+while true
+    wait 0
+    if Char.LocateAnyMeans3D($scplayer, {Pos3:}364.6719, 219.1381, 1018.8, {Radius Pos3:}1.0, 1.0, 1.0, {Draw Sphere:}True)
+    then
+        Player.SetControl($player1, False)
+        Task.TurnCharToFaceChar($scplayer, cWeaponsVendor)
+        Task.TurnCharToFaceChar(cWeaponsVendor, $scplayer)
+        gosub @External_HQWeaponsVendor_MainMenu
+        repeat
+            wait 0
+            if and
+                $flagWeaponsVendorMenuOpen == False
+                not Char.LocateAnyMeans3D($scplayer, {Pos3:}364.6719, 219.1381, 1018.8, {Radius Pos3:}3.0, 3.0, 3.0, {Draw Sphere:}False)
+            then
+                Break
+            end
+        until False
+    end
+    
+    if not $playerArea == 3
+    then    
+        Char.Delete(cWeaponsVendor)
+        Char.MarkAsNoLongerNeeded(cWeaponsVendor)
+        Break
+    end  
+end
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQWPNVS] [INFO] Script ending (Reason: Player left area 3).")
+terminate_this_script
+
+
+:External_HQWeaponsVendor_MainMenu
+gosub @External_HQWeaponsVendor_ClearTableGun
+Camera.SetFixedPosition({Pos3:}366.4914, 218.1016, 1019.2546, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Wide shot 
+Camera.PointAtPoint({Pos3:}365.8134, 218.8161, 1019.0815, SwitchType.Interpolation) 
+ 
+activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}1, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP102", {Rows:}"XWEP103", "XWEP104", "XWEP105", "XWEP106", "XWEP107", "XWEP108", "XWEP109", "XWEP110", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+Menu.SetActiveItem(activeMenu, iMenuHover)
+while true
+    wait 0
+    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+    then
+        Camera.SetFixedPosition({Pos3:}364.6807, 219.4590, 1019.7131, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Desk shot
+        Camera.PointAtPoint({Pos3:}364.6715, 220.1218, 1018.9643, SwitchType.Jumpcut)         
+        Menu.GetItemSelected(activeMenu, iMenuChoice)
+        Menu.Delete(activeMenu)
+        while Pad.IsButtonPressed(PadId.Pad1, Button.Cross)
+            wait 0
+        end
+        
+        switch iMenuChoice
+            //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 0: Pistols
+            Case 0 // Pistols
+                iMenuHover = 0
+                iFirstRun = 1
+                :External_HQWeaponsVendor_PistolsMenu
+                // Preload models for this category
+                Streaming.RequestModel(#COLT45)
+                Streaming.RequestModel(#SILENCED)
+                Streaming.RequestModel(#DESERT_EAGLE)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP103", {Rows:}"XWEP201", "XWEP203", "XWEP205", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"XWEP001", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceSilencedPistol)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceDesertEagle)
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // Pistol
+                                func_displayGun(346, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}80.0, 90.0, 90.0, {Description:}"XWEP202")                                                            
+                            Case 1 // Silenced Pistol
+                                func_displayGun(347, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}80.0, 90.0, 90.0, {Description:}"XWEP204")                                
+                            Case 2 // Desert Eagle
+                                func_displayGun(348, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP206")
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 //Pistol 
+                                func_weaponsVendorGiveWeapon(22, $iWeaponPricePistol, 100)                                                        
+                            Case 1 // Silenced Pistol
+                                func_weaponsVendorGiveWeapon(23, $iWeaponPriceSilencedPistol, 100)                             
+                            Case 2 // Desert Eagle
+                                func_weaponsVendorGiveWeapon(24, $iWeaponPriceDesertEagle, 100) 
+                        end
+                        jump @External_HQWeaponsVendor_PistolsMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 0
+                Streaming.MarkModelAsNoLongerNeeded(#COLT45)
+                Streaming.MarkModelAsNoLongerNeeded(#SILENCED)
+                Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
+                         
+            //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 1: SMGs
+            Case 1 // SMGs
+                iMenuChoice = 0
+                iFirstRun = 1 
+                :External_HQWeaponsVendor_SMGsMenu
+                // Preload models for this category
+                Streaming.RequestModel(#TEC9)
+                Streaming.RequestModel(#MICRO_UZI)
+                Streaming.RequestModel(#MP5LNG)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP104", {Rows:}"XWEP301", "XWEP303", "XWEP305", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceTec9)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceUzi)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceMP5)
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // TEC-9
+                                func_displayGun(372, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP302")                                                          
+                            Case 1 // Micro UZI
+                                func_displayGun(352, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP304")                                
+                            Case 2 // MP5
+                                func_displayGun(353, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP306")
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // TEC-9 
+                                func_weaponsVendorGiveWeapon(32, $iWeaponPriceTec9, 100)                                                        
+                            Case 1 // Micro UZI
+                                func_weaponsVendorGiveWeapon(28, $iWeaponPriceUzi, 100)                             
+                            Case 2 // MP5
+                                func_weaponsVendorGiveWeapon(29, $iWeaponPriceMP5, 100) 
+                        end
+                        jump @External_HQWeaponsVendor_SMGsMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back) 
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 1
+                Streaming.MarkModelAsNoLongerNeeded(#TEC9)
+                Streaming.MarkModelAsNoLongerNeeded(#MICRO_UZI)
+                Streaming.MarkModelAsNoLongerNeeded(#MP5LNG)                               
+        
+            //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 2: Rifles
+            Case 2 // Rifles
+                iMenuChoice = 0
+                iFirstRun = 1 
+                :External_HQWeaponsVendor_RiflesMenu
+                // Preload models for this category
+                Streaming.RequestModel(#AK47)
+                Streaming.RequestModel(#M4)
+                Streaming.RequestModel(#CUNTGUN)
+                Streaming.RequestModel(#SNIPER)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP105", {Rows:}"XWEP401", "XWEP403", "XWEP405", "XWEP407", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceAK47)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceM4)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceRifle)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}3, {GXT:}"DOLLAR", {Value:} $iWeaponPriceSniperRifle)
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // AK-47
+                                func_displayGun(355, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP402")                                                          
+                            Case 1 // M4
+                                func_displayGun(356, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP404")                                
+                            Case 2 // Lever Action
+                                func_displayGun(357, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP406")
+                            Case 3 // Sniper
+                                func_displayGun(358, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP408")                                    
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // AK-47
+                                func_weaponsVendorGiveWeapon(30, $iWeaponPriceAK47, 100)                                                        
+                            Case 1 // M4
+                                func_weaponsVendorGiveWeapon(32, $iWeaponPriceM4, 100)                             
+                            Case 2 // Lever Action
+                                func_weaponsVendorGiveWeapon(33, $iWeaponPriceRifle, 100) 
+                            Case 3 // Sniper
+                                func_weaponsVendorGiveWeapon(34, $iWeaponPriceSniperRifle, 100)
+                        end
+                        jump @External_HQWeaponsVendor_RiflesMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 2
+                Streaming.MarkModelAsNoLongerNeeded(#AK47)
+                Streaming.MarkModelAsNoLongerNeeded(#M4)
+                Streaming.MarkModelAsNoLongerNeeded(#CUNTGUN)
+                Streaming.MarkModelAsNoLongerNeeded(#SNIPER)                 
+
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3: Shotguns
+            Case 3 // Shotguns
+                iMenuChoice = 0 
+                :External_HQWeaponsVendor_ShotgunsMenu
+                // Preload models for this category
+                Streaming.RequestModel(#CHROMEGUN)
+                Streaming.RequestModel(#SAWNOFF)
+                Streaming.RequestModel(#SHOTGSPA)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP106", {Rows:}"XWEP501", "XWEP503", "XWEP505", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceShotgun)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceSawnOff)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceCombatShotgun)
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // Shotgun
+                                func_displayGun(349, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP502")                                                          
+                            Case 1 // Sawn-Off
+                                func_displayGun(350, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP504")                                
+                            Case 2 // Combat Shotgun/SPAS-12
+                                func_displayGun(351, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP506")                                    
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // AK-47
+                                func_weaponsVendorGiveWeapon(25, $iWeaponPriceShotgun, 100)                                                        
+                            Case 1 // M4
+                                func_weaponsVendorGiveWeapon(26, $iWeaponPriceSawnOff, 100)                             
+                            Case 2 // Lever Action
+                                func_weaponsVendorGiveWeapon(27, $iWeaponPriceCombatShotgun, 100) 
+                        end
+                        jump @External_HQWeaponsVendor_ShotgunsMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 3
+                Streaming.MarkModelAsNoLongerNeeded(#CHROMEGUN)
+                Streaming.MarkModelAsNoLongerNeeded(#SAWNOFF)
+                Streaming.MarkModelAsNoLongerNeeded(#SHOTGSPA)               
+            
+            //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 4: Heavy Weapons
+            Case 4 // Heavy Weapons
+                iMenuChoice = 0 
+                :External_HQWeaponsVendor_HeavyWeaponsMenu
+                // Preload models for this category
+                Streaming.RequestModel(#ROCKETLA)
+                Streaming.RequestModel(#HEATSEEK)
+                Streaming.RequestModel(#FLAME)
+                Streaming.RequestModel(#MINIGUN)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP107", {Rows:}"XWEP601", "XWEP603", "XWEP605", "XWEP607", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceRPG)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceMissileLauncher)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceFlamethrower)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}3, {GXT:}"DOLLAR", {Value:} $iWeaponPriceMinigun)
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // Rocket Launcher
+                                func_displayGun(359, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP602")                                                          
+                            Case 1 // Missile Launcher/Heatseek
+                                func_displayGun(360, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP604")                                
+                            Case 2 // Flamethrower
+                                func_displayGun(361, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP606") 
+                            Case 3 // Minigun
+                                func_displayGun(362, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP608")                                                                          
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // Rocket Launcher
+                                func_weaponsVendorGiveWeapon(35, $iWeaponPriceRPG, 100)                                                        
+                            Case 1 // Missile Launcher/Heatseek
+                                func_weaponsVendorGiveWeapon(36, $iWeaponPriceMissileLauncher, 100)                             
+                            Case 2 // Flamethrower
+                                func_weaponsVendorGiveWeapon(37, $iWeaponPriceFlamethrower, 100) 
+                            Case 3 // Minigun
+                                func_weaponsVendorGiveWeapon(38, $iWeaponPriceMinigun, 100)
+                        end
+                        jump @External_HQWeaponsVendor_HeavyWeaponsMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 4
+                Streaming.MarkModelAsNoLongerNeeded(#ROCKETLA)
+                Streaming.MarkModelAsNoLongerNeeded(#HEATSEEK)
+                Streaming.MarkModelAsNoLongerNeeded(#FLAME)
+                Streaming.MarkModelAsNoLongerNeeded(#MINIGUN)  
+            
+            //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 5: Projectiles
+            Case 5 // Projectiles                               
+                iMenuChoice = 0 
+                :External_HQWeaponsVendor_ProjectilesMenu
+                // Preload models for this category
+                Streaming.RequestModel(#GRENADE)
+                Streaming.RequestModel(#SATCHEL)
+                Streaming.RequestModel(#MOLOTOV)
+                Streaming.RequestModel(#TEARGAS)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP108", {Rows:}"XWEP701", "XWEP703", "XWEP705", "XWEP707", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceGrenades)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceSatchels)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceMolotovs)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}3, {GXT:}"DOLLAR", {Value:} $iWeaponPriceTearGas)
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // Grenades
+                                func_displayGun(342, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP702")                                                          
+                            Case 1 // Satchels
+                                func_displayGun(363, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP704")                                
+                            Case 2 // Molotovs
+                                func_displayGun(344, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP706") 
+                            Case 3 // Tear Gas
+                                func_displayGun(343, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP708")                                                                          
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // Grenades
+                                func_weaponsVendorGiveWeapon(16, $iWeaponPriceGrenades, 100)                                                        
+                            Case 1 // Satchels + Detonator
+                                func_weaponsVendorGiveWeapon(39, $iWeaponPriceSatchels, 100)
+                                func_weaponsVendorGiveWeapon(40, 0, 1)                             
+                            Case 2 // Molotovs
+                                func_weaponsVendorGiveWeapon(18, $iWeaponPriceMolotovs, 100) 
+                            Case 3 // Tear Gas
+                                func_weaponsVendorGiveWeapon(17, $iWeaponPriceTearGas, 100)
+                        end
+                        jump @External_HQWeaponsVendor_ProjectilesMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 5
+                Streaming.MarkModelAsNoLongerNeeded(#GRENADE)
+                Streaming.MarkModelAsNoLongerNeeded(#SATCHEL)
+                Streaming.MarkModelAsNoLongerNeeded(#MOLOTOV)
+                Streaming.MarkModelAsNoLongerNeeded(#TEARGAS) 
+            
+            //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 6: Melee
+            Case 6 // Melee
+                iMenuChoice = 0 
+                :External_HQWeaponsVendor_MeleeMenu
+                // Preload models for this category
+                Streaming.RequestModel(#BRASSKNUCKLE)
+                Streaming.RequestModel(#NITESTICK)
+                Streaming.RequestModel(#KNIFECUR)
+                Streaming.RequestModel(#BAT)
+                Streaming.RequestModel(#KATANA)
+                Streaming.RequestModel(#CHNSAW)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP109", {Rows:}"XWEP801", "XWEP803", "XWEP805", "XWEP807", "XWEP809", "XWEP811", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceBrassKnuckles)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceNightStick)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceKnife)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}3, {GXT:}"DOLLAR", {Value:} $iWeaponPriceBaseballBat)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}4, {GXT:}"DOLLAR", {Value:} $iWeaponPriceKatana)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}5, {GXT:}"DOLLAR", {Value:} $iWeaponPriceChainsaw)                    
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // Brass Knuckles
+                                func_displayGun(331, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP802")                                                          
+                            Case 1 // Night Stick
+                                func_displayGun(334, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 180.0, {Description:}"XWEP804")                                
+                            Case 2 // Knife
+                                func_displayGun(335, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 180.0, {Description:}"XWEP806") 
+                            Case 3 // Baseball Bat
+                                func_displayGun(336, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 180.0, {Description:}"XWEP808")
+                            Case 4 // Katana
+                                func_displayGun(339, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 180.0, {Description:}"XWEP810")                                                                                                                 
+                            Case 5 // Chainsaw
+                                func_displayGun(341, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP812")
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // Brass Knuckles
+                                func_weaponsVendorGiveWeapon(1, $iWeaponPriceBrassKnuckles, 1)                                                        
+                            Case 1 // Night Stick
+                                func_weaponsVendorGiveWeapon(3, $iWeaponPriceNightStick, 1)                             
+                            Case 2 // Knife
+                                func_weaponsVendorGiveWeapon(4, $iWeaponPriceKnife, 1) 
+                            Case 3 // Baseball Bat
+                                func_weaponsVendorGiveWeapon(5, $iWeaponPriceBaseballBat, 1)
+                            Case 5 // Katana
+                                func_weaponsVendorGiveWeapon(8, $iWeaponPriceKatana, 1)
+                            Case 6 // Chainsaw
+                                func_weaponsVendorGiveWeapon(9, $iWeaponPriceChainsaw, 1)
+                        end
+                        jump @External_HQWeaponsVendor_MeleeMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 6
+                Streaming.MarkModelAsNoLongerNeeded(#BRASSKNUCKLE)
+                Streaming.MarkModelAsNoLongerNeeded(#NITESTICK)
+                Streaming.MarkModelAsNoLongerNeeded(#KNIFECUR)
+                Streaming.MarkModelAsNoLongerNeeded(#BAT)                                
+                Streaming.MarkModelAsNoLongerNeeded(#KATANA)
+                Streaming.MarkModelAsNoLongerNeeded(#CHNSAW)
+
+            //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 7: Gadgets
+            Case 7 // Gadgets
+                iMenuChoice = 0 
+                :External_HQWeaponsVendor_GadgetsMenu
+                // Preload models for this category
+                Streaming.RequestModel(#ARMOUR)
+                Streaming.RequestModel(#CAMERA)
+                Streaming.RequestModel(#NVGOGGLES)
+                Streaming.RequestModel(#IRGOGGLES)
+                Streaming.RequestModel(#GUN_PARA)
+                Streaming.RequestModel(#JETPACK)
+                // Draw menu
+                activeMenu = Menu.Create("XWEP101", {TL X:}30.0, {TL Y:}250.0, {Width:}180.0, {Cols:}2, {Interactive:}True, {Background:}True, {Alignment:}Align.Center)
+                Menu.SetColumn(activeMenu, {Col:}0, {Title:}"XWEP109", {Rows:}"XWEP901", "XWEP903", "XWEP905", "XWEP907", "XWEP909", "XWEP911", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")   
+                Menu.SetColumn(activeMenu, {Col:}1, {Title:}"XWEP000", {Rows:}"DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")                    
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}0, {GXT:}"DOLLAR", {Value:} $iWeaponPriceArmour)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}1, {GXT:}"DOLLAR", {Value:} $iWeaponPriceCamera)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}2, {GXT:}"DOLLAR", {Value:} $iWeaponPriceNVGoggles)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}3, {GXT:}"DOLLAR", {Value:} $iWeaponPriceIRGoggles)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}4, {GXT:}"DOLLAR", {Value:} $iWeaponPriceParachute)
+                Menu.SetItemWithNumber(activeMenu, {Col:}1, {Row:}5, {GXT:}"DOLLAR", {Value:} $iWeaponPriceJetpack)                    
+                Menu.SetActiveItem(activeMenu, iMenuChoice)
+
+                while true
+                    wait 0
+                    // Get the hovered menu item to change the gun displayed on the table.
+                    iMenuHover = Menu.GetItemSelected(activeMenu)
+                    if or
+                        not iMenuHoverOld == iMenuHover
+                        iFirstRun == 1
+                    then
+                        iFirstRun = 0
+                        iMenuHoverOld = iMenuHover
+                        gosub @External_HQWeaponsVendor_ClearTableGun
+                        switch iMenuHover
+                            Case 0 // Armour
+                                func_displayGun(373, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}0.0, 0.0, 90.0, {Description:}"XWEP902")                                                          
+                            Case 1 // Camera
+                                func_displayGun(367, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}80.0, 90.0, 90.0, {Description:}"XWEP904")                                
+                            Case 2 // NV Goggles
+                                func_displayGun(368, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}0.0, 0.0, 90.0, {Description:}"XWEP906") 
+                            Case 3 // IR Goggles
+                                func_displayGun(369, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}0.0, 0.0, 90.0, {Description:}"XWEP908")
+                            Case 4 // Parachute
+                                func_displayGun(371, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP910")                                                                                                                 
+                            Case 5 // Jetpack
+                                func_displayGun(370, {Pos3:}364.8, 220.392, 1018.5, {Rot. Pos3:}93.0, 93.0, 90.0, {Description:}"XWEP912")
+                        end                            
+                    end
+                    // Choice confirmed, do actions for the highlighted row.
+                    if Pad.IsButtonPressed(PadId.Pad1, Button.Cross)  // Sprint
+                    then
+                        Menu.GetItemSelected(activeMenu, iMenuChoice)
+                        Menu.Delete(activeMenu)
+                        gosub @External_HQWeaponsVendor_StallItemSelected                       
+                        switch iMenuChoice
+                            Case 0 // Armour
+                                Int iPlayerMaxArmour = Player.GetMaxArmor($player1)
+                                Int iPlayerCurrentArmour = Char.GetArmor($scplayer)
+                                Float fPlayerArmourTemp = 0.0
+                                Int iPlayerArmourTemp2 = 0
+                                fPlayerArmourTemp =# iPlayerMaxArmour // Convert temp var to a float version of player max armour, ie 150 is now 150.0
+                                fPlayerArmourTemp *= 0.66 // Multiply temp var by 0.66 to calculate what 2/3rds of the max armour is, ie 150*0.66 = 99.0
+                                iPlayerArmourTemp2 =# fPlayerArmourTemp // Convert float value to an int, ie 99.0 is now 99
+                                // Free Repair
+                                if iPlayerCurrentArmour >= iPlayerArmourTemp2 // If the player's current armour value is greater than or equal to 2/3rds of maximum,
+                                then
+                                    Char.AddArmor($scplayer, iPlayerMaxArmour)
+                                else // Paid Repair
+                                    // Reusing variables to avoid declaring more
+                                    iPlayerArmourTemp2 = Player.StoreScore($player1) // Get the player's money count
+                                    if iPlayerArmourTemp2 >= $iWeaponPriceArmour
+                                    then
+                                        iPlayerMaxArmour = $iWeaponPriceArmour // Mirror the armour price
+                                        iPlayerMaxArmour *= -1 // Invert price into a negative ready for subtraction
+                                        Player.AddScore($player1, iPlayerMaxArmour) // Subtract price from player's current money
+                                        Text.PrintNow("XWEP004", 2000, 1)
+                                    else
+                                        Text.PrintNow("XWEP003", 2000, 1)
+                                    end    
+                                end
+                                           
+                            Case 1 // Camera
+                                func_weaponsVendorGiveWeapon(43, $iWeaponPriceCamera, 1)                             
+                            Case 2 // NV Goggles
+                                func_weaponsVendorGiveWeapon(44, $iWeaponPriceNVGoggles, 1) 
+                            Case 3 // IR Goggles
+                                func_weaponsVendorGiveWeapon(45, $iWeaponPriceIRGoggles, 1)
+                            Case 5 // Parachute
+                                func_weaponsVendorGiveWeapon(46, $iWeaponPriceParachute, 1)
+                            Case 6 // Jetpack
+                                Text.PrintString("ADD JETPACK HERE", 2000)
+                        end
+                        jump @External_HQWeaponsVendor_GadgetsMenu     
+                    end
+                    // Backed out, break from the while loop.
+                    if or
+                        Pad.IsKeyPressed(KeyCode.Back)
+                        Pad.IsKeyPressed(Keycode.Return)
+                    then
+                        gosub @External_HQWeaponsVendor_StallReturn
+                        Break
+                    end
+                end
+                Menu.Delete(activeMenu)
+                iMenuHover = 7
+                Streaming.MarkModelAsNoLongerNeeded(#ARMOUR)
+                Streaming.MarkModelAsNoLongerNeeded(#CAMERA)
+                Streaming.MarkModelAsNoLongerNeeded(#NVGOGGLES)
+                Streaming.MarkModelAsNoLongerNeeded(#IRGOGGLES)
+                Streaming.MarkModelAsNoLongerNeeded(#GUN_PARA)                                
+                Streaming.MarkModelAsNoLongerNeeded(#JETPACK)                              
+        end
+        jump @External_HQWeaponsVendor_MainMenu     
+    end
+    
+    if or
+        Pad.IsKeyPressed(KeyCode.Space)
+        Pad.IsKeyPressed(Keycode.Return)
+    then
+        $flagWeaponsVendorMenuOpen = False
+        Player.SetControl($player1, True)
+        func_restoreCamera()
+        Menu.Delete(activeMenu)
+        Object.Delete($objTableGun)
+        Object.MarkAsNoLongerNeeded($objTableGun)
+        return
+    end
+end
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTES] [INFO] Script ending.")
+terminate_this_script
+
+
+// --- Function: Display Gun -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function func_displayGun(modelID: Int, posX: Float, posY: Float, posZ: Float, rotX: Float, rotY: Float, rotZ: Float, description: String)
+    Text.ClearHelp()
+    Text.PrintHelpForever(Description)
+    if not Streaming.HasModelLoaded(modelID)
+    then
+        Streaming.RequestModel(modelID)
+        Streaming.LoadAllModelsNow()
+    end
+    $objTableGun = Object.Create(modelID, posX, posY, posZ)
+    $objTableGun.SetCollision(False)
+    $objTableGun.SetRotation(rotX, rotY, rotZ)
+    $objTableGun.FreezePosition(True)
+    $objTableGun.SetAreaVisible(3)
+    $objTableGun.SetDynamic(False) 
+end
+
+
+
+// --- Function: Give Gun --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function func_weaponsVendorGiveWeapon(weaponID: Int, weaponPrice: Int, weaponAmmo: Int)
+    Int iPlayerCash = Player.StoreScore($player1)
+    Int iCostTemp
+    if iPlayerCash >= weaponPrice
+    then
+        weaponPrice *= -1
+        Player.AddScore($player1, weaponPrice)
+        func_giveWeaponSafely($scplayer, weaponID, weaponAmmo)        
+    else Text.PrintNow("XWEP003", 2000, 1)
+    end
+end
+
+
+
+// --- (Function): Clear Table Gun -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQWeaponsVendor_ClearTableGun
+Text.ClearHelp()
+if Object.DoesExist($objTableGun)
+then
+    $objTableGun.Delete()
+    $objTableGun.MarkAsNoLongerNeeded()
+end
+return
+
+
+// --- (Function): Stall When Item Is Selected -----------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQWeaponsVendor_StallItemSelected
+while Pad.IsButtonPressed(PadId.Pad1, Button.Cross)
+    wait 0
+end
+return
+
+
+
+// --- Function: Stall Until Enter Is Released -----------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQWeaponsVendor_StallReturn
+repeat
+    wait 0
+until not Pad.IsKeyPressed(Keycode.Return)
+return

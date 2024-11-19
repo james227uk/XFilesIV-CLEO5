@@ -17,11 +17,14 @@ DEFINE MISSION 0 AT @Mission_Initial        // 1. Initialisation Script
 DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
 DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 
-DEFINE EXTERNAL_SCRIPTS 3
+DEFINE EXTERNAL_SCRIPTS 6
  // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCONS AT @External_DebugConsole
 DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior
 DEFINE SCRIPT HQAGTIS AT @External_HQAgentsInterior
+DEFINE SCRIPT HQWPNVS AT @External_HQWeaponsVendor
+DEFINE SCRIPT HQSETCS AT @External_HQSetpieceCustodian
+DEFINE SCRIPT HQSARAS AT @External_HQSarah
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
@@ -43,16 +46,16 @@ var
     $flagMissionInitialCompleted: Int = False
     $flagMissionIntroductionCompleted: Int = False
     $flagMissionArrivalCompleted: Int = False
-    $flagDebugConsoleOpen: Int = 0
-    $flagDebugMythActive: Int = False
-    $flagProsperoHQGatesLocked: Int = False
     $flagFollowerActive: Int = False
+    $flagDebugConsoleOpen: Int = False
+    $flagDebugMythActive: Int = False
+    $flagProsperoHostile: Int = False
     $flagProsperoHQGatesLocked: Int = False
+    $flagWeaponsVendorMenuOpen: Int = False
+    $flagRelationshipScoreSarah: Int = 0
 end
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
-    On = 1
-    Off = 0
     gmStorymode = 0
     gmFreemode = 1
 end
@@ -62,8 +65,47 @@ const
     externalDebugConsole = 0   
     externalHQAgentsExterior = 1
     externalHQAgentsInterior = 2
+    externalHQWeaponsVendor = 3
+    externalHQSetpieceCustodian = 4
+    externalHQSarah = 5             
 end
 
+//--- Initial Weapons Vendor weapon Costs
+var
+    $iWeaponPricePistol:            Int = 0
+    $iWeaponPriceSilencedPistol:    Int = 600
+    $iWeaponPriceDesertEagle:       Int = 1200
+    $iWeaponPriceTec9:              Int = 360
+    $iWeaponPriceUzi:               Int = 600
+    $iWeaponPriceMP5:               Int = 2000
+    $iWeaponPriceAK47:              Int = 4200
+    $iWeaponPriceM4:                Int = 5400
+    $iWeaponPriceRifle:             Int = 1200
+    $iWeaponPriceSniperRifle:       Int = 5000 
+    $iWeaponPriceShotgun:           Int = 720
+    $iWeaponPriceSawnOff:           Int = 960
+    $iWeaponPriceCombatShotgun:     Int = 1200
+    $iWeaponPriceRPG:               Int = 10000
+    $iWeaponPriceMissileLauncher:   Int = 15000
+    $iWeaponPriceFlamethrower:      Int = 10000 
+    $iWeaponPriceMinigun:           Int = 20000
+    $iWeaponPriceGrenades:          Int = 2000
+    $iWeaponPriceSatchels:          Int = 2000
+    $iWeaponPriceMolotovs:          Int = 1000
+    $iWeaponPriceTearGas:           Int = 1000
+    $iWeaponPriceBrassKnuckles:     Int = 100
+    $iWeaponPriceNightStick:        Int = 200
+    $iWeaponPriceKnife:             Int = 500
+    $iWeaponPriceBaseballBat:       Int = 100
+    $iWeaponPriceKatana:            Int = 2000
+    $iWeaponPriceChainsaw:          Int = 4000
+    $iWeaponPriceArmour:            Int = 1000
+    $iWeaponPriceCamera:            Int = 5
+    $iWeaponPriceNVGoggles:         Int = 10000
+    $iWeaponPriceIRGoggles:         Int = 12000
+    $iWeaponPriceParachute:         Int = 1000
+    $iWeaponPriceJetpack:           Int = 50000
+end
 script_name 'MAIN'
 declare_mission_flag {Name:} $ONMISSION
 Fs.DeleteFile(logPath)
@@ -79,6 +121,9 @@ Streaming.LoadScene({X:}2544.1604, {Y:}2810.7729, {Z:}10.8203)
 Streaming.SetAreaVisible({InteriorID:}0)
 Clock.SetTimeOfDay({Hour:}0, {Minutes:}0)
 Weather.ForceNow({Weather ID:} WeatherType.RainySf)
+
+Game.SetRelationship(RelationShipType.Respect, PedType.Gang9, PedType.Gang10) // Prospero respects followers
+Game.SetRelationship(RelationShipType.Respect, PedType.Gang10, PedType.Gang9) // Followers respect Prospero.
 
 
 
@@ -124,7 +169,7 @@ Stat.SetFloat(StatID.WeapontypeM4Skill,             {Value:}1000.0)
 Stat.SetFloat(StatID.WeapontypeSniperrifleSkill,    {Value:}1000.0)
 Stat.SetInt  (StatID.CitiesPassed,                  {Value:}     4)
 Player.IncreaseMaxArmor($player1,                   {Value:}  5000)
-Player.AddScore        ($player1,                   {Value:}  5000)
+Player.AddScore        ($player1,                   {Value:}  10000)
 Game.SetMaxWantedLevel (                            {Value:}     6)
 Char.SetCanBeKnockedOffBike($scplayer, false)
 Game.AllowPauseInWidescreen(True)
@@ -138,57 +183,66 @@ set_deatharrest_state 0
 //========================================================================================================================================================================================================
 
 //--- Early Loaders
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Starting early loaders...") 
 start_new_script @Debug_DebugConsole
 start_new_script @Script_Universal_ProsperoHQ_Gates
 
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'initial'...")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'initial'...")
 $ONMISSION = True
 while $flagMissionInitialCompleted == False
     wait 0
 end
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'initial'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'initial'.")
 
 // Pick what to do next based on gamemode choice.
 if $flagGamemodeChoice == gmStorymode // Storymode
 then
     // Launch Introduction cutscene
     Mission.LoadAndLaunchInternal(Mission_Introduction)
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'introduction'...")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'introduction'...")
     $ONMISSION = True
     while $flagMissionIntroductionCompleted == False
         wait 0
     end
     $ONMISSION = False
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'introduction'.")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'introduction'.")
     
     // Launch 'Arrival' mission    
     Mission.LoadAndLaunchInternal(Mission_Arrival)
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Launching mission 'arrival'...")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'arrival'...")
     $ONMISSION = True
     while $flagMissionArrivalCompleted == False
         wait 0
     end
     $ONMISSION = False
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Returned from mission 'arrival'.")    
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'arrival'.")    
 else
     // Freemode
     Camera.RestoreJumpcut()
     Player.SetControl($player1, True)
     func_giveAgentOutfit()
+    Text.ClearPrints()
     Text.ClearHelp()
     Camera.DoFade(1000, Fade.In)
     Hud.SwitchWidescreen(False)
+    Hud.Display(True)
     Char.SetCoordinates($scplayer, 2590.947, 2790.5645, -100.0)
     Char.SetHeading($scplayer, 90.0)
+    
+    Clock.SetTimeOfDay(12, 0)
     
 end   
 
 //--- Create universal scripts
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Starting universal scripts...") 
 start_new_script @Script_Universal_HQSavePoint
-start_new_script @Script_Universal_ProsperoHQ_Agents_External
-start_new_script @Script_Universal_ProsperoHQ_Agents_Interior
+start_new_script @Script_Universal_ProsperoHQ_MasterLoader
+start_new_script @Script_Universal_ProsperoHQ_Agents_External_Loader
+start_new_script @Script_Universal_ProsperoHQ_Agents_Interior_Loader
+start_new_script @Script_Universal_Anomaly_Mimic
+start_new_script @Script_Universal_Anomaly_Chrono
 
 Player.SetControl({Player:} $player1, {State:}True)
 Camera.RestoreJumpcut()
@@ -216,8 +270,8 @@ end
 //      - Adds a save pickup at Prospero H.Q. by the front door
 //------------------------------------------------------------------------------------------------------
 :Script_Universal_HQSavePoint
-script_name 'HQSAVE'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVE] [INFO] Script started.")  
+script_name 'HQSAVEP'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVEP] [INFO] Script started.")  
 0@ = 2592.0503  // Pickup X
 1@ = 2783.4104  // Pickup Y
 2@ = 10.9844    // Pickup Z
@@ -236,7 +290,7 @@ Game.ActivateSaveMenu()
 repeat
     wait 100
 until Game.HasSaveGameFinished()
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVE] [INFO] Player saved game successfully.") 
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVEP] [INFO] Player saved game successfully.") 
 Pickup.Remove(3@)
 
 repeat
@@ -287,7 +341,9 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO]
 :Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
 wait 0
 gosub @Script_Universal_ProsperoHQ_Gates_Lock
-if $flagFollowerActive == True
+if and
+    $flagFollowerActive == True
+    Char.DoesExist($cFollower)
 then
     if or
         Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}20.0, 20.0, 20.0, {Draw Sphere:}False)
@@ -327,39 +383,121 @@ return
 terminate_this_script
 
 
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Master Loader
+//      - This script launches Prospero H.Q. interior scripts when the player enters the interior.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_MasterLoader
+script_name 'HQMASTL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQMASTL] [INFO] Script started.")  
+
+while true
+    wait 0
+    if $playerArea == 3
+    then
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQMASTL] [INFO] H.Q. interior entered. Starting subscripts...")  
+        start_new_script @Script_Universal_ProsperoHQ_WeaponsVendor_Loader
+        start_new_script @Script_Universal_ProsperoHQ_CustodianSetPiece_Loader 
+        start_new_script @Script_Universal_ProsperoHQ_Sarah_Loader       
+        repeat
+            wait 0
+        until not $playerArea == 3
+    end
+end
+terminate_this_script
+//
+//
+//
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Weapons Vendor Loader
+//      - This script launches the weapons vendor menu when the sphere is entered.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_WeaponsVendor_Loader
+script_name 'HQWPNVL'
+// 0@ = Weapons Vendor
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQWPNVL] [INFO] Script started.")
+
+while true
+    wait $mission_trigger_wait_time
+    if $playerArea == 3
+    then
+        func_runExternalScript(externalHQWeaponsVendor, "External-HQWeaponsVendor")
+        repeat
+            wait $mission_trigger_wait_time
+        until not $playerArea == 3
+        Break
+    else Break
+    end    
+end
+StreamedScript.MarkAsNoLongerNeeded(externalHQWeaponsVendor)
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQWPNVL] [INFO] External script marked no longer needed.")
+terminate_this_script
+//
+//
+//
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | The Custodian (Set Piece) (Loader)
+//      - This script spawns The Custodian in his office based on time, with Carter and Davis guarding.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_CustodianSetPiece_Loader
+script_name 'HQSETCL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCL] [INFO] Script started.")
+
+while true
+    Clock.GetTimeOfDay(0@, 1@)
+    wait $mission_trigger_wait_time
+    if and
+        $ONMISSION == False
+        $playerArea == 3
+        0@ >= 6
+        not 0@ >= 21
+    then
+        func_runExternalScript(externalHQSetpieceCustodian, "External-HQSetpieceCustodian")
+        repeat
+            wait 0
+        until not $playerArea == 3
+        Break
+    end
+    
+    if not $playerArea == 3
+    then Break
+    end
+end
+StreamedScript.MarkAsNoLongerNeeded(externalHQSetpieceCustodian)
+terminate_this_script
+//
+//
+//
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Prospero H.Q. | External Agents (Loader)
 //      - Creates a random assortmment of agents roaming the H.Q. grounds. Loader script.
 //------------------------------------------------------------------------------------------------------
-:Script_Universal_ProsperoHQ_Agents_External
+:Script_Universal_ProsperoHQ_Agents_External_Loader
 script_name 'HQAGTEL'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script started.")  
-0@ = 2497.2947  // HQ Center X
-1@ = 2773.2153  // HQ Center Y
-2@ = 10.8262    // HQ Ground Z
-3@ = 300.0      // Sphere Radius
 
 while true
     wait 1000
-    if Char.LocateAnyMeans3D($scplayer, {Pos3:}0@, 1@, 2@, 3@, 3@, 3@, False)
+    if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
     then
         func_runExternalScript(externalHQAgentsExterior, "External-HQAgentsExterior")
         repeat
             wait 1000
-        until not Char.LocateAnyMeans3D($scplayer, {Pos3:}0@, 1@, 2@, 3@, 3@, 3@, False) 
+        until not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False) 
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script ended. Restarting loader script.")
         StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsExterior)
     end
 end
 terminate_this_script
-
-
-
+//
+//
+//
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Prospero H.Q. | Interior Agents (Loader)
 //      - Creates a random assortmment of agents roaming the H.Q. interior. Loader script.
 //------------------------------------------------------------------------------------------------------
-:Script_Universal_ProsperoHQ_Agents_Interior
+:Script_Universal_ProsperoHQ_Agents_Interior_Loader
 script_name 'HQAGTIL'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Script started.")  
 
@@ -373,12 +511,191 @@ while true
             Char.GetAreaVisible($scplayer, 0@)
         until not $playerArea == 3
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Script ended. Restarting loader script.")
-        StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsInterior)
-        
+        StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsInterior)       
+    end
+end
+terminate_this_script
+//
+//
+//
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Sarah (Loader)
+//      - Creates Sarah in the H.Q. behind the desk.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_Sarah_Loader
+script_name 'HQSARAL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSARAL] [INFO] Script started.")  
+
+while true
+    wait 0
+    if $playerArea == 3
+    then 
+        func_runExternalScript(externalHQSarah, "External-HQSarah")
+        repeat
+            wait 1000
+            Char.GetAreaVisible($scplayer, 0@)
+        until not $playerArea == 3
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSARAL] [INFO] Script ended. Restarting loader script.")
+        StreamedScript.MarkAsNoLongerNeeded(externalHQSarah)       
     end
 end
 terminate_this_script
 
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Anomalies | Mimic
+//      - Mimic
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_Anomaly_Mimic
+script_name 'ANOMMMC'
+// 0@: Mimic Object
+// 1@: Target Char
+// 2@: Target Char Model
+// 3@: Mimic Equipped
+// 4@: Model Active
+// 5@: Transform FX Particle
+// 6@: Player X
+// 7@: Player Y
+// 8@: Player Z
+3@ = 0
+
+repeat
+    wait 0
+until Pad.TestCheat("MIMIC")
+Streaming.RequestModel(2976)
+Streaming.LoadAllModelsNow()
+0@ = Object.Create(2976, 0.0, 0.0, 0.0)
+Object.SetScale(0@, 0.01)
+Task.PickUpObject({Char:} $scplayer, {Object:}0@, {Offset Pos3:}0.0, 0.0, 0.0, {BoneID:}6, {Unknown}16, {Anim Name:}"NULL", {Anim File:}"NULL", {Duration:}-1)
+
+Object.SetCollision(0@, False)
+Object.SetModelAlpha(0@, 0) 
+Text.PrintStringNow("Mimic obtained!", 3000)
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Obtained")
+
+
+:Script_Universal_Anomaly_Mimic_Loop
+while true
+    wait 0
+    if Pad.IsKeyPressed(KeyCode.Y)
+    then
+        if 3@ == 0
+        then
+            Object.SetModelAlpha(0@, 255) 
+            3@ = 1
+            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Now holding")
+        else
+            Object.SetModelAlpha(0@, 0)
+            3@ = 0
+            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Now put away")
+        end
+        wait 1000
+    end    
+    
+    if and
+        Pad.IsKeyPressed(KeyCode.U)
+        3@ == 1
+    then
+        if 4@ == 0
+        then
+            Player.GetCharIsTargeting($player1, 1@)
+            if Char.DoesExist(1@)
+            then
+                Text.PrintStringNow("Switch Successful", 1000)
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Switching model")
+                Char.GetModel(1@, 2@)
+                Streaming.RequestModel(2@)
+                Streaming.LoadAllModelsNow()
+                Player.SetModel($player1, 2@)
+                Char.MarkAsNoLongerNeeded(1@)
+                Streaming.MarkModelAsNoLongerNeeded(2@)
+                gosub @Script_Universal_Anomaly_Mimic_Effect
+                4@ = 1      
+            else
+                Text.PrintStringNow("Switch Failed", 1000)
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Model switch failed")
+            end
+        else
+            Text.PrintStringNow("Switched back", 1000)
+            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Switched model back")
+            Player.SetModel($player1, #NULL)
+            gosub @Script_Universal_Anomaly_Mimic_Effect
+            4@ = 0
+        end
+        wait 1000    
+    end 
+end
+terminate_this_script
+
+:Script_Universal_Anomaly_Mimic_Effect
+Char.GetCoordinates($scplayer, {Pos3:}6@, 7@, 8@)
+5@ = Particle.Create("CAMFLASH", {Pos3:}6@, 7@, 8@, {Ignore Bounding Checks:}True)
+Particle.Play(5@)
+wait 1000
+Particle.Kill(5@)
+return
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Anomalies | Chrono
+//      - Chrono
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_Anomaly_Chrono
+script_name 'ANOMCHR'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMCHR] [INFO] Script started.") 
+1@ = 0 // Held
+2@ = 0 // Active
+
+while true
+    wait 0
+    if Pad.TestCheat("CHRONO")
+    then
+        Streaming.RequestModel(2976)
+        Streaming.LoadAllModelsNow()
+        0@ = Object.Create(2976, 0.0, 0.0, 0.0)
+        Object.SetScale(0@, 0.01)
+        Task.PickUpObject({Char:} $scplayer, {Object:}0@, {Offset Pos3:}0.0, 0.0, 0.0, {BoneID:}6, {Unknown}16, {Anim Name:}"NULL", {Anim File:}"NULL", {Duration:}-1)
+        
+        while true
+            wait 0
+            if and
+                Pad.IsKeyPressed(KeyCode.U)
+                1@ == 1
+            then
+                repeat
+                    wait 0
+                until not Pad.IsKeyPressed(KeyCode.U)
+                if 2@ == 0
+                then
+                    Clock.SetTimeScale(0.5)
+                    2@ = 1
+                    // slow down
+                else
+                    Clock.SetTimeScale(1.0)
+                   // speed up
+                   2@ = 0 
+                end
+            end
+            
+            if Pad.IsKeyPressed(KeyCode.Y)
+            then
+                repeat
+                    wait 0
+                until not Pad.IsKeyPressed(KeyCode.Y)
+                if 1@ == 0
+                then
+                    Object.SetModelAlpha(0@, 255)
+                    1@ = 1    
+                else
+                    Object.SetModelAlpha(0@, 0)
+                    1@ = 0 
+                end
+            end
+        end
+    end              
+end  
 
 
 
@@ -561,9 +878,8 @@ function func_runExternalScript(targetScript: int, name: string)
             wait 0
         end
         StreamedScript.StartNew(targetScript)
-        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [INFO] Began external script '%s'.", name)
-    else
-        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main] [ERROR] Failed to start external script '%s'. Active instances already %i.", name, scriptCount)
+        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Began external script '%s'.", name)
+    else Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [ERROR] Failed to start external script '%s'. Active instances already %i.", name, scriptCount)
     end
 end
 
@@ -622,7 +938,7 @@ function func_giveAgentOutfit()
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Tuxedo",        {Model:}"Suit2",     {Body Part:}BodyPart.Torso)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Suit1TrBlk2",   {Model:}"Suit1Tr",   {Body Part:}BodyPart.Legs)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"ShoeDressBlk",  {Model:}"Shoe",      {Body Part:}BodyPart.Shoes)
-    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"WatchCro2",     {Model:}"Watch",     {Body Part:} 14)
+    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"WatchCro2",     {Model:}"Watch",     {Body Part:}14)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Glasses05Dark", {Model:}"Glasses03", {Body Part:}BodyPart.Glasses)
     Player.BuildModel($player1)
 end
@@ -638,22 +954,9 @@ function func_giveCasualOutfit()
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Tshirtmaddgrey", {Model:}"Tshirt", {Body Part:}BodyPart.Torso)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"Worktrgrey",     {Model:}"Worktr", {Body Part:}BodyPart.Legs)
     Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"ShoeDressBlk",   {Model:}"Shoe",   {Body Part:}BodyPart.Shoes)
-    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}0,                {Model:}0,        {Body Part:} 14)
-    Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}0,                {Model:}0,        {Body Part:}BodyPart.Glasses)
+    Player.GiveClothes           ({Player:} $player1, {Texture:}0,                {Model:}0,        {Body Part:}14)
+    Player.GiveClothes           ({Player:} $player1, {Texture:}0,                {Model:}0,        {Body Part:}BodyPart.Glasses)
     Player.BuildModel($player1)
-end
-
-
-
-//------------------------------------------------------------------------------------------------------
-//      Functions | Clear Camera Vector
-//      - This function clears stubborn camera vector movements.
-//------------------------------------------------------------------------------------------------------
-function func_clearCameraVector()
-    float cameraX, cameraY, cameraZ
-    Camera.GetActiveCoordinates(cameraX, cameraY, cameraZ)
-    Camera.SetVectorMove(cameraX, cameraY, cameraZ, cameraX, cameraY, cameraZ, 0, False)
-    Camera.SetVectorTrack(cameraX, cameraY, cameraZ, cameraX, cameraY, cameraZ, 0, False)
 end
 
 
@@ -662,7 +965,8 @@ end
 //      Functions | Give Weapon Safely
 //      - This function loads the model before giving the weapon to the specified Char.
 //------------------------------------------------------------------------------------------------------
-function func_giveWeaponSafely(targetChar: Char, modelID: int, weaponID: int, ammo: int)
+function func_giveWeaponSafely(targetChar: Char, weaponID: int, ammo: int)
+    Int modelID = Weapon.GetModel(weaponID)
     Streaming.RequestModel(modelID)
     Streaming.LoadAllModelsNow()
     Char.GiveWeapon(targetChar, weaponID, ammo)
@@ -686,7 +990,7 @@ function func_playSoundSafely(slotID: int, soundID: int, waitUntilFinished: int)
     if waitUntilFinished == False
     then
         return
-    else
+    else 
         repeat
             wait 0
         until Audio.HasMissionAudioFinished(slotID)
@@ -721,7 +1025,7 @@ end
 //      Functions | Play Dialogue
 //      - 
 //------------------------------------------------------------------------------------------------------
-function func_playDialogue(mode: int, asPath: string, scmSoundID: int, subID: string, doAnims: int, forChar: Char, waitUntilFinished: int)
+function func_playDialogue(mode: int, asPath: string, scmSoundID: int, subID: string, doAnims: int, forChar: Char, waitUntilFinished: int, extraWaitTime: int)
 int streamLength = 0
 int subtitleDisplayTime = 0
 AudioStream streamID
@@ -735,7 +1039,10 @@ AudioStream streamID
         streamLength *= 1000
         streamLength += 1000
         AudioStream.SetState(streamID, AudioStreamAction.Play)
-        Text.PrintNow(subID, streamLength, 1)  
+        if Game.AreSubtitlesSwitchedOn()
+        then
+            Text.PrintNow(subID, streamLength, 1)
+        end  
         
         if doAnims == True
         then
@@ -751,8 +1058,24 @@ AudioStream streamID
             if Char.DoesExist(forChar)
             then Char.StopFacialTalk(forChar)
             end
-        end 
+            extraWaitTime += 500
+            wait extraWaitTime
+        end
+        AudioStream.Remove(streamID) 
     end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Clear Camera Vector
+//      - This function clears stubborn camera vector movements.
+//------------------------------------------------------------------------------------------------------
+function func_clearCameraVector()
+    float cameraX, cameraY, cameraZ
+    Camera.GetActiveCoordinates(cameraX, cameraY, cameraZ)
+    Camera.SetVectorMove(cameraX, cameraY, cameraZ, cameraX, cameraY, cameraZ, 0, False)
+    Camera.SetVectorTrack(cameraX, cameraY, cameraZ, cameraX, cameraY, cameraZ, 0, False)
 end
 
 
@@ -835,6 +1158,10 @@ end
 :Mission_Arrival
 {$INCLUDE_ONCE main\missions\Mission-Arrival.txt}
 
+
+
+
+
 //========================================================================================================================================================================================================
 //      11. External Scripts
 //      All external scripts go here. They are only loaded into memory when called.
@@ -864,3 +1191,29 @@ end
 //------------------------------------------------------------------------------------------------------
 :External_HQAgentsInterior
 {$INCLUDE_ONCE main\externals\External-HQAgentsInterior.txt}
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 3 | HQ Weapons Vendor
+//      - Creates the weapons purchase menu.
+//------------------------------------------------------------------------------------------------------
+:External_HQWeaponsVendor
+{$INCLUDE_ONCE main\externals\External-HQWeaponsVendor.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 4 | HQ Setpiece Custodian
+//      - Makes The Custodian, Carter, and Davis appear at his office between the hours of 6am - 9pm.
+//------------------------------------------------------------------------------------------------------
+:External_HQSetpieceCustodian
+{$INCLUDE_ONCE main\externals\External-HQSetpieceCustodian.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 5 | HQ Sarah
+//      - 
+//------------------------------------------------------------------------------------------------------
+:External_HQSarah
+{$INCLUDE_ONCE main\externals\External-HQSarah.txt}

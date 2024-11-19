@@ -1,0 +1,108 @@
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
+// Name:        HQ Setpiece Custodian
+// Description: This script makes The Custodian, Carter, and Davis appear at his office between the hours of 6am - 9pm.
+// Path:        main\externals\External-HQSetpieceCustodian.txt
+// Trigger:     Upon entering the Prospero H.Q. interior. Called by HQ Master Loader.
+//========================================================================================================================================================================================================
+{$USE CLEO}
+{$USE CLEO+}
+{$USE NewOpcodes}
+script_name 'HQSETCS'
+Char cSetpCustodian
+Char cSetpCarter
+Char cSetpDavis
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCS] [INFO] Script started.")
+
+Streaming.LoadSpecialCharacter(1, "WUZIMU")
+Streaming.LoadSpecialCharacter(2, "CARTER")
+Streaming.LoadSpecialCharacter(3, "DAVIS")
+Streaming.RequestModel(#DESERT_EAGLE)
+Streaming.RequestModel(#KNIFECUR)
+repeat
+    wait 0
+    if and
+        Streaming.HasSpecialCharacterLoaded(1)
+        Streaming.HasSpecialCharacterLoaded(2)
+        Streaming.HasSpecialCharacterLoaded(3)
+        Streaming.HasModelLoaded(#DESERT_EAGLE)
+        Streaming.HasModelLoaded(#KNIFECUR)     
+    then Break
+    end
+until False
+cSetpCustodian = Char.Create(PedType.Special, #SPECIAL01, 354.6557, 171.8008, 1025.7964)
+cSetpCarter= Char.Create(PedType.Special, #SPECIAL02, 356.0972, 164.4217, 1025.7891)
+cSetpDavis = Char.Create(PedType.Special, #SPECIAL03, 352.8675, 164.6367, 1025.7891)
+func_setpieceCustodian_BatchActions({Mode:}0, {Char:}cSetpCustodian, {Heading:}177.08)
+func_setpieceCustodian_BatchActions({Mode:}0, {Char:}cSetpCarter, {Heading:}177.88)
+func_setpieceCustodian_BatchActions({Mode:}0, {Char:}cSetpDavis, {Heading:}181.64)
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCS] [INFO] Created setpiece Custodian, Carter, and Davis.")
+
+repeat
+    wait 0
+    if or
+        Char.HasBeenDamagedByChar(cSetpCustodian, $scplayer)
+        Char.HasBeenDamagedByChar(cSetpCarter, $scplayer)
+        Char.HasBeenDamagedByChar(cSetpDavis, $scplayer)
+    then
+        func_setpieceCustodian_BatchActions({Mode:}1, {Char:}cSetpCustodian, {Heading:}-1)
+        func_setpieceCustodian_BatchActions({Mode:}1, {Char:}cSetpCarter, {Heading:}-1)
+        func_setpieceCustodian_BatchActions({Mode:}1, {Char:}cSetpDavis, {Heading:}-1)
+        Game.SetRelationship(RelationshipType.Hate, PedType.Gang9, PedType.Player1) // Prospero hates player
+        Game.SetRelationship(RelationshipType.Hate, PedType.Gang9, PedType.Gang10)  // Prospero hates followers
+        Game.SetRelationship(RelationshipType.Hate, PedType.Player1, PedType.Gang9) // Player hates Prospero
+        $flagProsperoHostile = 1
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCS] [INFO] Attacked by player. Now hostile.")                 
+        repeat
+            wait 0
+        until not $playerArea == 3
+        Break            
+    end
+    
+    if not $playerArea == 3
+    then Break
+    end                           
+until False        
+Streaming.UnloadSpecialCharacter(1)
+Streaming.UnloadSpecialCharacter(2)
+Streaming.UnloadSpecialCharacter(3)
+Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
+Streaming.MarkModelAsNoLongerNeeded(#KNIFECUR)
+func_setpieceCustodian_BatchActions({Mode:}2, {Char:}cSetpCustodian, {Heading:}-1)
+func_setpieceCustodian_BatchActions({Mode:}2, {Char:}cSetpCarter, {Heading:}-1)
+func_setpieceCustodian_BatchActions({Mode:}2, {Char:}cSetpDavis, {Heading:}-1)
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCS] [INFO] Player left area 3. Ending script.") 
+terminate_this_script
+
+
+
+// --- Function: Batch Actions ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function func_setpieceCustodian_BatchActions(mode: Int, charTargetChar: Char, fHeading: Float)
+    switch mode
+        case 0 // Setup
+            Char.SetHeading(charTargetChar, fHeading)
+            Char.SetAreaVisible(charTargetChar, 3)
+            Char.GiveWeapon(charTargetChar, WeaponType.Knife, 250)
+            Char.GiveWeapon(charTargetChar, WeaponType.DesertEagle, 250)
+            Char.ShutUp(charTargetChar, True)
+            Char.SetSuffersCriticalHits(charTargetChar, False)
+            Char.SetIgnoreDamageAnims(charTargetChar, True)
+            Char.SetStayInSamePlace(charTargetChar, True)
+            Char.SetHealth(charTargetChar, 99999)
+            Char.SetCurrentWeapon(charTargetChar, WeaponType.Unarmed) 
+            Char.SetDecisionMaker(charTargetChar, 32)        
+        
+        Case 1 // Kill player
+            Char.SetHealth(charTargetChar, 20000)
+            Char.SetCurrentWeapon(charTargetChar, WeaponType.DesertEagle)   
+            Char.SetStayInSamePlace(charTargetChar, False)
+            Char.SetIgnoreDamageAnims(charTargetChar, True)           
+            Task.KillCharOnFoot(charTargetChar, $scplayer)                  
+        
+        Case 2 // Cleanup
+            Char.Delete(charTargetChar)
+            Char.MarkAsNoLongerNeeded(charTargetChar)
+    end
+end

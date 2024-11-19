@@ -10,7 +10,7 @@
 //==========================================================================================================================================================================================================
 :Mission_Introduction_Header
 script_name 'introd'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Introduction] [INFO] Loaded mission 'introduction'.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|INTROD] [INFO] Loaded mission 'introduction'.")
 
 
 //------------------------------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Introduction
 :Mission_Introduction_Start
 Weather.ForceNow(WeatherType.ExtraSunnySf)
 Clock.SetTimeOfDay(12, 0)
+func_giveCasualOutfit()
 
 skip_cutscene_start_internal @Mission_Introduction_Scene2
     Char.SetCoordinates($scplayer, {Pos3:}-1351.6396, 900.3057, 46.8549)
@@ -145,7 +146,7 @@ pBloodpoolSplash.Play()
 
 if not Streaming.HasAnimationLoaded("ON_LOOKERS")
 then
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mission|Introduction] [WARN] Animation 'ON_LOOKERS' did not load when requested. Forcing load.")
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|INTROD] [WARN] Animation 'ON_LOOKERS' did not load when requested. Forcing load.")
     repeat
         wait 0
         Streaming.RequestAnimation("ON_LOOKERS")
@@ -435,10 +436,11 @@ Audio.PlayMissionAudio(MissionAudioSlot.Slot1)
 repeat
     wait 500
 until Audio.HasMissionAudioFinished(MissionAudioSlot.Slot1)
-AudioStream asDialogue = AudioStream.Load("root:\modloader\a X-Files IV\audio\dialogue\introduction\XSM0107.mp3")
+// XSM0107 ~y~?: ~w~This is an automated message. Directive 665 has been issued. All Prospero agents are to attend Prospero H.Q. immediately. Message repeating.
+AudioStream asDialogue = AudioStream.Load("modloader\a X-Files IV\audio\dialogue\introduction\XSM0107.mp3")
 repeat
     wait 0
-until AudioStream.Load("root:\modloader\a X-Files IV\audio\dialogue\introduction\XSM0107.mp3", asDialogue)
+until AudioStream.Load("modloader\a X-Files IV\audio\dialogue\introduction\XSM0107.mp3", asDialogue)
 AudioStream.SetState(asDialogue, AudioStreamAction.Play)
 repeat
     wait 0
@@ -450,11 +452,16 @@ func_playSoundSafely({slotID:} 1, {soundID:} 4203, {waitUntilFinished:} True)
 wait 1000
 Task.PlayAnim({Char:} $scplayer, {Anim Name:}"plyr_shkhead", {Anim File:}"misc", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
 wait 2000
-func_playDialogue({mode:}0, {asPath:}"root:\modloader\a X-Files IV\audio\dialogue\introduction\XSM0108.mp3", {scmSoundID:}-1, {subID:}"XSM0108", {doAnims:}True, $scplayer, {waitUntilFinished:}True)
+// XSM0108 ~y~CJ: ~w~Well, so much for my day off...
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\introduction\XSM0108.mp3", {scmID:}-1, {subID:}"XSM0108", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
 wait 1000
+Task.PlayAnim({Char:} $scplayer, {Anim Name:}"phone_out", {Anim File:}"ped", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+wait 1000
+repeat
+    wait 0
+until not Char.IsPlayingAnim($scplayer, "phone_out")
 Task.UseMobilePhone($scplayer, False)
-wait 1000
-
+Char.SetCurrentWeapon($scplayer, WeaponType.Unarmed)
 Task.CharSlideToCoord($scplayer, {Pos3:}495.0032, -22.45, 1000.6797, {Stop Angle:}115.5602, {Stop Radius:}0.1)
 Camera.SetFixedPosition({Pos3:}494.145569, -22.772722, 1000.485291, {Offset Pos3:}0.0, 0.0, 0.0)
 Camera.PointAtPoint({Pos3:}1445.754639, 185.501373, 1217.822754, SwitchType.JumpCut)

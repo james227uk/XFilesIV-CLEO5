@@ -74,7 +74,7 @@ WHILE TRUE
             THEN
                 cameraCoordinates.WriteFormattedString("//----------------------------------------------------------// %c", 0xA)
                 //writeLocalTimeToFile(cameraCoordinates)
-                cameraCoordinates.WriteFormattedString("Camera.SetFixedPosition({Pos3:}%0.4f, %0.4f, %0.4f, 0.0, 0.0, 0.0) %c", cameraX, cameraY, cameraZ, 0xA)
+                cameraCoordinates.WriteFormattedString("Camera.SetFixedPosition({Pos3:}%0.4f, %0.4f, %0.4f, {Rot. Pos3:}0.0, 0.0, 0.0) %c", cameraX, cameraY, cameraZ, 0xA)
                 cameraCoordinates.WriteFormattedString("Camera.PointAtPoint({Pos3:}%0.4f, %0.4f, %0.4f, SwitchType.Jumpcut) %c", pointAtX, pointAtY, pointAtZ, 0xA)
                 cameraCoordinates.WriteFormattedString("//----------------------------------------------------------// %c", 0xA)
                 cameraCoordinates.Close()

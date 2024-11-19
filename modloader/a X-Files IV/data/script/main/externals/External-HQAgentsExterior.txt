@@ -1,23 +1,22 @@
-//==========================================================================================================================================================================================================
-//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
-//==========================================================================================================================================================================================================
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
 // Name:        Exterior Agents
 // Description: This script generates random agents within the Prospero H.Q. exterior grounds.
 // Path:        main\externals\External-HQAgentsExterior.txt
 // Trigger:     Upon getting close to Prospero H.Q.
-//==========================================================================================================================================================================================================
-NOP
+//========================================================================================================================================================================================================
 {$USE CLEO}
 {$USE CLEO+}
 {$USE NewOpcodes}
-
 script_name 'HQAGTES'
 NOP
 var cArrayAgents: array 25 of Char 
 Int iArrayAgentsIndex = 0
 Int iRandomModelFlip = 165
 Float fRandomX, fRandomY, fRandomZ
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTES] [INFO] Script started")
 
 Streaming.RequestModel(#BMYMIB)
 Streaming.RequestModel(#WMOMIB)
@@ -33,19 +32,16 @@ until False
 
 repeat
     gosub @GenerateRandomCoords
-    Blip testMarker = Blip.AddForCoord(fRandomX, fRandomY, fRandomZ)
     Char.Create(PedType.Gang9, iRandomModelFlip, fRandomX, fRandomY, 9.820312, cArrayAgents[iArrayAgentsIndex])
     Task.WanderStandard(cArrayAgents[iArrayAgentsIndex])
-    //Blip testMarker = Blip.AddForChar(cArrayAgents[iArrayAgentsIndex])
     if iRandomModelFlip == 165
     then iRandomModelFlip = 166
     else iRandomModelFlip = 165
     end
     iArrayAgentsIndex += 1
-until iArrayAgentsIndex == 10
+until iArrayAgentsIndex == 25
 PLAY_MISSION_PASSED_TUNE 2
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[External|HQAGTES] [INFO] Index now: %i", iArrayAgentsIndex)
-iArrayAgentsIndex = 25
+iArrayAgentsIndex = 0
 
 repeat
     wait 1000
@@ -56,7 +52,7 @@ repeat
     Char.MarkAsNoLongerNeeded(cArrayAgents[iArrayAgentsIndex])
     iArrayAgentsIndex += 1
 until iArrayAgentsIndex == 25
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[External|HQAGTES] [INFO] Distance exceeded. Cleared all exterior agents from memory.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTES] [INFO] Distance exceeded. Script ending.")
 terminate_this_script
 
 
