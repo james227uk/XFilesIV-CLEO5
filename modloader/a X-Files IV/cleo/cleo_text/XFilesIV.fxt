@@ -152,3 +152,38 @@ XWEP909 Parachute
 XWEP910 Leaping out of a plane has never felt so safe. Warranty not included.
 XWEP911 X-07 Jetpack
 XWEP912 Fresh out of the Prospero labs, utilising ~r~REDACTED~w~ to enable aerial propulsion. Use with care.
+
+# Universal | External | Sarah
+# ----------------------------
+XFSW000 ~y~Sarah:~w~ Hey CJ, how's it going?
+XFSW001 ~y~Sarah:~w~ Generic hello text... Hey, I'm kidding. What's up?
+XFSW002 ~y~Sarah:~w~ CJ, what can I do for you?
+XFSW003 ~y~Sarah:~w~ CJ, what brings you here?
+XFSW004 ~y~Sarah:~w~ I'm a bit short of time, CJ. What's up?
+XFSW005 ~y~?:~w~ Hi, have we spoken before?
+XFSW006 ~y~CJ:~w~ I don't think so, no.
+XFSW007 ~y~?:~w~ In that case, introductions are in order.
+XFSW008 ~y~Sarah:~w~ I'm Sarah, formally Agent Williams, but everyone just calls me Sarah.
+XFSW009 ~y~Sarah:~w~ It's a long story.
+XFSW010 ~y~Sarah:~w~ Anyway, I handle most of the admin around here.
+XFSW011 ~y~Sarah:~w~ If you need support in the field, or just want some papers filed, then I'm your girl.
+XFSW020 ~y~Sarah:~w~ And you are?
+XFSW021 ~y~CJ:~w~ Agent Carl Johnson. But everyone calls me CJ.
+XFSW022 ~y~Sarah:~w~ Then it's nice to meet you, CJ.
+XFSW012 ~y~Sarah:~w~ So, how can I help?
+XFSW013 ~y~CJ:~w~ You bumped your head or something?
+XFSW014 ~y~Sarah:~w~ No, I'm just messing with you.
+XFSW015 Of course
+XFSW016 I don't think so
+XFSW017 Talk
+XFSW018 Services
+XFSW019 Menu
+XFSW023 ~y~Sarah:~w~ Until next time.
+XFSW024 ~y~Sarah:~w~ Cya later.
+XFSW025 ~y~Sarah:~w~ See you around.
+XFSW026 ~y~Sarah:~w~ Hope I helped.
+XFSW027 ~y~Sarah:~w~ Catch you later.
+XFSW028 Thoughts
+XFSW029 Relationship
+XFSW030 ~y~Sarah:~w~ Directive 665 has never, ever been issued. Something big is happening.
+XFSW031 ~y~Sarah:~w~ I heard you've got to climb Mount Chiliad... I don't envy you.

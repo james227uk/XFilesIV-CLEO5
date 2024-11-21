@@ -12,9 +12,12 @@
 {$USE NewOpcodes}
 script_name 'HQSARAS'
 Char cSarah
+Menu menuActive
 var seqSarahPC: array 5 of Sequence
+Int iMenuActiveChoice
 Int iSeqSarahPCIndex = 0
 Int iSeqProgress
+Int iGreetingRandom = 0
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQSARAS] [INFO] Script started.")
 Streaming.RequestModel(#WFYST)
 Streaming.RequestAnimation("Int_Office")
@@ -42,25 +45,37 @@ repeat
 until Char.DoesExist(cSarah)
 Streaming.MarkModelAsNoLongerNeeded(#WFYST)
 
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Main Loop
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 while true
     wait 0
     // Interact
     if Char.LocateAnyMeans3D($scplayer, {Pos3:}362.242, 173.7583, 1008.3828, {Rad. Pos3:}1.0, 1.0, 1.0, {Draw Sphere:}True) 
     then
-        Char.ClearTasksImmediately()
-        Task.PlayAnim({Char:}cSarah, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}True, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
-        
+        Camera.SetFixedPosition({Pos3:}364.1147, 175.7737, 1009.0024, {Rot. Pos3:}0.0, 0.0, 0.0) 
+        Camera.PointAtPoint({Pos3:}363.3251, 175.1891, 1008.8156, SwitchType.Interpolation) 
+        Player.SetControl($player1, False)
+        gosub @External_HQSarah_SelectGreeting
+        wait 1000
+        gosub @External_HQSarah_MainMenu               
+        Player.SetControl($player1, True)
+        Camera.Restore()     
+        repeat
+            wait 0
+        until not Char.LocateAnyMeans3D($scplayer, {Pos3:}362.242, 173.7583, 1008.3828, {Rad. Pos3:}3.0, 3.0, 3.0, {Draw Sphere:}False) 
+        gosub @External_HQSarah_PerformRandomSequence      
     end
     
     // Loop Anims
     Char.GetSequenceProgress(cSarah, iSeqProgress)
-    Text.PrintWithNumberNow("XSM0005", iSeqProgress, 500, 1)
     if iSeqProgress >= 4
     then
-        Math.RandomIntInRange(0, 4, iSeqSarahPCIndex)
-        Text.PrintWithNumberBig("XSM0005", iSeqSarahPCIndex, 500, 1)
-        Char.PerformSequence(cSarah, seqSarahPC[iSeqSarahPCIndex])
+        gosub @External_HQSarah_PerformRandomSequence
     end
+
     
     // Cleanup
     if not $playerArea == 3
@@ -80,13 +95,94 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSARAS] [INFO]
 terminate_this_script
 
 
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Main Menu
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_MainMenu
+menuActive = Menu.Create("XFSW019", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False)
+Menu.SetColumn(menuActive, {Column:}0, {Title:}"DUMMY", {Rows:}"XFSW017", "XFSW018", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        iMenuActiveChoice = Menu.GetItemSelected({Menu:}menuActive)
+        Menu.Delete({Menu:}menuActive)
+        func_stallMenu(0) // Stall until confirm/sprint key released.        
+        
+        switch iMenuActiveChoice
+            case 0
+                func_stallMenu(0)
+                gosub @External_HQSarah_TalkMenu
+                
+            case 1
+                func_stallMenu(0)
+                Text.PrintStringNow("Services etc", 1000)
+
+        end
+        jump @External_HQSarah_MainMenu
+    end
+    if or
+        Pad.IsKeyPressed(KeyCode.Space)
+        Pad.IsKeyPressed(Keycode.Return)
+    then
+        Break
+    end     
+end
+Menu.Delete(menuActive)
+gosub @External_HQSarah_RandomGoodbye
+return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Talk Menu
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_TalkMenu
+TimerA = 0
+menuActive = Menu.Create("XFSW017", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False)
+Menu.SetColumn(menuActive, {Column:}0, {Title:}"DUMMY", {Rows:}"XFSW028", "XFSW029", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        iMenuActiveChoice = Menu.GetItemSelected({Menu:}menuActive)
+        Menu.Delete({Menu:}menuActive)
+        func_stallMenu(0) // Stall until confirm/sprint key released.        
+        
+        switch iMenuActiveChoice
+            case 0
+                gosub @External_HQSarah_RandomThoughts
+                
+            case 1
+                Text.PrintStringNow("Relationship etc", 1000)
+        end
+        func_stallMenu(0) // Stall until confirm/sprint key released. 
+        Menu.Delete({Menu:}menuActive)
+        jump @External_HQSarah_TalkMenu
+    end
+    if or
+        Pad.IsKeyPressed(KeyCode.Back)
+        Pad.IsKeyPressed(Keycode.Return)
+    then
+        func_stallMenu(1) // Stall until enter/backspace pressed.
+        Menu.Delete(menuActive)
+        return
+    end     
+end
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Idle Sequences
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :External_HQSarah_CreateSequences
 Sequence.Open(seqSarahPC[0])
     Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
 Sequence.Close(seqSarahPC[0])
 
 Sequence.Open(seqSarahPC[1])
@@ -94,7 +190,7 @@ Sequence.Open(seqSarahPC[1])
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Watch",     {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
 Sequence.Close(seqSarahPC[1])
 
 Sequence.Open(seqSarahPC[2])
@@ -102,7 +198,7 @@ Sequence.Open(seqSarahPC[2])
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Bored_Loop",{Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
 Sequence.Close(seqSarahPC[2])
 
 Sequence.Open(seqSarahPC[3])
@@ -110,7 +206,7 @@ Sequence.Open(seqSarahPC[3])
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
 Sequence.Close(seqSarahPC[3])
 
 Sequence.Open(seqSarahPC[4])
@@ -118,9 +214,251 @@ Sequence.Open(seqSarahPC[4])
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Watch",     {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)    
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
     Task.PlayAnim({Char:}-1, {Anim Name:}"OFF_Sit_Type_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
-    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}True , {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Off_Sit_Idle_Loop", {Anim File:}"Int_Office", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
 Sequence.Close(seqSarahPC[4])
 return
+
+:External_HQSarah_PerformRandomSequence
+Math.RandomIntInRange(0, 4, iSeqSarahPCIndex)
+Char.PerformSequence(cSarah, seqSarahPC[iSeqSarahPCIndex])
+return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Random Greeting
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_SelectGreeting
+iGreetingRandom = Math.RandomIntInRange({Range:}1, 100) // Increased range for better randomness?
+if 50 >= iGreetingRandom
+then iGreetingRandom = 0
+else iGreetingRandom = 0 // DEBUG FORCED TO 0
+end
+Task.TurnCharToFaceChar(cSarah, $scplayer)
+Task.TurnCharToFaceChar($scplayer, cSarah)
+wait 500
+if $flagIntroducedSarah == False
+then
+    jump @External_HQSarah_Introduction
+end
+Switch iGreetingRandom
+    Case 0 // Generic
+        // High score
+        if $flagRelationshipScoreSarah >= 66
+        then
+            iGreetingRandom = Math.RandomIntInRange({Range:}0, 4)
+            Switch iGreetingRandom
+                    Case 0
+                    Case 1
+                    Case 2
+                    Case 3
+                    Case 4
+                end            
+        else 
+            // Mid score
+            if $flagRelationshipScoreSarah >= 33
+            then
+                iGreetingRandom = Math.RandomIntInRange({Range:}0, 4)
+                Switch iGreetingRandom
+                    Case 0
+                    Case 1
+                    Case 2
+                    Case 3
+                    Case 4
+                end
+            else
+                // Low score
+                iGreetingRandom = Math.RandomIntInRange({Range:}0, 4)
+                Switch iGreetingRandom
+                    Case 0
+                        // XFSW000 ~y~Sarah:~w~ Hey CJ, how's it going?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\intro_low_0.mp3", {scmID:}-1, {subID:}"XFSW000", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)                              
+                    Case 1                        
+                        // XFSW001 ~y~Sarah:~w~ Generic hello text... Hey, I'm kidding. What's up?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\intro_low_1.mp3", {scmID:}-1, {subID:}"XFSW001", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                    Case 2
+                        // XFSW002 ~y~Sarah:~w~ CJ, what can I do for you?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\intro_low_2.mp3", {scmID:}-1, {subID:}"XFSW002", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                    Case 3
+                        // XFSW003 ~y~Sarah:~w~ CJ, what brings you here?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\intro_low_3.mp3", {scmID:}-1, {subID:}"XFSW003", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                    Case 4
+                        // XFSW004 ~y~Sarah:~w~ I'm a bit short of time, CJ. What's up?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\intro_low_4.mp3", {scmID:}-1, {subID:}"XFSW004", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                end
+            end
+        end
+    
+    
+    Case 1 // Gamemode-specific
+end
+return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Random Goodbye
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_RandomGoodbye
+iGreetingRandom = Math.RandomIntInRange({Range:}0, 4)
+Switch iGreetingRandom
+    Case 0
+        // XFSW023 ~y~Sarah:~w~ Until next time.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW023.mp3", {scmID:}-1, {subID:}"XFSW023", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 1
+        // XFSW024 ~y~Sarah:~w~ Cya later.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW024.mp3", {scmID:}-1, {subID:}"XFSW024", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 2
+        // XFSW025 ~y~Sarah:~w~ See you around.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW025.mp3", {scmID:}-1, {subID:}"XFSW025", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 3
+        // XFSW026 ~y~Sarah:~w~ Hope I helped.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW026.mp3", {scmID:}-1, {subID:}"XFSW026", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 4
+        // XFSW027 ~y~Sarah:~w~ Catch you later.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW027.mp3", {scmID:}-1, {subID:}"XFSW027", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+end  
+return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Random Thoughts
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_RandomThoughts
+gosub @External_HQSarah_DialogueFaceCam_Sarah
+// Switch only supports 8 cases (0-7). Check current gamestage fits within.
+if 7 >= $flagGamestage
+then
+    Switch $flagGamestage
+        Case 0
+            iGreetingRandom = Math.GenerateRandomIntInRangeWithSeed(TIMERA, 0, 7)
+            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQSARAS] [INFO] Random thought rolled: %i. Seed: %i", iGreetingRandom, TIMERA)  
+            Switch iGreetingRandom 
+                Case 0
+                    // XFSW030 ~y~Sarah:~w~ Directive 665 has never, ever been issued. Something big is happening.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW030.mp3", {scmID:}-1, {subID:}"XFSW030", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)            
+                Case 1
+                    // XFSW031 ~y~Sarah:~w~ I heard you've got to climb Mount Chiliad... I don't envy you.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW031.mp3", {scmID:}-1, {subID:}"XFSW031", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                Case 2
+                    // XFSW030 ~y~Sarah:~w~ Directive 665 has never, ever been issued. Something big is happening.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW030.mp3", {scmID:}-1, {subID:}"XFSW030", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)            
+                // TEMPORARY DUPES SINCE 0-1 RANDOM ISN'T REALLY THAT RANDOM
+                Case 3
+                    // XFSW031 ~y~Sarah:~w~ I heard you've got to climb Mount Chiliad... I don't envy you.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW031.mp3", {scmID:}-1, {subID:}"XFSW031", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                Case 4
+                    // XFSW030 ~y~Sarah:~w~ Directive 665 has never, ever been issued. Something big is happening.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW030.mp3", {scmID:}-1, {subID:}"XFSW030", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)            
+                Case 5
+                    // XFSW031 ~y~Sarah:~w~ I heard you've got to climb Mount Chiliad... I don't envy you.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW031.mp3", {scmID:}-1, {subID:}"XFSW031", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                Case 6
+                    // XFSW030 ~y~Sarah:~w~ Directive 665 has never, ever been issued. Something big is happening.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW030.mp3", {scmID:}-1, {subID:}"XFSW030", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)            
+                Case 7
+                    // XFSW031 ~y~Sarah:~w~ I heard you've got to climb Mount Chiliad... I don't envy you.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW031.mp3", {scmID:}-1, {subID:}"XFSW031", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+            end
+                  
+        Case 1    
+        Case 2    
+        Case 3    
+        Case 4    
+        Case 5    
+        Case 6    
+        Case 7
+    end
+else
+    // Logic for beyond gamestage 7
+end
+return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: First-time Introduction
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_Introduction
+// XFSW005 ~y~?:~w~ Hi, have we spoken before?
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW005.mp3", {scmID:}-1, {subID:}"XFSW005", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+
+Menu.Create("DUMMY", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False, {Handle:}menuActive)
+Menu.SetColumn(menuActive, {Column:}0, {Title:}"DUMMY", {Rows:}"XFSW016", "XFSW015", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        Menu.GetItemSelected({Menu:}menuActive, {Store Choice To:}iMenuActiveChoice)
+        Menu.Delete({Menu:}menuActive)
+        func_stallMenu(0) // Stall until confirm/sprint key released.        
+        
+        switch iMenuActiveChoice
+            case 0 // XFWS015, I don't think so
+                // XFSW006 ~y~CJ:~w~ I don't think so, no.
+                gosub @External_HQSarah_DialogueFaceCam_CJ
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW006.mp3", {scmID:}-1, {subID:}"XFSW006", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)                
+                // XFSW007 ~y~?:~w~ In that case, introductions are in order.
+                gosub @External_HQSarah_DialogueFaceCam_Sarah
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW007.mp3", {scmID:}-1, {subID:}"XFSW007", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW008 ~y~Sarah:~w~ I'm Sarah, formally Agent Williams, but everyone just calls me Sarah.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW008.mp3", {scmID:}-1, {subID:}"XFSW008", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW009 ~y~Sarah:~w~ It's a long story.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW009.mp3", {scmID:}-1, {subID:}"XFSW009", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW010 ~y~Sarah:~w~ Anyway, I handle most of the admin around here.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW010.mp3", {scmID:}-1, {subID:}"XFSW010", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW011 ~y~Sarah:~w~ If you need support in the field, or just want some papers filed, then I'm your girl.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW011.mp3", {scmID:}-1, {subID:}"XFSW011", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW020 ~y~Sarah:~w~ And you are?
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW020.mp3", {scmID:}-1, {subID:}"XFSW020", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW021 ~y~CJ:~w~ Agent Carl Johnson. But everyone calls me CJ.
+                gosub @External_HQSarah_DialogueFaceCam_CJ
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW021.mp3", {scmID:}-1, {subID:}"XFSW021", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW022 ~y~Sarah:~w~ Then it's nice to meet you, CJ.  
+                gosub @External_HQSarah_DialogueFaceCam_Sarah
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW022.mp3", {scmID:}-1, {subID:}"XFSW022", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)            
+                // XFSW012 ~y~Sarah:~w~ So, how can I help?
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW012.mp3", {scmID:}-1, {subID:}"XFSW012", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+                
+            case 1 // XFWS014, Of course  
+                // XFSW013 ~y~CJ:~w~ You bumped your head or something?
+                gosub @External_HQSarah_DialogueFaceCam_CJ         
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW013.mp3", {scmID:}-1, {subID:}"XFSW013", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW014 ~y~Sarah:~w~ No, I'm just messing with you.
+                gosub @External_HQSarah_DialogueFaceCam_Sarah            
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW014.mp3", {scmID:}-1, {subID:}"XFSW014", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+                // XFSW012 ~y~Sarah:~w~ So, how can I help?
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW012.mp3", {scmID:}-1, {subID:}"XFSW012", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        end
+        Break
+    end 
+end
+$flagIntroducedSarah = 1
+Menu.Delete(menuActive)
+return
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Camera Placements
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_DialogueFaceCam_CJ
+Camera.SetFixedPosition({Pos3:}361.5849, 173.7647, 1008.9308, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: CJ close-up
+Camera.PointAtPoint({Pos3:}362.5839, 173.7783, 1008.8874, SwitchType.Jumpcut)
+return
+
+:External_HQSarah_DialogueFaceCam_Sarah
+Camera.SetFixedPosition({Pos3:}361.0815, 173.7571, 1008.9875, {Rot. Pos3:}0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}360.0860, 173.7268, 1008.8984, SwitchType.Jumpcut) 
+return
+
+terminate_this_script
+
+
+
+
+
+
 /*
 -- int_office --
 OFF_Sit_Bored_Loop
@@ -132,6 +470,28 @@ OFF_Sit_Watch
 Hello: Low relationship
 Story-based comments.
 Freemode last myth killed.
+
+- Switch based on random: batch 0 or 1
+Batch 0: Generic Hellos
+    - Switch based on relationship score
+    Batch 0a: // Low
+        Files 0-7
+        
+    Batch 0b: // Mid
+        Files 0-7
+        
+    Batch 0c: // High
+        Files 0-7
+
+- Switch based on gamemode    
+Batch 1: Mode specific
+    - Switch based on mission completed
+    Batch 1a: Storymode
+        File 0-7
+    
+    - Switch based on last myth killed    
+    Batch 1b: Freemode
+        Files 0-7
 
 
 

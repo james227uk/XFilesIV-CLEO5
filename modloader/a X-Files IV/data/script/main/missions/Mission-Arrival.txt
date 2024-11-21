@@ -315,13 +315,13 @@ Camera.SetFixedPosition({Pos3:}2476.4109, 2726.3413, 31.8636, 0.0, 0.0, 0.0)
 Camera.PointAtPoint({Pos3:}2477.2285, 2726.8511, 31.5960, SwitchType.Jumpcut)
 Camera.DoFade(2000, Fade.In)
 wait 2500
-Text.PrintString("XSM0229", 5000) // XSM0229 Welcome to ~b~Prospero H.Q.~w~, home to San Andreas' leading paranatural investigation organisation.
+Text.PrintNow("XSM0229", 5000, 1) // XSM0229 Welcome to ~b~Prospero H.Q.~w~, home to San Andreas' leading paranatural investigation organisation.
 wait 5000
-Text.PrintString("XSM0230", 5000) // XSM0230 This is your central base of operations.
+Text.PrintNow("XSM0230", 5000, 1) // XSM0230 This is your central base of operations.
 wait 5000
 Camera.SetFixedPosition({Pos3:}2576.0359, 2785.4612, 13.8231, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}2577.0078, 2785.6775, 13.7298, SwitchType.Interpolation) 
-Text.PrintString("XSM0231", 5000) // XSM0231 Head inside to continue.
+Text.PrintNow("XSM0231", 5000, 1) // XSM0231 Head inside to continue.
 wait 5000
 
 :Mission_Arrival_HQExtTourSkip
@@ -343,7 +343,7 @@ Camera.DoFade(2000, Fade.In)
 Camera.SetVectorMove({From Pos3:}390.1941, 176.7417, 1008.2476, {To Pos3:}370.0411, 173.8476, 1009.2340, 10000, False)
 Camera.SetVectorTrack({From Pos3:}389.1949, 176.7005, 1008.2509, {To Pos3:}369.0413, 173.8660, 1009.2449, 10000, False)
 wait 3000
-Text.PrintString("XSM0232", 6000) // XSM0232 Prospero H.Q. offers everything you need for your missions.
+Text.PrintNow("XSM0232", 6000, 1) // XSM0232 Prospero H.Q. offers everything you need for your missions.
 wait 7000
 Camera.SetFixedPosition({Pos3:}370.0411, 173.8476, 1009.2340, {Rot. Pos3:}0.0, 0.0, 0.0)
 Camera.PointAtPoint({Pos3:}369.0413, 173.8660, 1009.2449, SwitchType.JumpCut)
@@ -351,25 +351,25 @@ Camera.PointAtPoint({Pos3:}369.0413, 173.8660, 1009.2449, SwitchType.JumpCut)
 // Front Desk
 Camera.SetFixedPosition({Pos3:}364.4323, 173.7254, 1009.1994, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}363.4377, 173.7365, 1009.0966, SwitchType.JumpCut) 
-Text.PrintString("XSM0233", 6000) // XSM0233 ~y~Services~w~ and ~y~hints~w~ are offered at the front desk.
+Text.PrintNow("XSM0233", 6000, 1) // XSM0233 ~y~Services~w~ and ~y~hints~w~ are offered at the front desk.
 wait 7000
 
 // Weapons room
 Camera.SetFixedPosition({Pos3:}364.3035, 191.5955, 1009.5892, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}365.1177, 192.1213, 1009.3428, SwitchType.Interpolation) 
-Text.PrintString("XSM0234", 6000) // XSM0234 ~y~Weapons~w~ can be purchased from the armoury.
+Text.PrintNow("XSM0234", 6000, 1) // XSM0234 ~y~Weapons~w~ can be purchased from the armoury.
 wait 7000
 
 // First Aid
 Camera.SetFixedPosition({Pos3:}349.6431, 167.4555, 1021.5146, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}350.2698, 166.7251, 1021.2430, SwitchType.Interpolation) 
-Text.PrintString("XSM0236", 6000) // XSM0236 ~y~Healthcare~w~ can be obtained in the clinic.
+Text.PrintNow("XSM0236", 6000, 1) // XSM0236 ~y~Healthcare~w~ can be obtained in the clinic.
 wait 7000
 
 // Document Repository
 Camera.SetFixedPosition({Pos3:}364.6816, 188.2681, 1021.7971, 0.0, 0.0, 0.0) 
 Camera.PointAtPoint({Pos3:}363.9405, 188.9074, 1021.5920, SwitchType.Interpolation) 
-Text.PrintString("XSM0235", 6000) // XSM0235 ~y~Briefings~w~ and ~y~lore~w~ can be found in the Document Repository.
+Text.PrintNow("XSM0235", 6000, 1) // XSM0235 ~y~Briefings~w~ and ~y~lore~w~ can be found in the Document Repository.
 wait 7000
 
 

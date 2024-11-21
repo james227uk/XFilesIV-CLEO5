@@ -53,6 +53,8 @@ var
     $flagProsperoHQGatesLocked: Int = False
     $flagWeaponsVendorMenuOpen: Int = False
     $flagRelationshipScoreSarah: Int = 0
+    $flagIntroducedSarah: Int = False
+    $flagGamestage: Int = 0
 end
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
@@ -169,7 +171,7 @@ Stat.SetFloat(StatID.WeapontypeM4Skill,             {Value:}1000.0)
 Stat.SetFloat(StatID.WeapontypeSniperrifleSkill,    {Value:}1000.0)
 Stat.SetInt  (StatID.CitiesPassed,                  {Value:}     4)
 Player.IncreaseMaxArmor($player1,                   {Value:}  5000)
-Player.AddScore        ($player1,                   {Value:}  10000)
+Player.AddScore        ($player1,                   {Value:} 10000)
 Game.SetMaxWantedLevel (                            {Value:}     6)
 Char.SetCanBeKnockedOffBike($scplayer, false)
 Game.AllowPauseInWidescreen(True)
@@ -1128,6 +1130,32 @@ function func_spawnInCar(targetChar: Char, carModel: Int): int
     Car c = Car.Create(carModel, {Pos3:}posX, posY, posZ)
     Char.WarpIntoCar(targetChar, c)
     return c
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Menu Stall
+//      - This function stalls a menu until the input key is released.
+//------------------------------------------------------------------------------------------------------
+function func_stallMenu(mode: Int)
+    Switch mode
+        Case 0 // Stall confirm (Sprint)
+            while Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+                wait 0
+            end
+        
+        Case 1 // Stall backing out (Return/Backspace)
+            repeat
+                wait 0
+                if and
+                    not Pad.IsKeyPressed(KeyCode.Return)
+                    not Pad.IsKeyPressed(KeyCode.Back)
+                then
+                    Break
+                end
+            until False  
+    end      
 end
 
 
