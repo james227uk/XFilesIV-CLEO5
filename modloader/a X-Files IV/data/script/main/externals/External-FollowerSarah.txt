@@ -1,0 +1,247 @@
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
+// Name:        Follower Sarah
+// Description: This script creates Sarah as a follower.
+// Path:        main\externals\External-HQSarah.txt
+// Trigger:     Called by loader script when exiting area 3. Loader script is called by HQ Sarah's services menu.
+//========================================================================================================================================================================================================
+script_name 'HQSARAS'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|FLWRSWS] [INFO] Script started.")
+Char $cFollower
+Sequence seqDowned
+Blip blipFollower
+Menu menuSarah
+Int iMenuSarahChoice
+Int iDialogueRandom
+Int iDialogueSeed
+Float fPlayerX, fPlayerY, fPlayerZ
+Int iHealth, iHealthMax
+Int iIsInCombat = False
+
+Streaming.RequestModel(#WFYST)
+Streaming.RequestModel(#M4)
+Streaming.RequestAnimation("SWEET")
+Streaming.LoadAllModelsNow()
+iHealthMax = 1000
+iHealthMax += $flagUpgradeFollowerBonusHealth
+gosub @External_FollowerSarah_CreateAndApplyProperties
+gosub @External_FollowerSarah_CreateSequences
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Main Loop
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+while true
+    wait 0    
+    // Health
+    gosub @External_FollowerSarah_CoreCheckHealth
+    
+    // In Combat
+    gosub @External_FollowerSarah_CoreCheckCombatStatus
+    
+    // Interact menu
+    if and
+        Player.IsTargetingChar($player1, $cFollower)
+        Pad.IsKeyPressed(KeyCode.Y)
+    then 
+        gosub @External_FollowerSarah_RandomGreeting
+        gosub @External_FollowerSarah_CoreInteractMenu
+        gosub @External_FollowerSarah_RandomGoodbye
+    end    
+end
+
+terminate_this_script
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Functions and Gosubs
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_FollowerSarah_CoreCheckHealth
+iHealth = Char.GetHealth($cFollower)
+if 250 >= iHealth
+then
+    // Knocked down
+    gosub @External_FollowerSarah_CheckAnimsLoaded
+    Char.SetIgnoreDamageAnims($cFollower, True)
+    Char.SetProofs($cFollower, True, True, True, True, True)
+    Char.PerformSequence($cFollower, seqDowned)
+    Blip.ChangeColor(blipFollower, BlipColor.Red)
+    TIMERA = 0
+    repeat
+        wait 250
+    until TIMERA >= 30000
+    Char.ClearTasks($cFollower)
+    Char.SetHealth($cFollower, iHealthMax)
+    Char.SetIgnoreDamageAnims($cFollower, False)
+    Char.SetProofs($cFollower, False, False, False, False, False) 
+    Blip.ChangeColor(blipFollower, BlipColor.BlueFix)  
+end
+return
+
+
+
+:External_FollowerSarah_CoreCheckCombatStatus
+// If char is fighting,
+if Char.IsFighting($cFollower)
+then
+    // Then reset timer and flag as in combat
+    TIMERB = 0
+    iIsInCombat = True
+else
+    // Else, if char is not fighting and timer is above 15s, reset combat flag.
+    if TIMERB >= 15000
+    then iIsInCombat = False
+    end
+end   
+return   
+
+
+
+:External_FollowerSarah_CoreInteractMenu
+menuSarah = Menu.Create("XFSW019", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False)
+Menu.SetColumn(menuSarah, {Column:}0, {Title:}"DUMMY", {Rows:}"XFSW017", "XFSW018", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        iMenuSarahChoice = Menu.GetItemSelected({Menu:}menuSarah)
+        Menu.Delete({Menu:}menuSarah)
+        func_stallMenu(0) // Stall until confirm/sprint key released.        
+        
+        switch iMenuSarahChoice
+            case 0 
+                                
+            case 1
+                
+        end
+        jump @External_FollowerSarah_CoreInteractMenu
+    end
+    if or
+        Pad.IsKeyPressed(KeyCode.Space)
+        Pad.IsKeyPressed(Keycode.Return)
+    then
+        Break
+    end     
+end
+Menu.Delete(menuSarah)
+return
+
+
+:External_FollowerSarah_CreateAndApplyProperties
+Char.GetCoordinates($scplayer, fPlayerX, fPlayerY, fPlayerZ)
+//Path.GetClosestCharNode({At Pos3:}fPlayerX, fPlayerY, fPlayerZ, {Store To Pos3:}fPlayerX, fPlayerY, fPlayerZ)
+Char.Create(PedType.Special, #WFYST, {Pos3:}fPlayerX, fPlayerY, fPlayerZ, {Handle:}$cFollower)
+Group.SetMember($playerGroup, $cFollower)
+$cFollower.SetNeverLeavesGroup(True)
+$cFollower.SetDropsWeaponsWhenDead(False)
+$cFollower.SetSuffersCriticalHits(False)
+$cFollower.ShutUp(True)
+$cFollower.SetHealth(iHealthMax)
+$cFollower.GiveWeapon(WeaponType.M4, 99999)
+repeat
+    wait 0
+until Char.DoesExist($cFollower)
+Blip.AddForChar($cFollower, blipFollower)
+Blip.ChangeColor($cFollower, BlipColor.BlueFix)
+return
+
+
+:External_FollowerSarah_CreateSequences
+Sequence.Open(seqDowned)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"LaFin_Sweet", {Anim File:}"Sweet", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+    Task.PlayAnim({Char:}-1, {Anim Name:}"Sweet_injuredloop", {Anim File:}"Sweet", {Speed:}4.0, {Loop:}True, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Duration:}-1)
+Sequence.Close(seqDowned)
+return
+
+
+:External_FollowerSarah_CheckAnimsLoaded
+if not Streaming.HasAnimationLoaded("SWEET")
+then
+    Streaming.RequestAnimation("SWEET")
+    repeat
+        wait 0
+    until Streaming.HasAnimationLoaded("SWEET")
+end
+return
+
+
+
+:External_FollowerSarah_RandomGreeting
+Math.RandomIntInRange(0, 4, iDialogueRandom)
+Switch iDialogueRandom
+    Case 0 // XFSW800 ~y~Sarah:~w~ How can I help?
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW800.mp3", {scmID:}-1, {subID:}"XFSW800", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)    
+    Case 1 // XFSW801 ~y~Sarah:~w~ What's up?
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW801.mp3", {scmID:}-1, {subID:}"XFSW801", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0) 
+    Case 2 // XFSW802 ~y~Sarah:~w~ What's on your mind? 
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW802.mp3", {scmID:}-1, {subID:}"XFSW802", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 3 // XFSW803 ~y~Sarah:~w~ You need me?
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW803.mp3", {scmID:}-1, {subID:}"XFSW803", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 4 // XFSW804 ~y~Sarah:~w~ Hey.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW804.mp3", {scmID:}-1, {subID:}"XFSW804", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+end
+return
+
+
+:External_FollowerSarah_RandomGoodbye
+Math.RandomIntInRange(0, 4, iDialogueRandom)
+Switch iDialogueRandom
+    Case 0 // XFSW805 ~y~Sarah:~w~ Okay then.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW805.mp3", {scmID:}-1, {subID:}"XFSW805", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)    
+    Case 1 // XFSW806 ~y~Sarah:~w~ Alright.        
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW806.mp3", {scmID:}-1, {subID:}"XFSW806", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0) 
+    Case 2 // XFSW807 ~y~Sarah:~w~ Any time.        
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW807.mp3", {scmID:}-1, {subID:}"XFSW807", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 3 // XFSW808 ~y~Sarah:~w~ Back to it then.        
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW808.mp3", {scmID:}-1, {subID:}"XFSW808", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 4 // XFSW809 ~y~Sarah:~w~ Let's go.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW809.mp3", {scmID:}-1, {subID:}"XFSW809", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+end
+return
+
+
+:External_FollowerSarah_RandomAffirmative
+Math.RandomIntInRange(0, 4, iDialogueRandom)
+Switch iDialogueRandom
+    Case 0 // XFSW810 ~y~Sarah:~w~ Affirmative.        
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW810.mp3", {scmID:}-1, {subID:}"XFSW810", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)    
+    Case 1 // XFSW811 ~y~Sarah:~w~ Roger that.        
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW811.mp3", {scmID:}-1, {subID:}"XFSW811", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0) 
+    Case 2 // XFSW812 ~y~Sarah:~w~ You got it.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW812.mp3", {scmID:}-1, {subID:}"XFSW812", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 3 // XFSW813 ~y~Sarah:~w~ Right.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW813.mp3", {scmID:}-1, {subID:}"XFSW813", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 4 // XFSW814 ~y~Sarah:~w~ Will do.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW814.mp3", {scmID:}-1, {subID:}"XFSW814", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+end
+return
+
+
+:External_FollowerSarah_RandomNegative
+Math.RandomIntInRange(0, 4, iDialogueRandom)
+Switch iDialogueRandom
+    Case 0 // XFSW815 ~y~Sarah:~w~ Negative.        
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW815.mp3", {scmID:}-1, {subID:}"XFSW815", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)    
+    Case 1 // XFSW816 ~y~Sarah:~w~ No can do.      
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW816.mp3", {scmID:}-1, {subID:}"XFSW816", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0) 
+    Case 2 // XFSW817 ~y~Sarah:~w~ Can't do that.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW817.mp3", {scmID:}-1, {subID:}"XFSW817", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 3 // XFSW818 ~y~Sarah:~w~ No way.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW818.mp3", {scmID:}-1, {subID:}"XFSW818", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+    Case 4 // XFSW819 ~y~Sarah:~w~ Afraid not.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\follower\XFSW819.mp3", {scmID:}-1, {subID:}"XFSW819", {doAnims:}True, $cFollower, {waitToFinish:}True, {extraWaitTime:}0)
+end
+return
+
+
+:External_FollowerSarah_RandomThought
+if $flagGamemodeChoice == gmStorymode
+then // Storymode dialogues
+    
+else // Freemode dialogues
+    
+end

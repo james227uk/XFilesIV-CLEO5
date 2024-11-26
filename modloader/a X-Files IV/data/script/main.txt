@@ -12,12 +12,13 @@
 //========================================================================================================================================================================================================
 
 //--- Primary header
-DEFINE MISSIONS 3
+DEFINE MISSIONS 4
 DEFINE MISSION 0 AT @Mission_Initial        // 1. Initialisation Script
 DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
 DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
+DEFINE MISSION 3 AT @Mission_FindingTheYeti // 4. Storymode: Finding The Yeti
 
-DEFINE EXTERNAL_SCRIPTS 6
+DEFINE EXTERNAL_SCRIPTS 7
  // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCONS AT @External_DebugConsole
 DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior
@@ -25,6 +26,7 @@ DEFINE SCRIPT HQAGTIS AT @External_HQAgentsInterior
 DEFINE SCRIPT HQWPNVS AT @External_HQWeaponsVendor
 DEFINE SCRIPT HQSETCS AT @External_HQSetpieceCustodian
 DEFINE SCRIPT HQSARAS AT @External_HQSarah
+DEFINE SCRIPT FLWRSWS AT @External_FollowerSarah
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
@@ -46,7 +48,7 @@ var
     $flagMissionInitialCompleted: Int = False
     $flagMissionIntroductionCompleted: Int = False
     $flagMissionArrivalCompleted: Int = False
-    $flagFollowerActive: Int = False
+    $flag_Storymode_Mission_FindingTheYeti_Completed: Int = False
     $flagDebugConsoleOpen: Int = False
     $flagDebugMythActive: Int = False
     $flagProsperoHostile: Int = False
@@ -55,11 +57,17 @@ var
     $flagRelationshipScoreSarah: Int = 0
     $flagIntroducedSarah: Int = False
     $flagGamestage: Int = 0
+    $flagFollowerActive: Int = 0
+    $flagFollowerSarahAvailable: Int = False
+    $flagUpgradeFollowerBonusHealth: Int = 0   
+    $flagFacilityLilProbeInnPurchased: Int = False
 end
 const
     logPath = "root:\modloader\a X-Files IV\XFilesIV.log"
     gmStorymode = 0
     gmFreemode = 1
+    followerNone = 0
+    followerSarah = 1
 end
 
 //--- External Script Name Mappings
@@ -69,7 +77,8 @@ const
     externalHQAgentsInterior = 2
     externalHQWeaponsVendor = 3
     externalHQSetpieceCustodian = 4
-    externalHQSarah = 5             
+    externalHQSarah = 5 
+    externalFollowerSarah = 6            
 end
 
 //--- Initial Weapons Vendor weapon Costs
@@ -148,8 +157,9 @@ Player.GiveClothesOutsideShop({Player:} $player1, {Texture:}"VEST",           {M
 Player.BuildModel($player1)
 
 //--- Set respawn points
-Restart.AddHospital({X:}2027.77, {Y:} -1420.52, {Z:}15.99, {Heading:}137.0, {TownID:} 0)
-Restart.AddPolice(  {X:}1550.68, {Y:}-1675.49,  {Z:}14.51, {Heading:}90.0,  {TownID:} 0)
+Restart.AddHospital({Pos3:}2589.7759, 2790.8264, 10.8203, {Heading:}90.0, {TownID:} 0)
+Restart.AddPolice  ({Pos3:}2589.7759, 2790.8264, 10.8203, {Heading:}90.0, {TownID:} 0)
+
 
 //--- Set initial stats
 Stat.SetFloat(StatID.MaxHealth,                     {Value:}1000.0)
@@ -172,7 +182,7 @@ Stat.SetFloat(StatID.WeapontypeSniperrifleSkill,    {Value:}1000.0)
 Stat.SetInt  (StatID.CitiesPassed,                  {Value:}     4)
 Player.IncreaseMaxArmor($player1,                   {Value:}  5000)
 Player.AddScore        ($player1,                   {Value:} 10000)
-Game.SetMaxWantedLevel (                            {Value:}     6)
+Game.SetMaxWantedLevel (                            {Value:}     0)
 Char.SetCanBeKnockedOffBike($scplayer, false)
 Game.AllowPauseInWidescreen(True)
 set_deatharrest_state 0
@@ -208,20 +218,18 @@ then
     while $flagMissionIntroductionCompleted == False
         wait 0
     end
-    $ONMISSION = False
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'introduction'.")
     
-    // Launch 'Arrival' mission    
-    Mission.LoadAndLaunchInternal(Mission_Arrival)
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'arrival'...")
-    $ONMISSION = True
-    while $flagMissionArrivalCompleted == False
+    // Launch 'Arrival' mission
+    start_new_script @Script_Storymode_Arrival_Loader
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Holding until mission 'arrival' is completed.")
+    repeat
         wait 0
-    end
-    $ONMISSION = False
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'arrival'.")    
+    until $flagMissionArrivalCompleted == True
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Mission 'arrival' completed. Resuming.")
 else
     // Freemode
+    $flagFollowerSarahAvailable = True
     Camera.RestoreJumpcut()
     Player.SetControl($player1, True)
     func_giveAgentOutfit()
@@ -232,19 +240,27 @@ else
     Hud.Display(True)
     Char.SetCoordinates($scplayer, 2590.947, 2790.5645, -100.0)
     Char.SetHeading($scplayer, 90.0)
-    
+
     Clock.SetTimeOfDay(12, 0)
+    
+    $flagDebugMythMarkers = True
+    
+    start_new_script @Script_Freemode_Leatherface
     
 end   
 
 //--- Create universal scripts
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Starting universal scripts...") 
 start_new_script @Script_Universal_HQSavePoint
+start_new_script @Script_Universal_ProsperoHQ_ExtMasterLoader
 start_new_script @Script_Universal_ProsperoHQ_MasterLoader
 start_new_script @Script_Universal_ProsperoHQ_Agents_External_Loader
 start_new_script @Script_Universal_ProsperoHQ_Agents_Interior_Loader
 start_new_script @Script_Universal_Anomaly_Mimic
 start_new_script @Script_Universal_Anomaly_Chrono
+start_new_script @Script_Universal_Facility_LilProbeInn
+start_new_script @Script_Universal_Facility_MissionaryHill
+start_new_script @Script_Debug_PartyBus
 
 Player.SetControl({Player:} $player1, {State:}True)
 Camera.RestoreJumpcut()
@@ -322,7 +338,14 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO]
 // Create gate objects
 Streaming.RequestModel(#GATE_AUTOR)
 Streaming.RequestModel(#GATE_AUTOL)
-Streaming.LoadAllModelsNow()
+repeat
+    wait 0
+    if and
+        Streaming.HasModelLoaded(#GATE_AUTOR)
+        Streaming.HasModelLoaded(#GATE_AUTOL)
+    then Break
+    end
+until False
 0@ = Object.Create(#GATE_AUTOL, {Pos3:}2497.41, 2777.07, 9.8)
 1@ = Object.Create(#GATE_AUTOR, {Pos3:}2497.41, 2769.11, 9.8)
 Object.SetHeading(0@, 90.0)
@@ -344,7 +367,7 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO]
 wait 0
 gosub @Script_Universal_ProsperoHQ_Gates_Lock
 if and
-    $flagFollowerActive == True
+    $flagFollowerActive > 0
     Char.DoesExist($cFollower)
 then
     if or
@@ -480,7 +503,7 @@ script_name 'HQAGTEL'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script started.")  
 
 while true
-    wait 1000
+    wait $mission_trigger_wait_time
     if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
     then
         func_runExternalScript(externalHQAgentsExterior, "External-HQAgentsExterior")
@@ -504,7 +527,7 @@ script_name 'HQAGTIL'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTIL] [INFO] Script started.")  
 
 while true
-    wait 1000
+    wait $mission_trigger_wait_time
     if $playerArea == 3
     then 
         func_runExternalScript(externalHQAgentsInterior, "External-HQAgentsInterior")
@@ -530,7 +553,9 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSARAL] [INFO]
 
 while true
     wait 0
-    if $playerArea == 3
+    if and
+        $playerArea == 3
+        not $flagFollowerActive == followerSarah
     then 
         func_runExternalScript(externalHQSarah, "External-HQSarah")
         repeat
@@ -586,11 +611,9 @@ while true
         then
             Object.SetModelAlpha(0@, 255) 
             3@ = 1
-            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Now holding")
         else
             Object.SetModelAlpha(0@, 0)
             3@ = 0
-            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Now put away")
         end
         wait 1000
     end    
@@ -605,7 +628,6 @@ while true
             if Char.DoesExist(1@)
             then
                 Text.PrintStringNow("Switch Successful", 1000)
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Switching model")
                 Char.GetModel(1@, 2@)
                 Streaming.RequestModel(2@)
                 Streaming.LoadAllModelsNow()
@@ -616,11 +638,9 @@ while true
                 4@ = 1      
             else
                 Text.PrintStringNow("Switch Failed", 1000)
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Model switch failed")
             end
         else
             Text.PrintStringNow("Switched back", 1000)
-            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|ANOMMMC] [INFO] Switched model back")
             Player.SetModel($player1, #NULL)
             gosub @Script_Universal_Anomaly_Mimic_Effect
             4@ = 0
@@ -697,7 +717,110 @@ while true
             end
         end
     end              
-end  
+end 
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Followers | Sarah (Loader)
+//      - Loads Sarah's external script.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_Follower_Sarah
+script_name 'FLWRSWL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FLWRSWL] [INFO] Script started.") 
+while true
+    wait 0
+    // Check player hasn't cancelled recruitment, and only fire when player leaves the H.Q.
+    if not $playerArea == 3
+    then
+        func_runExternalScript(externalFollowerSarah, "External-FollowerSarah")
+        Break
+    end
+    // 
+    if $flagFollowerActive == followerNone
+    then 
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FLWRSWL] [INFO] Script ended (Reason: No longer set as active follower via flag).") 
+        Break
+    end
+end
+terminate_this_script
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Facilities | Lil Probe Inn
+//      - 
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_Facility_LilProbeInn
+script_name 'XFACLPI'
+// 0@: Pickup
+
+Pickup.CreateForSaleProperty({Pos3:}-86.2929, 1382.7775, 10.2734, 10000, "PROP_3", 0@)
+
+while true
+    wait $mission_trigger_wait_time
+    if and
+        Player.IsPlaying($player1)
+        $ONMISSION == False
+        Pickup.HasBeenCollected(0@)
+    then
+        Player.SetControl($player1, True)
+        Game.SetEveryoneIgnorePlayer($player1, True)
+        Hud.SwitchWidescreen(True)
+        Camera.SetFixedPosition({Pos3:}-66.8304, 1390.0591, 15.9004, {Rot. Pos3:}0.0, 0.0, 0.0) 
+        Camera.PointAtPoint({Pos3:}-67.7256, 1389.6855, 15.6575, SwitchType.Jumpcut) 
+        Text.PrintBig("XFLPI02", 5000, TextStyle.BottomRight)
+        Audio.PlayMissionPassedTune(1)
+        wait 5000
+        Text.ClearPrints()
+        Camera.SetBehindPlayer()
+        Camera.RestoreJumpcut()
+        Hud.SwitchWidescreen(False)
+        Player.SetControl($player1, True)
+        Game.SetEveryoneIgnorePlayer($player1, False)
+        $flagFacilityLilProbeInnPurchased = 1
+        terminate_this_script        
+    end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Facilities | Missionary Hill
+//      - 
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_Facility_MissionaryHill
+script_name 'XFACMIS'
+0@ = Pickup.CreateForSaleProperty({Pos3:}-2516.6189, -622.7719, 132.7585, 10000, "PROP_3")
+1@ = Blip.AddSpriteForCoord(-2516.6189, -622.7719, 132.7585, RadarSprite.PropertyG)
+
+while true
+    wait $mission_trigger_wait_time
+    if and
+        Player.IsPlaying($player1)
+        $ONMISSION == False
+        Pickup.HasBeenCollected(0@)
+    then
+        Player.SetControl($player1, False)
+        Game.SetEveryoneIgnorePlayer($player1, True)
+        Hud.SwitchWidescreen(True)
+        Camera.SetFixedPosition({Pos3:}-2469.1597, -591.2800, 147.0769, {Rot. Pos3:}0.0, 0.0, 0.0) 
+        Camera.PointAtPoint({Pos3:}-2469.9814, -591.7629, 146.7744, SwitchType.Interpolation) 
+        Blip.Remove(1@)
+        Text.PrintBig("XFLPI02", 5000, TextStyle.BottomRight)
+        Audio.PlayMissionPassedTune(1)
+        wait 5000
+        Camera.SetBehindPlayer()
+        Camera.Restore()
+        Hud.SwitchWidescreen(False)
+        Player.SetControl($player1, True)
+        Game.SetEveryoneIgnorePlayer($player1, False)
+        $flagFacilityMissionaryHillPurchased = 1
+        
+        //2@ = Object.C
+        terminate_this_script        
+    end
+end
 
 
 
@@ -714,9 +837,9 @@ while true
     wait 0
     if Pad.IsKeyPressed(KeyCode.F6)
     then
-        while Pad.IsKeyPressed(KeyCode.F6)
+        repeat 
             wait 0
-        end 
+        until not Pad.IsKeyPressed(KeyCode.F6)
         func_runExternalScript(externalDebugConsole, "External-DebugConsole")
     end
     
@@ -759,7 +882,7 @@ Char.SetNeverLeavesGroup($cFollower, True)
 Char.SetRelationship($cFollower, RelationshipType.Respect, PedType.Player1)
 Char.SetRelationship($cFollower, RelationshipType.Like, PedType.Gang9) // Prospero
 Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang8) // Myths
-$flagFollowerActive = True
+$flagFollowerActive = followerSarah
 Streaming.MarkModelAsNoLongerNeeded(#WFYST)
 Streaming.MarkModelAsNoLongerNeeded(#M4)
 Blip.AddForChar($cFollower, 4@)
@@ -844,14 +967,225 @@ else
 end
 terminate_this_script
 
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Debug | Party Bus
+//      - The party bus rolls up on the target.
+//------------------------------------------------------------------------------------------------------
+:Script_Debug_PartyBus
+script_name 'DBGPRTB'
+// 0@, 1@, 2@: Player XYZ
+// 3@: Bus
+// 4@: Driver
+// 5@, 6@, 7@, 8@, 9@: Agents
+// 10@: Bus Blip
+// 11@, 12@, 13@: Target Marker Coords
+// 14@: Skip Heading
+// 15@: Skipped?
+
+while true
+    repeat
+        wait 0
+    until Pad.TestCheat("BUS")
+    Streaming.RequestModel(#COACH)
+    Streaming.RequestModel(#BMYMIB)
+    Streaming.RequestModel(#WMOMIB)
+    Streaming.RequestModel(#DESERT_EAGLE)
+    Streaming.LoadAllModelsNow()
+    Char.GetCoordinates($scplayer, 0@, 1@, 2@)
+    Path.GetClosestCarNode({Pos3:}0@, 1@, 2@, {Pos3:}0@, 1@, 2@)
     
+    3@ = Car.Create(#COACH, {Pos3:}0@, 1@, 2@)
+    4@ = Char.CreateInsideCar(3@, PedType.Gang9, #WMOMIB)
+    5@ = Char.CreateAsPassenger(3@, PedType.Gang9, #BMYMIB, SeatId.FrontRight)
+    6@ = Char.CreateAsPassenger(3@, PedType.Gang9, #WMOMIB, SeatId.RearLeft)
+    7@ = Char.CreateAsPassenger(3@, PedType.Gang9, #BMYMIB, SeatId.RearRight)
+    8@ = Char.CreateAsPassenger(3@, PedType.Gang9, #WMOMIB, SeatId.Passenger4)
+    9@ = Char.CreateAsPassenger(3@, PedType.Gang9, #BMYMIB, SeatId.Passenger5)
+    10@ = Blip.AddForCar(3@) 
+    Char.GiveWeapon(4@, WeaponType.DesertEagle, 99999)
+    Char.GiveWeapon(5@, WeaponType.DesertEagle, 99999)
+    Char.GiveWeapon(6@, WeaponType.DesertEagle, 99999)
+    Char.GiveWeapon(7@, WeaponType.DesertEagle, 99999)
+    Char.GiveWeapon(8@, WeaponType.DesertEagle, 99999)
+    Char.GiveWeapon(9@, WeaponType.DesertEagle, 99999)
+    
+    Char.GetCoordinates($scplayer, 0@, 1@, 2@)
+    Task.CarDriveToCoord(4@, 3@, {Pos3:}2@, 3@, 4@, 15.0, DriveMode.Accurate, 0, 0)
+    
+    repeat
+        wait 0
+        if Char.LocateAnyMeansCar3D($scplayer, 3@, 10.0, 10.0, 10.0, False)
+        then Char.ClearTasks(4@)
+        end
+        
+        if and
+            Char.LocateAnyMeansCar3D($scplayer, 3@, 10.0, 10.0, 10.0, False)
+            Pad.IsKeyPressed(KeyCode.Y)
+        then 
+            gosub @Script_Debug_PartyBus_StallYReleased
+            Break
+        end
+    until False
+    Player.SetControl($player1, False)
+    Task.EnterCarAsPassenger($scplayer, 3@, -1, SeatId.Passenger6)
+    if $flagFollowerActive == True
+    then Task.EnterCarAsPassenger($cFollower, 3@, -1, SeatId.Passenger7)
+    end
+    repeat
+        wait 0
+    until Char.IsInCar($scplayer, 3@)   
+    Player.SetControl($player1, True)
+    
+    repeat
+        wait 0
+        World.GetTargetCoords(11@, 12@, 13@)
+        if Pad.IsKeyPressed(KeyCode.Y)
+        then Break
+        else Text.PrintStringNow("Set a target marker and press ~y~Y~w~.", 1000)
+        end        
+    until False 
+    Task.CarDriveToCoord(4@, 3@, {Pos3:}11@, 12@, 13@, 30.0, DriveMode.Normal, 0, 0)
+    gosub @Script_Debug_PartyBus_StallYReleased
+    
+    repeat
+        wait 0
+        if Car.Locate2D(3@, 11@, 12@, 10.0, 10.0, False)
+        then Break
+        end
+        
+        if and
+            Pad.IsKeyPressed(KeyCode.Y)
+            15@ == 0
+        then
+            gosub @Script_Debug_PartyBus_StallYReleased
+            15@ = 1
+            Camera.DoFade(3000, Fade.Out)
+            wait 3500
+            Path.GetClosestStraightRoad({From:}11@, 12@, 13@, {Min-Max:}100.0, 200.0, {Node 1 Pos3:}16@, 17@, 18@, {Node 2 Pos3:}0@, 1@, 2@, {Heading:}14@)
+            Streaming.RequestCollision(16@, 17@)
+            Streaming.LoadAllModelsNow()
+            Car.SetCoordinates(3@, 16@, 17@, 18@)
+            Car.SetForwardSpeed(3@, 15.0)
+            Task.CarDriveToCoord(4@, 3@, {Pos3:}11@, 12@, 13@, 30.0, DriveMode.Normal, 0, 0)
+            wait 3000
+            Camera.DoFade(3000, Fade.In)              
+        end
+    until False
+    Char.ClearTasks(4@)
+    
+    repeat
+        wait 0
+    until not Char.IsInCar($scplayer, 3@)
+    Task.LeaveCar(4@, 3@)
+    Task.LeaveCar(5@, 3@)
+    Task.LeaveCar(6@, 3@)
+    Task.LeaveCar(7@, 3@)
+    Task.LeaveCar(8@, 3@)
+    Task.LeaveCar(9@, 3@)
+    if Char.DoesExist($cFollower)
+    then Task.LeaveCar($cFollower, 3@)
+    end
+    Group.SetMember($playerGroup, 4@)
+    Group.SetMember($playerGroup, 5@)
+    Group.SetMember($playerGroup, 6@)
+    Group.SetMember($playerGroup, 7@)
+    Group.SetMember($playerGroup, 8@)
+    Group.SetMember($playerGroup, 9@)
+    Char.SetNeverLeavesGroup(4@, True)
+    Char.SetNeverLeavesGroup(5@, True)
+    Char.SetNeverLeavesGroup(6@, True)
+    Char.SetNeverLeavesGroup(7@, True)
+    Char.SetNeverLeavesGroup(8@, True)
+    Char.SetNeverLeavesGroup(9@, True)
+    Break   
+end
+terminate_this_script
+
+:Script_Debug_PartyBus_StallYReleased
+repeat
+    wait 0
+until not Pad.IsKeyPressed(KeyCode.Y)
+return
 
 
 
 //========================================================================================================================================================================================================
 //      7. Storymode Scripts
-//      Scripts that run exc lusively in Storymode.
+//      Scripts that run exclusively in Storymode.
 //========================================================================================================================================================================================================
+
+//------------------------------------------------------------------------------------------------------
+//      Storymode Scripts | Mission | Arrival (Loader)
+//      - The script launches the Arrival mission.
+//------------------------------------------------------------------------------------------------------
+:Script_Storymode_Arrival_Loader
+script_name 'SMARIVL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO] Script started.")
+
+0@ = Blip.AddSpriteForCoord(2485.9832, 2770.8528, 10.7738, RadarSprite.Crash1)
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO] Launching mission 'arrival'...")
+Mission.LoadAndLaunchInternal(Mission_Arrival)
+repeat
+    wait $mission_trigger_wait_time
+until $flagMissionArrivalCompleted == True
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'arrival'.")  
+Blip.Remove(0@)
+$ONMISSION = False  
+start_new_script @Script_Storymode_FindingTheYeti_Loader
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO] Script ended.")
+terminate_this_script
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Storymode Scripts | Mission | Finding The Yeti (Loader)
+//      - The script launches the Finding The Yeti mission.
+//------------------------------------------------------------------------------------------------------
+:Script_Storymode_FindingTheYeti_Loader
+script_name 'SMFTYEL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMFTYEL] [INFO] Script started.")
+gosub @Script_Storymode_FindingTheYeti_Loader_Blip
+
+while true
+    wait $mission_trigger_wait_time
+    if $flag_Storymode_Mission_FindingTheYeti_Completed == True
+    then 
+        Blip.Remove(0@)
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMFTYEL] [INFO] Script ended.")
+        // start_new_script @Script_Storymode_mis3_Loader
+        terminate_this_script
+    end
+    
+    if and 
+        $ONMISSION == False
+        Player.IsPlaying($player1)
+        Player.CanStartMission($player1)
+        Char.LocateAnyMeans2D($scplayer, {Pos3:}-2472.0, -1561.0, 412.9375, {Radius:}300.0, {Draw Sphere:}False)
+    then
+        if and
+            $TIME_HOURS >= 3
+            22 >= $TIME_HOURS
+        then func_doMissionTimeskip({targetHour:}22)
+        end
+        Text.PrintBig("XSM0301", 1000, TextStyle.BottomRight)
+        func_doMissionFade()
+        Blip.Remove(0@)
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMFTYEL] [INFO] Launching mission 'Finding The Yeti'...")
+        Mission.LoadAndLaunchInternal(Mission_FindingTheYeti)
+    end
+    
+    if not Player.IsPlaying($player1)
+    then
+        Blip.Remove(0@)
+        gosub @Script_Storymode_FindingTheYeti_Loader_Blip
+    end     
+end
+
+:Script_Storymode_FindingTheYeti_Loader_Blip
+0@ = Blip.AddSpriteForCoord({Pos3:}-2472.0, -1561.0, 412.9375, RadarSprite.Crash1)
+return
 
  
 
@@ -859,7 +1193,141 @@ terminate_this_script
 //      8. Freemode Scripts
 //      Scripts that run exclusively in Freemode.
 //========================================================================================================================================================================================================
+:Script_Freemode_Leatherface
+script_name 'FMLEATH'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FMLEATH] [INFO] Script started.") 
 
+Clock.GetLocalTime(1@, 1@, 1@, 1@, 1@, 1@, 1@, 0@)
+// 1@: Leatherface
+// 2@: Blip
+// 3@: Has Engaged?
+
+while true
+    wait 0
+    if Char.LocateAnyMeans3D($scplayer, {Pos3:}-510.0, -128.0, 70.75, 200.0, 200.0, 200.0, False)
+    then
+        Streaming.LoadSpecialCharacter(1, "LFACE")
+        Streaming.RequestModel(#CHNSAW)
+        repeat
+            wait 0
+            if and
+                Streaming.HasSpecialCharacterLoaded(1)
+                Streaming.HasModelLoaded(#CHNSAW)
+            then Break
+            end
+        until False
+        
+        Math.GenerateRandomIntInRangeWithSeed(0@, 0, 7, 0@)
+        Switch 0@
+            Case 0 // SW, Cabin
+                1@ = func_freemodeLeatherfaceSpawn({Pos3:}-565.2369, -180.0686, 78.4135, 214.7312)                            
+            Case 1 // SW, Cabin
+                1@ = func_freemodeLeatherfaceSpawn({Pos3:}-552.5394, -180.362, 78.4062, 237.0016)         
+            Case 2 // SE-most open shed
+                1@ = func_freemodeLeatherfaceSpawn(-473.3665, -169.6685, 78.2109, 183.131)     
+            Case 3 // Centre/NW Cabin
+                1@ = func_freemodeLeatherfaceSpawn(-538.5566, -101.2753, 63.3042, 241.3882)
+            Case 4 // NW-most open shed
+                1@ = func_freemodeLeatherfaceSpawn(-542.8248, -60.4575, 62.9922, 265.515)           
+            Case 5 // NE-most Cabin
+                1@ = func_freemodeLeatherfaceSpawn(-434.6028, -67.4277, 58.875, 49.6498)          
+            Case 6 // Centre, between log piles
+                1@ = func_freemodeLeatherfaceSpawn(-478.5486, -123.0586, 65.7223, 71.8966)         
+            Case 7 // NW, between log piles
+                1@ = func_freemodeLeatherfaceSpawn(-567.1461, -102.5068, 65.1088, 251.3683)
+        end
+        if $flagDebugMythMarkers == True
+        then 2@ = Blip.AddForChar(1@)
+        end 
+        
+        // Main loop
+        while true
+            wait 0
+            // If Leatherface can see the player, then attack
+            if Char.HasSpottedCharInFront(1@, $scplayer)
+            then Task.KillCharOnFoot(1@, $scplayer)
+            end
+            
+            // If the player is not within 500m of Leatherface,
+            if not Char.LocateAnyMeansChar3D($scplayer, 1@, 500.0, 500.0, 500.0, False)
+            then // then check if Leatherface has been attacked. 
+                if 3@ == True // If he has, freeze his position until the player returns.
+                then
+                    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FMLEATH] [INFO] Player left range, and has engaged. Freezing position until return.") 
+                    Char.FreezePosition(1@, True)
+                    if Blip.DoesExist(2@)
+                    then Blip.Remove(2@)
+                    end
+                    repeat
+                        wait 1000
+                    until Char.LocateAnyMeansChar3D($scplayer, 1@, 300.0, 300.0, 300.0, False)
+                    if $flagDebugMythMarkers == True
+                    then 2@ = Blip.AddForChar(1@)
+                    end
+                else // Else, cleanup and start the script again
+                    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FMLEATH] [INFO] Player left range, but did not engage. Cleaning up and restarting.") 
+                    gosub @Script_Freemode_Leatherface_Cleanup
+                    Break
+                end
+            end 
+            /*
+            if Char.IsPlayingAnim(1@, "run_old")
+            then Char.SetAnimSpeed(1@, "run_old", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Csaw_1")
+            then Char.SetAnimSpeed(1@, "Csaw_1", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Csaw_2")
+            then Char.SetAnimSpeed(1@, "Csaw_2", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Csaw_3")
+            then Char.SetAnimSpeed(1@, "Csaw_3", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Csaw_g")
+            then Char.SetAnimSpeed(1@, "Csaw_g", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Csaw_part")
+            then Char.SetAnimSpeed(1@, "Csaw_part", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Weapon_csaw")
+            then Char.SetAnimSpeed(1@, "Weapon_csaw", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "Weapon_csawlo")
+            then Char.SetAnimSpeed(1@, "Weapon_csawlo", 8.0)
+            end
+            if Char.IsPlayingAnim(1@, "idle_csaw")
+            then Char.SetAnimSpeed(1@, "idle_csaw", 8.0)
+            end 
+            */          
+        end
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FMLEATH] [INFO] Breaking main loop.") 
+        Break
+    end    
+end
+terminate_this_script
+
+function func_freemodeLeatherfaceSpawn(posX: Float, posY: Float, posZ: Float, heading: Float): Int
+    Char.Create(PedType.Special, #SPECIAL01, posX, posY, posZ, 10@)
+    Char.SetHeading(10@, heading)
+    Char.GiveWeapon(10@, WeaponType.Chainsaw, 1)
+    func_applyMythTemplate(10@) 
+    Char.SetAnimGroup(10@, "OldMan")
+    return 10@     
+end
+
+:Script_Freemode_Leatherface_Cleanup
+Streaming.MarkModelAsNoLongerNeeded(#CHNSAW)
+Streaming.UnloadSpecialCharacter(1)
+if Char.DoesExist(5@)
+then
+    Char.Delete(5@)
+    Char.MarkAsNoLongerNeeded(5@) 
+end
+if Blip.DoesExist(6@)
+then Blip.Remove(6@)
+end
+wait 1000
+return
 
 
 //========================================================================================================================================================================================================
@@ -885,24 +1353,6 @@ function func_runExternalScript(targetScript: int, name: string)
     end
 end
 
-
-
-//------------------------------------------------------------------------------------------------------
-//      Functions | Load Model
-//      - This function streams a model, waits for it to be loaded, then returns.
-//------------------------------------------------------------------------------------------------------
-function func_loadModel(modelID: int, forceLoad: int)
-    Streaming.RequestModel(modelID)
-    if forceLoad == 1
-    then
-        Streaming.LoadAllModelsNow()
-        return
-    else
-        while not Streaming.IsModelAvailable(modelID)
-            wait 0
-        end
-    end
-end
 
 
 //------------------------------------------------------------------------------------------------------
@@ -1003,7 +1453,7 @@ end
 
 //------------------------------------------------------------------------------------------------------
 //      Functions | Load AudioStream safely.
-//      - This function requests an AudioStream and check's its loaded before playing.
+//      - This function requests an AudioStream and checks it's loaded before playing.
 //------------------------------------------------------------------------------------------------------
 function func_playAudioStreamSafely(streamID: AudioStream, soundPath: string, waitUntilFinished: int)
     repeat
@@ -1092,6 +1542,53 @@ function func_restoreCamera()
     Camera.DoFade(0, Fade.In)
     Hud.SwitchWidescreen(False)
     Text.ClearThisPrintBigNow(TextStyle.BottomRight)
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Mission Fade
+//      - This function fades the game ready to launch a mission
+//------------------------------------------------------------------------------------------------------
+function func_doMissionFade()
+    if Player.IsPlaying($player1)
+    then
+        $ONMISSION = True
+        Player.SetControl($player1, False)      
+        Camera.SetFadingColor(0, 0, 0)
+        Camera.DoFade(1000, Fade.Out)
+        Camera.SetBehindPlayer()
+        while Camera.GetFadingStatus()
+            wait 0
+        end
+        Text.ClearPrints()
+        Text.ClearHelp()
+        Char.ClearTasks($scplayer)
+    end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Functions | Mission Timeskip
+//      - This function accelerates the time of day like when starting missions in GTA V
+//------------------------------------------------------------------------------------------------------
+function func_doMissionTimeskip(targetHour: Int)
+    Int iCurrentHour
+    Int iCurrentMinute
+    Clock.GetTimeOfDay(iCurrentHour, iCurrentMinute)    
+    repeat
+        if iCurrentHour == targetHour
+        then
+            Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Clock now at %i (iCurrentHour). Input was %i (targetHour). Breaking.", iCurrentHour, targetHour,)
+            Break
+        end        
+        iCurrentHour += 1
+        Clock.SetTimeOfDay(iCurrentHour, iCurrentMinute)
+        Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Clock set to %i. Looping.", iCurrentHour)
+        wait 250
+    until False
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Time skip complete at %i. Returning.", iCurrentHour)
 end
 
 
@@ -1186,6 +1683,13 @@ end
 :Mission_Arrival
 {$INCLUDE_ONCE main\missions\Mission-Arrival.txt}
 
+//------------------------------------------------------------------------------------------------------
+//      Missions | Mission 3: Finding The Yeti
+//      - CJ heads to Mount Chiliad in search of the Yeti and the missing hikers.
+//------------------------------------------------------------------------------------------------------
+:Mission_FindingTheYeti
+{$INCLUDE_ONCE main\missions\Mission-FindingTheYeti.txt}
+
 
 
 
@@ -1245,3 +1749,12 @@ end
 //------------------------------------------------------------------------------------------------------
 :External_HQSarah
 {$INCLUDE_ONCE main\externals\External-HQSarah.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 6 | Follower Sarah
+//      - 
+//------------------------------------------------------------------------------------------------------
+:External_FollowerSarah
+{$INCLUDE_ONCE main\externals\External-FollowerSarah.txt}

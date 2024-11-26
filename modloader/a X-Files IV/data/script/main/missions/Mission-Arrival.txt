@@ -60,7 +60,6 @@ wait 5500
 Char.ClearTasksImmediately($scplayer)
 Player.SetControl($player1, True)
 func_restoreCamera()
-Blip blipHQMarker = Blip.AddSpriteForCoord(2485.9832, 2770.8528, 10.7738, RadarSprite.Crash1)
 $flagProsperoHQGatesLocked = True
 
 :Mission_Arrival_HQCheck
@@ -74,7 +73,6 @@ Player.SetControl($player1, False)
 Camera.DoFade(2000, Fade.Out)
 wait 2000
 Hud.SwitchWidescreen(True)
-Blip.Remove(blipHQMarker)
 
 Streaming.RequestModel(#BMYMIB)
 Streaming.LoadAllModelsNow()

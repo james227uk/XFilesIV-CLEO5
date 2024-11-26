@@ -40,7 +40,6 @@ repeat
     end
     iArrayAgentsIndex += 1
 until iArrayAgentsIndex == 25
-PLAY_MISSION_PASSED_TUNE 2
 iArrayAgentsIndex = 0
 
 repeat

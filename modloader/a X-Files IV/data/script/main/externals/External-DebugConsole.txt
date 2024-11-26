@@ -18,7 +18,7 @@
 script_name 'DBGCONS'
 
 const TOGGLE_KEY = 117 // F5
-int iShowWindow = 0
+int iShowWindow = 1
 
 while true
     wait 0
@@ -72,8 +72,13 @@ while true
             if ImGui.Button("The Panopticon", fSzX, fSzY)
             then
                 func_teleportSafe({X:}-512.116, {Y:}-183.331, {Heading:}354.0, {Area:}0)
-            end                    
-            ImGui.Spacing()            
+            end
+                                
+            ImGui.Spacing()
+            if ImGui.Button("Lil' Probe Inn", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}-82.103, {Y:}1372.8312, {Heading:}100.9, {Area:}0)
+            end                        
         end
 
         // Spawning
@@ -111,12 +116,26 @@ while true
                     Car.SetProofs(vehSpawnedCar, 1, 1, 1, 1, 1)
                     Car.MarkAsNoLongerNeeded(vehSpawnedCar)
                 end
+                ImGui.Spacing()
+                if ImGui.Button("Maverick", fSzX, fSzY)
+                then
+                    vehSpawnedCar = func_spawnInCar($scplayer, #MAVERICK)
+                    Car.SetProofs(vehSpawnedCar, 1, 1, 1, 1, 1)
+                    Car.MarkAsNoLongerNeeded(vehSpawnedCar)
+                end                
             end
             ImGui.Spacing()
             if ImGui.CollapsingHeader("Entities")
             then
-                ImGui.Text("Debug")
-                ImGui.GetScalingSize("S5", 3, 0, fSzX, fSzY)
+                ImGui.Text("Followers")
+                ImGui.GetScalingSize("S5", 3, 0, fSzX, fSzY)                
+                if ImGui.Button("Sarah", fSzX, fSzY)
+                then
+                    $flagFollowerActive = followerSarah
+                    start_new_script @Script_Universal_Follower_Sarah    
+                end                
+                ImGui.Spacing()
+                ImGui.Text("Debug")                
                 if ImGui.Button("Follower", fSzX, fSzY)
                 then
                     if $flagFollowerActive == False
@@ -205,18 +224,44 @@ while true
         if iTab == 3 // Settings
         then
             ImGui.Spacing()
-            ImGui.GetScalingSize("S8", 3, 0, fSzX, fSzY)
-            if ImGui.Button("Lock H.Q. Gates", fSzX, fSzY)
+            if ImGui.CollapsingHeader("General")
             then
-                if $flagProsperoHQGatesLocked == False
-                then 
-                    $flagProsperoHQGatesLocked = True
-                    Text.PrintStringNow("H.Q. Gates Locked", 1000)
-                else 
-                    $flagProsperoHQGatesLocked = False
-                    Text.PrintStringNow("H.Q. Gates Unlocked", 1000)
+                ImGui.GetScalingSize("S8", 4, 0, fSzX, fSzY)
+                if ImGui.Button("Lock H.Q. Gates", fSzX, fSzY)
+                then
+                    if $flagProsperoHQGatesLocked == False
+                    then 
+                        $flagProsperoHQGatesLocked = True
+                        Text.PrintStringNow("H.Q. Gates Locked", 1000)
+                    else 
+                        $flagProsperoHQGatesLocked = False
+                        Text.PrintStringNow("H.Q. Gates Unlocked", 1000)
+                    end
+                end   
+            end 
+            
+            ImGui.Spacing()
+            if ImGui.CollapsingHeader("Storymode")
+            then
+                if ImGui.Button("Skip Arrival", fSzX, fSzY)
+                then
+                    terminate_all_scripts_with_this_name "arrival"
+                    $flagMissionArrivalCompleted = True
+                    $ONMISSION = False
+                    Player.SetControl($player1, True)
+                    func_restoreCamera()
+                end  
+                ImGui.GetScalingSize("S9", 2, 0, fSzX, fSzY)
+                if ImGui.Button("1", fSzX, fSzY)
+                then
+                
                 end
-            end   
+                ImGui.SameLine()
+                if ImGui.Button("2", fSzX, fSzY)
+                then
+                
+                end      
+            end                         
         end        
         ImGui.EndChild()
 

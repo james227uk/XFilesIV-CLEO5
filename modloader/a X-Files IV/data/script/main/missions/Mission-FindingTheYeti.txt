@@ -1,0 +1,664 @@
+//==========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) ----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk ---------------------------------------------------------------------------------------------
+//==========================================================================================================================================================================================================
+// Name:        2. Finding The Yeti
+// Description: CJ investigates Mount Chiliad for any sign of the Yeti, and the missing hikers.
+// Path:        main\missions\Mission-FindingTheYeti.txt
+// Trigger:     Upon entering the proximity of Mount Chiliad.
+//==========================================================================================================================================================================================================
+script_name 'findyti'
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Loaded mission 'Finding The Yeti'.")
+
+Blip blipEvidenceTrailBiker
+Blip blipEvidenceTrailHikers
+Blip blipEvidenceTrailFootprints
+Blip blipEvidenceCabin
+Blip blipEvidenceCabinOverlook
+Char cSetpieceHikerM
+Char cSetpieceHikerF
+Char cSetpieceCabin1
+Char cSetpieceCabin2
+Char cSetpieceCabin3
+Char cSetpieceCabin4
+Char cSetpieceCabin5
+Char cSetpieceCabin6
+Char cSetpieceCabin7
+Char cSetpieceYeti
+Char cSetpieceBikerBiker
+Car vehSetpieceCabinCar
+Car vehSetpieceBikerBike
+Int flagEvidenceTrailBikerCollected = False
+Int flagEvidenceTrailHikersCollected = False
+Int flagEvidenceTrailFootprintsCollected = False
+Int flagEvidenceCabinCollected = False
+Int flagEvidenceCabinOverlookCollected = False
+Int flagEvidenceCollectedCount = 0
+Int iTemp
+Float fTemp
+
+// Start the mssion
+register_mission_given
+gosub @Mission_FindingTheYeti_Start
+if has_deatharrest_been_executed
+then
+    gosub @Mission_FindingTheYeti_Failed
+end
+gosub @Mission_FindingTheYeti_Cleanup
+terminate_this_script
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      1. Main Mission Body                                                                                                                                                         Main Mission Body | 1
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:Mission_FindingTheYeti_Start
+Streaming.RequestModel(#WMYBP)
+Streaming.RequestModel(#CWFYHB)
+Streaming.RequestModel(#LANDSTAL)
+Streaming.RequestModel(#SANCHEZ)
+Streaming.LoadSpecialCharacter(1, "YETI")
+Streaming.LoadAllModelsNow()
+
+// Trail: Hikers
+cSetpieceHikerM = Char.Create(Pedtype.Special, #WMYBP, {Pos3:}-2545.5974, -1839.9076, 311.1054)
+cSetpieceHikerF = Char.Create(Pedtype.Special,  #CWFYHB, {Pos3:}-2547.4766, -1837.934, 311.5814)
+fTemp = Math.RandomFloatInRange(0.0, 360.0)
+cSetpieceHikerM.SetHeading(fTemp)
+fTemp = Math.RandomFloatInRange(0.0, 360.0)
+cSetpieceHikerF.SetHeading(fTemp)
+cSetpieceHikerM.SetHealth(0)
+cSetpieceHikerF.SetHealth(0)
+
+
+// Cabin
+cSetpieceCabin1 = Char.CreateRandom(-2814.6379, -1518.8406, 140.8437)
+cSetpieceCabin2 = Char.CreateRandom(-2815.3323, -1524.8899, 140.8437)
+cSetpieceCabin3 = Char.CreateRandom(-2818.2761, -1527.0281, 140.8437)
+cSetpieceCabin4 = Char.CreateRandom(-2808.9409, -1524.0925, 140.8437)
+cSetpieceCabin5 = Char.CreateRandom(-2822.6489, -1518.6887, 140.7656)
+cSetpieceCabin1.SetHealth(0)
+cSetpieceCabin2.SetHealth(0)
+cSetpieceCabin3.SetHealth(0)
+cSetpieceCabin4.SetHealth(0)
+cSetpieceCabin5.SetHealth(0)
+
+vehSetpieceCabinCar = Car.Create(#LANDSTAL, -2800.2351, -1513.4695, 139.2891)
+cSetpieceCabin6 = Char.CreateRandomAsDriver(vehSetpieceCabinCar)
+cSetpieceCabin7 = Char.CreateRandomAsPassenger(vehSetpieceCabinCar, SeatId.FrontRight)
+vehSetpieceCabinCar.SetHealth(0)
+
+// Biker
+vehSetpieceBikerBike = Car.Create(#SANCHEZ, -2089.3823, -1713.3593, 181.9683)
+cSetpieceBikerBiker = Char.CreateRandom(-2084.0173, -1716.3269, 182.9362)
+cSetpieceBikerBiker.SetHealth(0)
+vehSetpieceBikerBike.SetHealth(0)
+
+cSetpieceYeti = Char.Create(PedType.Special, #SPECIAL01, {Pos3:}-2787.9829, -1447.3538, 136.1136)
+cSetpieceYeti.SetVisible(False)
+
+
+iTemp = False
+wait 1000
+Char.FreezePosition($scplayer, False)
+Char.FreezePosition(cSetpieceHikerM, True)
+Char.FreezePosition(cSetpieceHikerF, True)
+Char.FreezePosition(cSetpieceCabin1, True)
+Char.FreezePosition(cSetpieceCabin2, True)
+Char.FreezePosition(cSetpieceCabin3, True)
+Char.FreezePosition(cSetpieceCabin4, True)
+Char.FreezePosition(cSetpieceCabin5, True)
+Char.FreezePosition(cSetpieceCabin6, True)
+Char.FreezePosition(cSetpieceCabin7, True)
+Char.FreezePosition(cSetpieceBikerBiker, True)
+Car.FreezePosition(vehSetpieceCabinCar, True)
+
+skip_cutscene_start_internal @Mission_FindingTheYeti_IntroSkip
+Hud.SwitchWidescreen(True)
+Camera.DoFade(5000, Fade.In)
+Camera.SetVectorMove({From Pos3:}-2312.5, -822.6, 63.8, {To Pos3:}-2312.5, -822.6, 63.8, 5000, False)
+Camera.SetVectorTrack({From Pos3:}-2312.6926, -823.5919, 63.5980, {To Pos3:}-2312.7278, -823.5767, 64.2063, 5000, True)
+wait 5000
+Camera.SetFixedPosition({Pos3:}-2312.5, -822.6, 63.8, {Rot. Pos3:}0.0, 0.0, 0.0)
+Camera.PointAtPoint({Pos3:}-2312.7278, -823.5767, 64.2063, SwitchType.JumpCut)
+wait 2000
+func_restoreCamera()
+Player.SetControl($player1, True)
+
+// XSM0302 ~y~CJ:~w~ Now I'm here this seems even stupider than before.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0302.mp3", {scmID:}-1, {subID:}"XSM0302", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+// XSM0303 A Yeti? Give me a break.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0303.mp3", {scmID:}-1, {subID:}"XSM0303", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}750)
+// XSM0304 Least I'm getting paid for this.
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0304.mp3", {scmID:}-1, {subID:}"XSM0304", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+// XSM0304 I suppose I'd better take a look around...
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0305.mp3", {scmID:}-1, {subID:}"XSM0305", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}1500)
+// XSM0306 The trails are a good place to start.
+gosub @Mission_FindingTheYeti_MarkersTrail
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0306.mp3", {scmID:}-1, {subID:}"XSM0306", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+// XSM0307 And we need to check out that cabin.
+gosub @Mission_FindingTheYeti_MarkersCabin
+func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0307.mp3", {scmID:}-1, {subID:}"XSM0307", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+iTemp = True
+
+:Mission_FindingTheYeti_IntroSkip
+skip_cutscene_end
+if iTemp == False // Intro wasn't watched, create markers.
+then
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Intro was skipped.")
+    func_restoreCamera()
+    Player.SetControl($player1, True)
+    gosub @Mission_FindingTheYeti_MarkersTrail
+    gosub @Mission_FindingTheYeti_MarkersCabin
+end
+
+
+while true
+    wait 0
+    // Evidence counter
+    if flagEvidenceCollectedCount == 4
+    then Break
+    end
+    
+    // Trail: Hikers
+    if flagEvidenceTrailHikersCollected == False
+    then
+        if Char.LocateOnFoot3D($scplayer, {Pos3:}-2541.7388, -1840.7543, 310.7318, 2.0, 2.0, 2.0, True)
+        then
+            skip_cutscene_start_internal @Mission_FindingTheYeti_Evidence_HikersSkip
+                Camera.DoFade(1000, Fade.Out)
+                while Camera.GetFadingStatus()
+                    wait 0
+                end
+                Player.SetControl($player1, False)
+                Char.SetCoordinates($scplayer, {Pos3:}-2541.7388, -1840.7543, -100.0)
+                Char.SetHeading($scplayer, 58.2109)
+                Hud.SwitchWidescreen(True)
+                Camera.SetFixedPosition({Pos3:}-2547.0037, -1833.6890, 311.6307, {Rot. Pos3:}0.0, 0.0, 0.0) 
+                Camera.PointAtPoint({Pos3:}-2546.9014, -1834.6791, 311.5342, SwitchType.Jumpcut) 
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2545.2336, -1838.103, 311.4263, {Heading:}132.7849, {Stop Rad.}0.05)
+                Char.SetCoordinates(cSetpieceYeti, -2495.0266, -1918.0884, -100.0)
+                Char.SetHeading(cSetpieceYeti, 32.5173)
+                Char.SetVisible(cSetpieceYeti, True)
+                Camera.DoFade(1000, Fade.In)
+                wait 3000
+                Task.ToggleDuck($scplayer, True)
+                while true
+                    wait 0
+                    // XSM0308 Bodies... what the hell happened here?
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0308.mp3", {scmID:}-1, {subID:}"XSM0308", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                    if and
+                        flagEvidenceCabinCollected == True
+                        flagEvidenceTrailBikerCollected == True
+                    then
+                        // cabin + biker version
+                        // XSM0311 Same sized claw marks as those at the cabin...
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0311.mp3", {scmID:}-1, {subID:}"XSM0311", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        // XSM0313 ...and on that biker.
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0313.mp3", {scmID:}-1, {subID:}"XSM0313", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        // XSM0312 Must be some fast moving cat, if it is one...
+                        Camera.SetFixedPosition({Pos3:}-2547.6321, -1840.8899, 310.3977, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Low to ground by hikers 
+                        Camera.PointAtPoint({Pos3:}-2546.8213, -1840.3048, 310.4123, SwitchType.Jumpcut)
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0312.mp3", {scmID:}-1, {subID:}"XSM0312", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    
+                    if flagEvidenceCabinCollected == True
+                    then
+                        // Cabin only version
+                        // XSM0311 Same sized claw marks as those at the cabin...
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0311.mp3", {scmID:}-1, {subID:}"XSM0311", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        // XSM0312 Must be some fast moving cat, if it is one...
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0312.mp3", {scmID:}-1, {subID:}"XSM0312", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    
+                    if flagEvidenceTrailBikerCollected == True
+                    then
+                        // Biker only version
+                        // XSM0315 Same sized claw marks as on that biker...   
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0315.mp3", {scmID:}-1, {subID:}"XSM0315", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        // XSM0312 Must be some fast moving cat, if it is one...
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0312.mp3", {scmID:}-1, {subID:}"XSM0312", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    
+                    if flagEvidenceTrailFootprintsCollected == True
+                    then
+                        // Footprints version
+                        // XSM0309 Massive claw marks on both of them...      
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0309.mp3", {scmID:}-1, {subID:}"XSM0309", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        // XSM0314 Gotta be connected to those footprints we found.  
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0314.mp3", {scmID:}-1, {subID:}"XSM0314", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        // XSM0310 Maybe some kind of large cat?
+                        Camera.SetFixedPosition({Pos3:}-2545.0754, -1837.2954, 311.6040, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Behind CJ's shoulder
+                        Camera.PointAtPoint({Pos3:}-2545.4006, -1838.0759, 311.0701, SwitchType.Jumpcut)                 
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0310.mp3", {scmID:}-1, {subID:}"XSM0310", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end                  
+                    
+                    // --No other clues version
+                    // XSM0309 Massive claw marks on both of them...
+                    Camera.SetFixedPosition({Pos3:}-2545.0754, -1837.2954, 311.6040, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Behind CJ's shoulder
+                    Camera.PointAtPoint({Pos3:}-2545.4006, -1838.0759, 311.0701, SwitchType.Jumpcut) 
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0309.mp3", {scmID:}-1, {subID:}"XSM0309", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                    // XSM0310 Maybe some kind of large cat?
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0310.mp3", {scmID:}-1, {subID:}"XSM0310", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                    Break
+                end
+           
+            :Mission_FindingTheYeti_Evidence_HikersSkip
+            wait 500
+            skip_cutscene_end
+            Task.ToggleDuck($scplayer, False)
+            func_restoreCamera()
+            Char.ClearTasks($scplayer)
+            Player.SetControl($player1, True)
+            Blip.Remove(blipEvidenceTrailHikers)
+            Char.SetCoordinates(cSetpieceYeti, -2346.0422, -1661.5488, 484.0096)
+            Char.SetVisible(cSetpieceYeti, False)
+            flagEvidenceTrailHikersCollected = True
+            flagEvidenceCollectedCount += 1
+        end       
+    end
+    
+    // Cabin: Overlook
+    if flagEvidenceCabinOverlookCollected == False
+    then
+        if Char.LocateOnFoot3D($scplayer, {Pos3:}-2731.7129, -1598.2828, 235.9504, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}True)
+        then
+            skip_cutscene_start_internal @Mission_FindingTheYeti_Evidence_CabinOverlookSkip
+                Camera.DoFade(1000, Fade.Out)
+                while Camera.GetFadingStatus()
+                    wait 0
+                end
+                Player.SetControl($player1, False)
+                Char.SetCoordinates($scplayer, {Pos3:}-2732.1499, -1598.0598, -100.0)
+                Char.SetHeading($scplayer, 42.2)
+                Hud.SwitchWidescreen(True)
+                Camera.SetFixedPosition({Pos3:}-2738.9229, -1589.5988, 235.5422, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ walking to cliff edge.
+                Camera.PointAtPoint({Pos3:}-2738.4524, -1590.4557, 235.3317, SwitchType.Jumpcut) 
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2736.1318, -1596.6216, 235.2048, {Heading:}99.5943, {Stop Rad.}0.05)
+                Char.SetCoordinates(cSetpieceYeti, -2689.6135, -1731.7319, -100.0)
+                Char.SetHeading(cSetpieceYeti, 23.1403)
+                Char.SetVisible(cSetpieceYeti, True)
+                Camera.DoFade(1000, Fade.In)
+                wait 3000
+                Task.ToggleDuck($scplayer, True)
+                // XSM0316 Spent ammo casings... a lot of them.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0316.mp3", {scmID:}-1, {subID:}"XSM0316", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                // XSM0317 Someone used a ton of ammo shooting at something.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0317.mp3", {scmID:}-1, {subID:}"XSM0317", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                Char.ClearTasks($scplayer)
+                Task.TurnCharToFaceCoord($scplayer, -2815.8, -1522.6, 140.8)
+                
+                if flagEvidenceCabinCollected == True
+                then
+                    // XSM0322 Same calibre as those down at the cabin.
+                    Camera.SetFixedPosition({Pos3:}-2734.3845, -1596.5751, 238.2431, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Behind CJ, pointing down at the cabin.
+                    Camera.PointAtPoint({Pos3:}-2734.8889, -1596.1161, 237.5117, SwitchType.Jumpcut) 
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0322.mp3", {scmID:}-1, {subID:}"XSM0322", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                    // XSM0323 I guess we found our shooter, but what were they shooting at?
+                    Camera.SetFixedPosition({Pos3:}-2737.9341, -1595.1340, 235.4417, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ at cliff edge, who is facing the cabin.
+                    Camera.PointAtPoint({Pos3:}-2737.1907, -1595.8027, 235.4550, SwitchType.Jumpcut) 
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0323.mp3", {scmID:}-1, {subID:}"XSM0323", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                    // XSM0324 Surely they weren't shooting at the cabin people?
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0324.mp3", {scmID:}-1, {subID:}"XSM0324", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                else
+                    while true
+                        wait 0
+                        // XSM0318 And I'm guessing it was down there, whatever it was.
+                        Camera.SetFixedPosition({Pos3:}-2734.3845, -1596.5751, 238.2431, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Behind CJ, pointing down at the cabin.
+                        Camera.PointAtPoint({Pos3:}-2734.8889, -1596.1161, 237.5117, SwitchType.Jumpcut) 
+                        Task.ToggleDuck($scplayer, False)
+                        Task.CharSlideToCoord($scplayer, {Pos3:}-2736.3135, -1595.5858, 234.9072, {Heading:}46.6175, {Radius:}0.05)
+                        wait 2000 
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0318.mp3", {scmID:}-1, {subID:}"XSM0318", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        if flagEvidenceTrailHikersCollected == True
+                        then
+                            // XSM0319 Wonder if there's any connection to those hikers?
+                            Camera.SetFixedPosition({Pos3:}-2737.9341, -1595.1340, 235.4417, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ at cliff edge, who is facing the cabin.
+                            Camera.PointAtPoint({Pos3:}-2737.1907, -1595.8027, 235.4550, SwitchType.Jumpcut) 
+                            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0319.mp3", {scmID:}-1, {subID:}"XSM0319", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)                
+                            Break
+                        end
+                        if flagEvidenceTrailBikerCollected == True
+                        then
+                            // XSM0320 Wonder if there's any connection to that biker?
+                            Camera.SetFixedPosition({Pos3:}-2737.9341, -1595.1340, 235.4417, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ at cliff edge, who is facing the cabin.
+                            Camera.PointAtPoint({Pos3:}-2737.1907, -1595.8027, 235.4550, SwitchType.Jumpcut) 
+                            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0320.mp3", {scmID:}-1, {subID:}"XSM0320", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)                
+                            Break
+                        end 
+                        if flagEvidenceTrailFootprintsCollected == True
+                        then
+                            // XSM0321 Wonder if it's whatever left those footprints?
+                            Camera.SetFixedPosition({Pos3:}-2737.9341, -1595.1340, 235.4417, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ at cliff edge, who is facing the cabin.
+                            Camera.PointAtPoint({Pos3:}-2737.1907, -1595.8027, 235.4550, SwitchType.Jumpcut) 
+                            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0321.mp3", {scmID:}-1, {subID:}"XSM0321", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)                
+                            Break
+                        end
+                        Break
+                    end
+                end
+              
+            :Mission_FindingTheYeti_Evidence_CabinOverlookSkip 
+            wait 500
+            Task.ToggleDuck($scplayer, False)
+            wait 1000
+            skip_cutscene_end
+            func_restoreCamera()
+            Char.ClearTasksImmediately($scplayer)
+            Player.SetControl($player1, True)
+            Char.SetCoordinates(cSetpieceYeti, -2346.0422, -1661.5488, 484.0096)
+            Char.SetVisible(cSetpieceYeti, False)
+            Blip.Remove(blipEvidenceCabinOverlook)
+            flagEvidenceCabinOverlookCollected = True
+            flagEvidenceCollectedCount += 1                                   
+        end
+    end
+    
+    // Trail: Footprints
+    if flagEvidenceTrailFootprintsCollected == False
+    then
+        if Char.LocateOnFoot3D($scplayer, {Pos3:}-1997.3577, -1543.304, 84.6634, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}True)
+        then
+            skip_cutscene_start_internal @Mission_FindingTheYeti_Evidence_TrailFootprintsSkip
+                Camera.DoFade(1000, Fade.Out)
+                while Camera.GetFadingStatus()
+                    wait 0
+                end
+                Player.SetControl($player1, False)
+                Char.SetCoordinates($scplayer, {Pos3:}-1997.3577, -1543.304, 84.1634)
+                Char.SetHeading($scplayer, 178.5318)
+                Hud.SwitchWidescreen(True)
+                Camera.SetFixedPosition({Pos3:}-1998.4666, -1554.5269, 84.6273, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ approaching footprints.
+                Camera.PointAtPoint({Pos3:}-1998.2550, -1553.5507, 84.5804, SwitchType.Jumpcut) 
+                Task.CharSlideToCoord($scplayer, {Pos3:}-1997.5176, -1549.5034, 84.7371, {Heading:}178.5318, {Stop Rad.}0.05)
+                Camera.DoFade(1000, Fade.In)
+                wait 3000
+                Task.ToggleDuck($scplayer, True)
+                // XSM0325 Footprints... massive ones.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0325.mp3", {scmID:}-1, {subID:}"XSM0325", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                // XSM0326 What'd leave prints like these? Some kind of large cat?
+                Camera.SetFixedPosition({Pos3:}-1996.1412, -1552.3406, 84.5477, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Closer to CJ, facing him crouching.
+                Camera.PointAtPoint({Pos3:}-1996.6245, -1551.4669, 84.4908, SwitchType.Jumpcut)
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0326.mp3", {scmID:}-1, {subID:}"XSM0326", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                
+                
+                Camera.SetFixedPosition({Pos3:}-1997.5397, -1552.2812, 84.3101, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ crouching, close-up.
+                Camera.PointAtPoint({Pos3:}-1997.4875, -1551.2830, 84.2847, SwitchType.Jumpcut) 
+                while true
+                    wait 0
+                    if flagEvidenceCabinCollected == True
+                    then
+                        // XSM0329 Wonder if it's what attacked the cabin?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0329.mp3", {scmID:}-1, {subID:}"XSM0329", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    if flagEvidenceTrailBikerCollected == True
+                    then
+                        // XSM0330 Wonder if the biker was following the prints, but it was following him?
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0330.mp3", {scmID:}-1, {subID:}"XSM0330", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    if flagEvidenceTrailHikersCollected == True
+                    then
+                        // XSM0328 Wonder if it's what attacked those hikers.
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0328.mp3", {scmID:}-1, {subID:}"XSM0328", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    Break                                         
+                end
+                // XSM0327 They go in both directions repeatedly, so no chance I can follow them.
+                Camera.SetFixedPosition({Pos3:}-1978.8539, -1539.8978, 94.8328, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Distant, high-up shot looking down at CJ.
+                Camera.PointAtPoint({Pos3:}-1979.6288, -1540.3550, 94.3963, SwitchType.Jumpcut)   
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0327.mp3", {scmID:}-1, {subID:}"XSM0327", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)                
+                
+            :Mission_FindingTheYeti_Evidence_TrailFootprintsSkip 
+            wait 500
+            Task.ToggleDuck($scplayer, False)
+            wait 1000
+            skip_cutscene_end
+            func_restoreCamera()
+            Char.ClearTasks($scplayer)
+            Player.SetControl($player1, True)
+            Blip.Remove(blipEvidenceTrailFootprints)
+            flagEvidenceTrailFootprintsCollected = True
+            flagEvidenceCollectedCount += 1
+        end
+    end 
+    
+    // Trail: Biker
+    if flagEvidenceTrailBikerCollected == False
+    then
+        if Char.LocateOnFoot3D($scplayer, {Pos3:}-2085.4451, -1707.2437, 182.0307, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}True)
+        then
+            skip_cutscene_start_internal @Mission_FindingTheYeti_Evidence_TrailBikerSkip
+                Camera.DoFade(1000, Fade.Out)
+                while Camera.GetFadingStatus()
+                    wait 0
+                end
+                Player.SetControl($player1, False)
+                Char.SetCoordinates($scplayer, {Pos3:}-2084.0247, -1707.9419, -100.0)
+                Char.SetHeading($scplayer, 158.1485)
+                Hud.SwitchWidescreen(True)
+                Camera.SetFixedPosition({Pos3:}-2093.2676, -1717.0201, 183.0921, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ walking towards bike
+                Camera.PointAtPoint({Pos3:}-2092.4077, -1716.5348, 182.9341, SwitchType.Jumpcut)               
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2085.8506, -1711.4728, 182.3055, {Heading:}166.6086, {Stop Rad.}0.05)           
+                Camera.DoFade(1000, Fade.In)
+                wait 3000
+                // XSM0331 The hell happened here?
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0331.mp3", {scmID:}-1, {subID:}"XSM0331", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                Camera.SetFixedPosition({Pos3:}-2083.0659, -1717.2332, 182.9091, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Next to dead biker, facing CJ.
+                Camera.PointAtPoint({Pos3:}-2083.0435, -1716.2916, 182.5730, SwitchType.Jumpcut)               
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2084.1165, -1713.6284, 182.7118, {Heading:}221.1527, {Radius:}0.05)
+                Char.SetCoordinates(cSetpieceYeti, -2049.3149, -1657.379, -100.0)
+                Char.SetHeading(cSetpieceYeti, 144.2887)
+                Char.SetVisible(cSetpieceYeti, True)
+                wait 2000
+                Task.TurnCharToFaceChar($scplayer, cSetpieceBikerBiker)
+                Task.ToggleDuck($scplayer, True)
+                wait 1000
+                while true
+                    wait 0
+                    if flagEvidenceTrailHikersCollected == True
+                    then
+                        // XSM0334 Same claw marks as those hikers.
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0334.mp3", {scmID:}-1, {subID:}"XSM0334", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)             
+                        Break
+                    end
+                    // XSM0332 These are claw marks... they were torn apart.
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0332.mp3", {scmID:}-1, {subID:}"XSM0332", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                    if flagEvidenceTrailFootprintsCollected == True
+                    then
+                        // XSM0335 Looks like those footprints again too.
+                        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0335.mp3", {scmID:}-1, {subID:}"XSM0335", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
+                        Break
+                    end
+                    Break
+                end
+                Task.ToggleDuck($scplayer, False)
+                Camera.SetFixedPosition({Pos3:}-2088.1575, -1716.0477, 181.9184, {Rot. Pos3:}0.0, 0.0, 0.0) 
+                Camera.PointAtPoint({Pos3:}-2088.3442, -1715.0769, 181.7683, SwitchType.Jumpcut)
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2087.8604, -1713.0284, 182.1512, {Heading:}102.7115, {Radius:}0.05)
+                wait 2000
+                Task.TurnCharToFaceCoord($scplayer, {Pos3:}-2089.3823, -1713.3593, 181.9683)
+                Task.ToggleDuck($scplayer, True)
+                wait 1000
+                // XSM0333 Claw marks here too, must've clipped the gas tank and blew it up.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0333.mp3", {scmID:}-1, {subID:}"XSM0333", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)                         
+                
+            :Mission_FindingTheYeti_Evidence_TrailBikerSkip 
+            wait 500
+            Task.ToggleDuck($scplayer, False)
+            wait 1000
+            // XSM0310 Maybe some kind of large cat?
+            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0310.mp3", {scmID:}-1, {subID:}"XSM0310", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)               
+            skip_cutscene_end
+            func_restoreCamera()
+            Char.ClearTasks($scplayer)
+            Player.SetControl($player1, True)
+            Char.SetCoordinates(cSetpieceYeti, -2346.0422, -1661.5488, 484.0096)
+            Char.SetVisible(cSetpieceYeti, False)
+            Blip.Remove(blipEvidenceTrailBiker)
+            flagEvidenceTrailBikerCollected = True
+            flagEvidenceCollectedCount += 1
+        end
+    end
+    
+// Cabin
+    if flagEvidenceCabinCollected == False
+    then
+        if Char.LocateOnFoot3D($scplayer, {Pos3:}-2797.2817, -1535.8827, 139.4028, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}True)
+        then
+            skip_cutscene_start_internal @Mission_FindingTheYeti_Evidence_CabinSkip
+                Camera.DoFade(1000, Fade.Out)
+                while Camera.GetFadingStatus()
+                    wait 0
+                end
+                Player.SetControl($player1, False)
+                //Char.SetCoordinates($scplayer, {Pos3:}-2797.2817, -1535.8827, -100.0)
+                //Char.SetHeading($scplayer, 39.0739)
+                Char.SetCoordinates($scplayer, {Pos3:}-2798.6587, -1533.8175, -100.0)
+                Char.SetHeading($scplayer, 33.6664)
+                Hud.SwitchWidescreen(True)
+                Camera.SetFixedPosition({Pos3:}-2793.1052, -1538.1759, 139.8401, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Behind CJ, facing cabin. 
+                Camera.PointAtPoint({Pos3:}-2793.8252, -1537.4821, 139.8279, SwitchType.Jumpcut) 
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2802.0078, -1528.7894, 139.2891, {Heading:}355.2068, {Radius.}0.05)
+                Camera.DoFade(1000, Fade.In)
+                wait 5000
+                // XSM0336 The hell happened here?!
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0336.mp3", {scmID:}-1, {subID:}"XSM0336", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)       
+                
+                Camera.SetFixedPosition({Pos3:}-2812.1614, -1531.1515, 141.7899, {Rot. Pos3:}0.0, 0.0, 0.0) 
+                Camera.PointAtPoint({Pos3:}-2812.5493, -1530.2765, 141.5002, SwitchType.Jumpcut) 
+                Char.SetCoordinates($scplayer, {Pos3:}-2809.4795, -1524.1038, 140.3437)
+                Char.SetHeading($scplayer, 88.2676)
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2813.603, -1524.0278, 140.8437, {Heading:}89.5209, {Radius:}0.05)
+                wait 3000
+                Task.TurnCharToFaceChar($scplayer, cSetpieceCabin2)
+                wait 100
+                Task.ToggleDuck($scplayer, True)
+                // XSM0337 Deep lacerations to the chest...
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0337.mp3", {scmID:}-1, {subID:}"XSM0337", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)       
+                
+                while true
+                    wait 0
+                    if or
+                        flagEvidenceTrailHikersCollected == True
+                        flagEvidenceTrailBikerCollected == True
+                    then
+                        // XSM0342 Same marks as the other victims.
+                        func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0342.mp3", -1, {SubID:}"XSM0342", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500) 
+                        
+                        // XSM0343 If this is a cat then it's faster than anything I know of.
+                        func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0343.mp3", -1, {SubID:}"XSM0343", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500)
+                        Break
+                    end
+                    
+                    // DEFAULT | XSM0338 Some kind of big cat get in here?
+                    func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0338.mp3", {scmID:}-1, {subID:}"XSM0338", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)       
+                    Break
+                end
+                Camera.SetFixedPosition({Pos3:}-2804.4836, -1515.9849, 139.0743, {Rot. Pos3:}0.0, 0.0, 0.0)  // Camera: Low to ground, behind CJ, facing car and driver.
+                Camera.PointAtPoint({Pos3:}-2803.6045, -1515.5117, 139.0168, SwitchType.Jumpcut) 
+                Char.SetCoordinates($scplayer, {Pos3:}-2803.0098, -1522.7861, -100.0)
+                Char.SetHeading($scplayer, 345.8533)
+                Task.CharSlideToCoord($scplayer, {Pos3:}-2801.8938, -1515.2858, 139.2891, {Heading:}346.4801, {Radius:}0.05)
+                wait 5000
+                Task.TurnCharToFaceChar($scplayer, cSetpieceCabin6)
+                Task.ToggleDuck($scplayer, True)
+                wait 1000
+                // XSM0339 These guys must've tried to run away.
+                Camera.SetFixedPosition({Pos3:}-2803.9883, -1511.2303, 139.6395, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ, car, and driver.
+                Camera.PointAtPoint({Pos3:}-2803.2715, -1511.9044, 139.4609, SwitchType.Jumpcut) 
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0339.mp3", {scmID:}-1, {subID:}"XSM0339", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)       
+                Task.TurnCharToFaceCoord($scplayer, {Pos3:}-2799.0498, -1514.6777, 139.1873)
+                wait 1000
+                cSetpieceYeti.SetCoordinates(-2787.5757, -1446.712, -100.0)
+                cSetpieceYeti.SetHeading(163.7249)                
+                // XSM0340 Same claw marks all over the metal.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0340.mp3", {scmID:}-1, {subID:}"XSM0340", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}1000)       
+                Task.ToggleDuck($scplayer, False)
+                wait 1000
+                Task.TurnCharToFaceChar($scplayer, cSetpieceCabin2)
+                Camera.SetFixedPosition({Pos3:}-2803.8430, -1517.4016, 139.8385, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Close-up facing CJ.
+                Camera.PointAtPoint({Pos3:}-2803.1448, -1516.6960, 139.7170, SwitchType.Jumpcut)                
+                // XSM0341 Whatever happened, I think we found why the line went dead.
+                func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0341.mp3", -1, {SubID:}"XSM0341", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}1000)  
+                wait 2000
+                
+            :Mission_FindingTheYeti_Evidence_CabinSkip
+            skip_cutscene_end
+            Task.ToggleDuck($scplayer, False)
+            func_restoreCamera()
+            Char.ClearTasks($scplayer)
+            Player.SetControl($player1, True)
+            Char.SetCoordinates(cSetpieceYeti, -2346.0422, -1661.5488, 484.0096)
+            Char.SetVisible(cSetpieceYeti, False)
+            Blip.Remove(blipEvidenceCabin)
+            flagEvidenceCabinCollected = True
+            flagEvidenceCollectedCount += 1
+        end
+    end                                    
+end
+
+
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0341.mp3", -1, {SubID:}"XSM0341", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}1000)  
+
+wait 5000
+repeat
+    wait 0
+until Pad.IsKeyPressed(KeyCode.Y)
+return
+
+
+
+
+return
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      2. Mission Passed Actions                                                                                                                                               Mission Passed Actions | 2
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+:Mission_FindingTheYeti_Passed
+$flag_Storymode_Mission_FindingTheYeti_Completed = True
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Returning from mission (Reason: Mission passed).")
+return
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      3. Mission Failed Actions                                                                                                                                               Mission Failed Actions | 3
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+:Mission_FindingTheYeti_Failed
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Returning from mission (Reason: Mission failed).")
+return
+
+
+// Mission cleanup.
+:Mission_FindingTheYeti_Cleanup
+Streaming.MarkModelAsNoLongerNeeded(#WMYBP)
+Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)
+Streaming.MarkModelAsNoLongerNeeded(#LANDSTAL)
+Streaming.MarkModelAsNoLongerNeeded(#SANCHEZ)
+Streaming.RemoveSpecialModel(1)
+$ONMISSION = False
+Mission.Finish()
+return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      4. Gosubs and Functions                                                                                                                                                   Gosubs and Functions | 4
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:Mission_FindingTheYeti_MarkersTrail
+blipEvidenceTrailBiker = Blip.AddSpriteForCoord({Pos3:}-2085.4451, -1707.2437, 182.0307, RadarSprite.Qmark)
+blipEvidenceTrailHikers = Blip.AddSpriteForCoord({Pos3:}-2541.7388, -1840.7543, 310.7318, RadarSprite.Qmark)
+blipEvidenceTrailFootprints = Blip.AddSpriteForCoord({Pos3:}-1997.3577, -1543.304, 84.6634, RadarSprite.Qmark)
+return
+
+:Mission_FindingTheYeti_MarkersCabin
+blipEvidenceCabin = Blip.AddSpriteForCoord({Pos3:}-2797.2817, -1535.8827, 139.4028, RadarSprite.Qmark)
+blipEvidenceCabinOverlook = Blip.AddSpriteForCoord({Pos3:}-2731.7129, -1598.2828, 235.9504, RadarSprite.Qmark)
+return

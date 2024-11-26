@@ -111,14 +111,10 @@ while true
         func_stallMenu(0) // Stall until confirm/sprint key released.        
         
         switch iMenuActiveChoice
-            case 0
-                func_stallMenu(0)
-                gosub @External_HQSarah_TalkMenu
-                
-            case 1
-                func_stallMenu(0)
-                Text.PrintStringNow("Services etc", 1000)
-
+            case 0 // Talk
+                gosub @External_HQSarah_TalkMenu                
+            case 1 // Services
+                gosub @External_HQSarah_ServicesMenu
         end
         jump @External_HQSarah_MainMenu
     end
@@ -160,6 +156,46 @@ while true
         func_stallMenu(0) // Stall until confirm/sprint key released. 
         Menu.Delete({Menu:}menuActive)
         jump @External_HQSarah_TalkMenu
+    end
+    if or
+        Pad.IsKeyPressed(KeyCode.Back)
+        Pad.IsKeyPressed(Keycode.Return)
+    then
+        func_stallMenu(1) // Stall until enter/backspace pressed.
+        Menu.Delete(menuActive)
+        return
+    end     
+end
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Services Menu
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_ServicesMenu
+TimerA = 0
+menuActive = Menu.Create("XFSW018", {X:}270.0, {Y:}300.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False)
+Menu.SetColumn(menuActive, {Column:}0, {Title:}"DUMMY", {Rows:}"XFSW032", "XFSW029", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        iMenuActiveChoice = Menu.GetItemSelected({Menu:}menuActive)
+        Menu.Delete({Menu:}menuActive)
+        func_stallMenu(0) // Stall until confirm/sprint key released.        
+        
+        switch iMenuActiveChoice
+            // Follower
+            case 0
+                gosub @External_HQSarah_Services_Follower
+                
+            case 1
+                Text.PrintStringNow("Service 2 etc", 1000)
+        end
+        func_stallMenu(0) // Stall until confirm/sprint key released. 
+        Menu.Delete({Menu:}menuActive)
+        jump @External_HQSarah_ServicesMenu
     end
     if or
         Pad.IsKeyPressed(KeyCode.Back)
@@ -437,6 +473,79 @@ end
 $flagIntroducedSarah = 1
 Menu.Delete(menuActive)
 return
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Dialogue: Services | 1. Follower
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_HQSarah_Services_Follower
+if $flagFollowerSarahAvailable == 1
+then
+    // Can follow.
+    // If Sarah is already following.
+    if $flagFollowerActive == followerSarah
+    then
+        // XFSW045 ~y~CJ:~w~ On second thought, I think I can handle it myself.
+        gosub @External_HQSarah_DialogueFaceCam_CJ   
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW045.mp3", {scmID:}-1, {subID:}"XFSW045", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+                 
+        // XFSW046 ~y~Sarah:~w~ You're no fun... Well, I'm here if you need me. 
+        gosub @External_HQSarah_DialogueFaceCam_Sarah
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW046.mp3", {scmID:}-1, {subID:}"XFSW046", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        $flagFollowerActive = followerNone
+    // If Sarah is NOT already following.   
+    else
+        // XFSW033 ~y~CJ:~w~ You should come with me, I could use the help. Interested?
+        gosub @External_HQSarah_DialogueFaceCam_CJ
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW033.mp3", {scmID:}-1, {subID:}"XFSW033", {doAnims:}True, $scplayer, {waitToFinish:}True, {extraWaitTime:}500)
+        gosub @External_HQSarah_DialogueFaceCam_Sarah
+        iGreetingRandom = Math.RandomIntInRange({Range:}0, 4)
+        Switch iGreetingRandom
+            Case 0
+                // XFSW034 ~y~Sarah:~w~ Any time, any place. You know it.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW034.mp3", {scmID:}-1, {subID:}"XFSW034", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+            Case 1
+                // XFSW035 ~y~Sarah:~w~ Thought you'd never ask. Let's go.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW035.mp3", {scmID:}-1, {subID:}"XFSW035", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+            Case 2
+                // XFSW036 ~y~Sarah:~w~ Sure, I'm all wrapped up here anyway.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW036.mp3", {scmID:}-1, {subID:}"XFSW036", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+            Case 3
+                // XFSW037 ~y~Sarah:~w~ I think they can spare me around here for a few hours. Lead on.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW037.mp3", {scmID:}-1, {subID:}"XFSW037", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+            Case 4
+                // XFSW038 ~y~Sarah:~w~ Sure, but only if we can stop for coffee.
+                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW038.mp3", {scmID:}-1, {subID:}"XFSW038", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        end
+        // XFSW044 ~y~Sarah:~w~ I'll meet you outside.
+        func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW044.mp3", {scmID:}-1, {subID:}"XFSW044", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}500)
+        $flagFollowerActive = followerSarah
+        start_new_script @Script_Universal_Follower_Sarah
+    end  
+else
+    // Can't follow.
+    iGreetingRandom = Math.RandomIntInRange({Range:}0, 4)
+    Switch iGreetingRandom
+        Case 0
+            // XFSW039 ~y~Sarah:~w~ I don't know CJ, there's a lot to do. Maybe some other time?
+            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW039.mp3", {scmID:}-1, {subID:}"XFSW039", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        Case 1
+            // XFSW040 ~y~Sarah:~w~ I'd love to, but I need to get this done. Maybe later?
+            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW040.mp3", {scmID:}-1, {subID:}"XFSW040", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        Case 2
+            // XFSW041 ~y~Sarah:~w~ If I leave, The Custodian will kill me. I'd better not.
+            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW041.mp3", {scmID:}-1, {subID:}"XFSW041", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        Case 3
+            // XFSW042 ~y~Sarah:~w~ It's been a long time since I've done fieldwork. I'm not up to it any more...
+            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW042.mp3", {scmID:}-1, {subID:}"XFSW042", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+        Case 4
+            // XFSW043 ~y~Sarah:~w~ I'd love to, but sadly I'm stuck here behind the desk. Long story.
+            func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\sarah\XFSW043.mp3", {scmID:}-1, {subID:}"XFSW043", {doAnims:}True, cSarah, {waitToFinish:}True, {extraWaitTime:}0)
+    end    
+end
+return
+
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

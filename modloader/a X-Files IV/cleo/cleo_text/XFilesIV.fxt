@@ -60,6 +60,53 @@ XSM0234 ~y~Weapons~w~ can be purchased from the armoury.
 XSM0235 ~y~Briefings~w~ and ~y~lore~w~ can be found in the Document Repository.
 XSM0236 ~y~Healthcare~w~ can be obtained in the clinic.
 
+# Storymode | Mission 2 | Finding The Yeti
+# ----------------------------
+XSM0301 Finding The Yeti
+XSM0302 ~y~CJ:~w~ Now I'm here this seems even stupider than before.
+XSM0303 A Yeti? Give me a break.
+XSM0304 Least I'm getting paid for this.
+XSM0305 I suppose I'd better take a look around...
+XSM0306 The trails are a good place to start.
+XSM0307 And we need to check out that cabin.
+XSM0308 Bodies... what the hell happened here?
+XSM0309 Massive claw marks on both of them...
+XSM0310 Maybe some kind of large cat?
+XSM0311 Same sized claw marks as those at the cabin...
+XSM0312 Must be some fast moving cat, if it is one...
+XSM0313 ...and on that biker.
+XSM0314 Gotta be connected to those footprints we found.
+XSM0315 Same sized claw marks as on that biker...
+XSM0316 Spent ammo casings... a lot of them.
+XSM0317 Someone used a ton of ammo shooting at something.
+XSM0318 And I'm guessing it was down there, whatever it was.
+XSM0319 Wonder if there's any connection to those hikers?
+XSM0320 Wonder if there's any connection to that biker?
+XSM0321 Wonder if it's whatever left those footprints?
+XSM0322 Same calibre as those down at the cabin.
+XSM0323 I guess we found our shooter, but what were they shooting at?
+XSM0324 Surely they weren't shooting at the cabin people?
+XSM0325 Footprints... massive ones.
+XSM0326 What'd leave prints like these? Some kind of large cat?
+XSM0327 They go in both directions repeatedly, so no chance I can follow them.
+XSM0328 Wonder if it's what attacked those hikers.
+xSM0329 Wonder if it's what attacked the cabin?
+XSM0330 Wonder if the biker was following the prints, but it was following him?
+XSM0331 The hell happened here?
+XSM0332 These are claw marks... they were torn apart.
+XSM0333 Claw marks here too, must've clipped the gas tank and blew it up.
+XSM0334 Same claw marks as those hikers.
+XSM0335 Looks like those footprints again too.
+XSM0336 The hell happened here?!
+XSM0337 Deep lacerations to the chest...
+XSM0338 Some kind of big cat get in here?
+XSM0339 These guys must've tried to run away.
+XSM0340 Same claw marks all over the metal.
+XSM0341 Whatever happened, I think we found why the line went dead.
+XSM0342 Same marks as the other victims.
+XSM0343 If this is a cat then it's faster than anything I know of.
+
+
 # Universal | External | HQ Weapons Vendor
 # ----------------------------
 XWEP000 Price
@@ -187,3 +234,50 @@ XFSW028 Thoughts
 XFSW029 Relationship
 XFSW030 ~y~Sarah:~w~ Directive 665 has never, ever been issued. Something big is happening.
 XFSW031 ~y~Sarah:~w~ I heard you've got to climb Mount Chiliad... I don't envy you.
+XFSW032 Follower
+XFSW033 ~y~CJ:~w~ You should come with me, I could use the help. Interested?
+XFSW034 ~y~Sarah:~w~ Any time, any place. You know it.
+XFSW035 ~y~Sarah:~w~ Thought you'd never ask. Let's go.
+XFSW036 ~y~Sarah:~w~ Sure, I'm all wrapped up here anyway.
+XFSW037 ~y~Sarah:~w~ I think they can spare me around here for a few hours. Lead on.
+XFSW038 ~y~Sarah:~w~ Sure, but only if we can stop for coffee.
+XFSW039 ~y~Sarah:~w~ I don't know CJ, there's a lot to do. Maybe some other time?
+XFSW040 ~y~Sarah:~w~ I'd love to, but I need to get this done. Maybe later?
+XFSW041 ~y~Sarah:~w~ If I leave, The Custodian will kill me. I'd better not.
+XFSW042 ~y~Sarah:~w~ It's been a long time since I've done fieldwork. I'm not up to it any more...
+XFSW043 ~y~Sarah:~w~ I'd love to, but sadly I'm stuck here behind the desk. Long story.
+XFSW044 ~y~Sarah:~w~ I'll meet you outside.
+XFSW045 ~y~CJ:~w~ On second thought, I think I can handle it myself.
+XFSW046 ~y~Sarah:~w~ You're no fun... Well, I'm here if you need me.
+# ---Follower----
+# Greetings
+XFSW800 ~y~Sarah:~w~ How can I help?
+XFSW801 ~y~Sarah:~w~ What's up?
+XFSW802 ~y~Sarah:~w~ What's on your mind?
+XFSW803 ~y~Sarah:~w~ You need me?
+XFSW804 ~y~Sarah:~w~ Hey.
+# Goodbyes
+XFSW805 ~y~Sarah:~w~ Okay then.
+XFSW806 ~y~Sarah:~w~ Alright.
+XFSW807 ~y~Sarah:~w~ Any time.
+XFSW808 ~y~Sarah:~w~ Back to it then.
+XFSW809 ~y~Sarah:~w~ Let's go.
+# Affirmatives
+XFSW810 ~y~Sarah:~w~ Affirmative.
+XFSW811 ~y~Sarah:~w~ Roger that.
+XFSW812 ~y~Sarah:~w~ You got it.
+XFSW813 ~y~Sarah:~w~ Right.
+XFSW814 ~y~Sarah:~w~ Will do.
+# Negatives
+XFSW815 ~y~Sarah:~w~ Negative.
+XFSW816 ~y~Sarah:~w~ No can do.
+XFSW817 ~y~Sarah:~w~ Can't do that.
+XFSW818 ~y~Sarah:~w~ No way.
+XFSW819 ~y~Sarah:~w~ Afraid not.
+
+# Universal | Facilities
+# ----------------------------
+XFLPI01 Lil' Probe Inn
+XFLPI02 Facility acquired!
+
+XFMIS01 Missionary Hill
