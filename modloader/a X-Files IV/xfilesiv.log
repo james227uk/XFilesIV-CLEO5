@@ -1,0 +1,38 @@
+29/11/2024 11:35:04.592 [Main|_______] [INFO] Starting early loaders...
+29/11/2024 11:35:04.593 [Main|_______] [INFO] Launching mission 'initial'...
+29/11/2024 11:35:04.620 [Mssn|Initial] [INFO] Loaded mission 'initial'.
+29/11/2024 11:35:04.632 [Main|PHQGATE] [INFO] Script started.
+29/11/2024 11:35:04.632 [Main|DBGCONL] [INFO] Script started.
+29/11/2024 11:35:05.686 [Mssn|INITIAL] [INFO] Selected gamemode 'Freemode'.
+29/11/2024 11:35:05.802 [Main|_______] [INFO] Returned from mission 'initial'.
+29/11/2024 11:35:05.802 [Main|_______] [INFO] Starting universal scripts...
+29/11/2024 11:35:05.826 [Main|TPNETWL] [INFO] Script started.
+29/11/2024 11:35:05.826 [Main|ANOMCHR] [INFO] Script started.
+29/11/2024 11:35:05.826 [Main|HQAGTIL] [INFO] Script started.
+29/11/2024 11:35:05.826 [Main|HQMASTL] [INFO] Script started.
+29/11/2024 11:35:05.826 [Main|HQEXMSL] [INFO] Script started.
+29/11/2024 11:35:05.826 [Main|FMLEATH] [INFO] Script started.
+29/11/2024 11:35:05.843 [Main|HQEXMSL] [INFO] First run detected, skipping starting some scripts.
+29/11/2024 11:35:05.860 [Main|HQSNIPR] [INFO] Script started.
+29/11/2024 11:35:05.860 [Main|HQAGTEL] [INFO] Script started.
+29/11/2024 11:35:05.860 [Main|HQSAVEP] [INFO] Script started.
+29/11/2024 11:35:06.160 [Main|_______] [INFO] Began external script 'External-HQAgentsExterior'.
+29/11/2024 11:35:06.176 [Exts|HQAGTES] [INFO] Script started
+29/11/2024 11:35:11.488 [Main|_______] [INFO] Began external script 'External-TPNetwork'.
+29/11/2024 11:35:11.505 [Exts|TPNETWS] [INFO] Script started.
+29/11/2024 11:35:11.521 [Exts|TPNETWS] [INFO] Player at station 1.
+29/11/2024 11:35:12.771 [Exts|TPNETWS] [INFO] Picked 2 from menu.
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Selection valid. Picked 2. Current station is 1.
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Checking selection...
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Selection is valid.
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Standard TP selected.
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Teleport selected: 1. Menu deleted. DO IT.
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Created particle.
+29/11/2024 11:35:12.838 [Exts|TPNETWS] [INFO] Menu deleted.
+29/11/2024 11:35:19.772 [Exts|TPNETWS] [INFO] Created particle.
+29/11/2024 11:35:19.773 [Exts|HQAGTES] [INFO] Script ending (Reason: Player left range of H.Q.).
+29/11/2024 11:35:19.773 [Main|HQSNIPR] [INFO] Script ending (Reason: Player left range of H.Q.).
+29/11/2024 11:35:19.773 [Main|PHQGATE] [INFO] Script ending (Reason: Player left range of H.Q.).
+29/11/2024 11:35:19.856 [Main|HQSAVEP] [INFO] Script ending (Reason: Player left range of H.Q.).
+29/11/2024 11:35:20.189 [Main|HQAGTEL] [INFO] Script ending (Reason: Player left range of H.Q.).
+29/11/2024 11:35:25.833 [Exts|TPNETWS] [INFO] Script ending (Reason: Player has teleported).

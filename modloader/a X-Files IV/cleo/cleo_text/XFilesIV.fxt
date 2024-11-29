@@ -281,3 +281,15 @@ XFLPI01 Lil' Probe Inn
 XFLPI02 Facility acquired!
 
 XFMIS01 Missionary Hill
+
+# Universal | External | Teleport Network
+# ----------------------------
+XTPNM01 Teleports
+XTPNM02 Stations
+XTPNM03 Cancel
+XTPNM04 Prospero H.Q.
+XTPNM05 Missionary Hill
+XTPNM06 Lil' Probe Inn
+XTPNM20 SYSTEM FAIL: Cannot teleport to same station.
+XTPNM21 SYSTEM SUCCESS: Active for 30 seconds...
+XTPNM22 SYSTEM INFO: Powering down.

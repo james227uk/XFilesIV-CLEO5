@@ -18,15 +18,16 @@ DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
 DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 DEFINE MISSION 3 AT @Mission_FindingTheYeti // 4. Storymode: Finding The Yeti
 
-DEFINE EXTERNAL_SCRIPTS 7
+DEFINE EXTERNAL_SCRIPTS 8
  // Use -1 in order not to compile AAA script
-DEFINE SCRIPT DBGCONS AT @External_DebugConsole
-DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior
-DEFINE SCRIPT HQAGTIS AT @External_HQAgentsInterior
-DEFINE SCRIPT HQWPNVS AT @External_HQWeaponsVendor
-DEFINE SCRIPT HQSETCS AT @External_HQSetpieceCustodian
-DEFINE SCRIPT HQSARAS AT @External_HQSarah
-DEFINE SCRIPT FLWRSWS AT @External_FollowerSarah
+DEFINE SCRIPT DBGCONS AT @External_DebugConsole         // 0
+DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior     // 1
+DEFINE SCRIPT HQAGTIS AT @External_HQAgentsInterior     // 2
+DEFINE SCRIPT HQWPNVS AT @External_HQWeaponsVendor      // 3
+DEFINE SCRIPT HQSETCS AT @External_HQSetpieceCustodian  // 4
+DEFINE SCRIPT HQSARAS AT @External_HQSarah              // 5
+DEFINE SCRIPT FLWRSWS AT @External_FollowerSarah        // 6
+DEFINE SCRIPT TPNETWS AT @External_TPNetwork            // 7
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
@@ -45,14 +46,19 @@ var
     $playerArea: Int
     $mission_trigger_wait_time: Int = 250
     $flagGamemodeChoice: Int = 0
+    
     $flagMissionInitialCompleted: Int = False
     $flagMissionIntroductionCompleted: Int = False
     $flagMissionArrivalCompleted: Int = False
     $flag_Storymode_Mission_FindingTheYeti_Completed: Int = False
+    
+    $flag_TPNetwork_Finished: Int = False
     $flagDebugConsoleOpen: Int = False
     $flagDebugMythActive: Int = False
+    
     $flagProsperoHostile: Int = False
     $flagProsperoHQGatesLocked: Int = False
+    $flag_ProsperoHQ_GuardsEnabled: Int = True
     $flagWeaponsVendorMenuOpen: Int = False
     $flagRelationshipScoreSarah: Int = 0
     $flagIntroducedSarah: Int = False
@@ -78,8 +84,9 @@ const
     externalHQWeaponsVendor = 3
     externalHQSetpieceCustodian = 4
     externalHQSarah = 5 
-    externalFollowerSarah = 6            
-end
+    externalFollowerSarah = 6 
+    externalTPNetwork = 7           
+end 
 
 //--- Initial Weapons Vendor weapon Costs
 var
@@ -251,15 +258,14 @@ end
 
 //--- Create universal scripts
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Starting universal scripts...") 
-start_new_script @Script_Universal_HQSavePoint
 start_new_script @Script_Universal_ProsperoHQ_ExtMasterLoader
 start_new_script @Script_Universal_ProsperoHQ_MasterLoader
-start_new_script @Script_Universal_ProsperoHQ_Agents_External_Loader
 start_new_script @Script_Universal_ProsperoHQ_Agents_Interior_Loader
 start_new_script @Script_Universal_Anomaly_Mimic
 start_new_script @Script_Universal_Anomaly_Chrono
 start_new_script @Script_Universal_Facility_LilProbeInn
 start_new_script @Script_Universal_Facility_MissionaryHill
+start_new_script @Script_Universal_TPNetwork_Loader
 start_new_script @Script_Debug_PartyBus
 
 Player.SetControl({Player:} $player1, {State:}True)
@@ -284,6 +290,38 @@ end
 //========================================================================================================================================================================================================
 
 //------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Exterior Master Loader
+//      - Loads HQ-focused scripts when the player is in close proximity.
+//------------------------------------------------------------------------------------------------------
+
+:Script_Universal_ProsperoHQ_ExtMasterLoader
+script_name 'HQEXMSL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQEXMSL] [INFO] Script started.")  
+0@ = True // First Run
+
+while true
+    wait 0
+    if Char.LocateAnyMeans2D($scplayer, {Pos2:}2618.0, 2724.0, {Rad. Pos2:}300.0, 300.0, {Draw Sphere:}False)
+    then
+        start_new_script @Script_Universal_HQSavePoint
+        start_new_script @Script_Universal_ProsperoHQ_Agents_External_Loader
+        start_new_script @Script_Universal_ProsperoHQ_Snipers
+        if 0@ == True // If this is the first run, then do nothing.
+        then Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQEXMSL] [INFO] First run detected, skipping starting some scripts.")  
+        else // Else, start the following scripts just like those above.
+            start_new_script @Script_Universal_ProsperoHQ_Gates
+        end
+    end
+    0@ = False // No longer first run.    
+    repeat
+        wait $mission_trigger_wait_time
+    until not Char.LocateAnyMeans2D($scplayer, {Pos2:}2618.0, 2724.0, {Rad. Pos2:}300.0, 300.0, {Draw Sphere:}False)
+    wait 500
+end
+//
+//
+//
+//------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Prospero H.Q. | Save Point
 //      - Adds a save pickup at Prospero H.Q. by the front door
 //------------------------------------------------------------------------------------------------------
@@ -294,13 +332,22 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVEP] [INFO]
 1@ = 2783.4104  // Pickup Y
 2@ = 10.9844    // Pickup Z
 // 3@: Save Pickup
-
-:Script_Universal_HQSavePoint_Loop
 World.ClearArea({Pos3:}0@, 1@, 2@, {Radius:}1.0, {Clear Particles:}True)
 Pickup.Create(#PICKUPSAVE, PickupType.Once, {Pos3:}0@, 1@, 2@, {Handle:}3@)
-repeat
-    wait 100
-until Pickup.HasBeenCollected(3@)
+
+:Script_Universal_HQSavePoint_Loop
+wait 100
+if not Char.LocateAnyMeans2D($scplayer, {Pos2:}2618.0, 2724.0, {Rad. Pos2:}300.0, 300.0, {Draw Sphere:}False)
+then 
+    Pickup.Remove(0@)
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSAVEP] [INFO] Script ending (Reason: Player left range of H.Q.).")   
+    terminate_this_script
+end
+
+if not Pickup.HasBeenCollected(3@)
+then jump @Script_Universal_HQSavePoint_Loop
+end
+
 $ONMISSION = 1
 Player.SetControl($player1, False)
 Game.ActivateSaveMenu()
@@ -322,18 +369,20 @@ $ONMISSION = 0
 repeat
     wait 0
 until not Char.LocateAnyMeans2D($scplayer, {Pos2:}0@, 1@, {Radius Pos2:}2.0, 2.0, {Draw Sphere:}False)
+
+
 jump @Script_Universal_HQSavePoint_Loop
 terminate_this_script
-
-
-
+//
+//
+//
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Prospero H.Q. | Base Gates
 //      - Create the base gates and then open/close them based on proximity.
 //------------------------------------------------------------------------------------------------------
 :Script_Universal_ProsperoHQ_Gates
 script_name 'PHQGATE'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO] Script started.")     
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO] Script started.")   
 
 // Create gate objects
 Streaming.RequestModel(#GATE_AUTOR)
@@ -355,16 +404,18 @@ Object.SetDynamic(1@, True)
 Streaming.MarkModelAsNoLongerNeeded(#GATE_AUTOR)
 Streaming.MarkModelAsNoLongerNeeded(#GATE_AUTOL)
 
-// Reduce polling rate until player is within a decent range of the gates.
-:Script_Universal_ProsperoHQ_Gates_Loop_FarRange
-wait 5000
-gosub @Script_Universal_ProsperoHQ_Gates_Lock
-if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
-jf @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO] Switched to quicker polling rate.")  
-
 :Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
 wait 0
+if not Char.LocateAnyMeans2D($scplayer, {Pos2:}2618.0, 2724.0, {Rad. Pos2:}300.0, 300.0, {Draw Sphere:}False)
+then
+    Object.Delete(0@)
+    Object.Delete(1@)
+    Object.MarkAsNoLongerNeeded(0@)
+    Object.MarkAsNoLongerNeeded(1@)
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|PHQGATE] [INFO] Script ending (Reason: Player left range of H.Q.).")  
+    terminate_this_script
+end
+
 gosub @Script_Universal_ProsperoHQ_Gates_Lock
 if and
     $flagFollowerActive > 0
@@ -381,9 +432,6 @@ else
         then gosub @Script_Universal_ProsperoHQ_Gates_Open
         else gosub @Script_Universal_ProsperoHQ_Gates_Close
     end
-end
-if not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, {Radius Pos3:}200.0, 200.0, 200.0, {Draw Sphere:}False)
-    then jump @Script_Universal_ProsperoHQ_Gates_Loop_FarRange
 end
 jump @Script_Universal_ProsperoHQ_Gates_Loop_CloseRange
 
@@ -406,11 +454,115 @@ then
 end
 return
 terminate_this_script
+//
+//
+//
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | Snipers
+//      - This script creates snipers on the guard towers at Prospero H.Q.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_Snipers
+script_name 'HQSNIPR'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSNIPR] [INFO] Script started.")
+
+while true
+    wait 0
+    if $flag_ProsperoHQ_GuardsEnabled == False
+    then Break
+    end
+    
+    if and
+        Streaming.HasModelLoaded(#BMYMIB)
+        Streaming.HasModelLoaded(#WMOMIB)
+        Streaming.HasModelLoaded(#SNIPER)
+    then
+        // Create snipers
+        0@ = localFunc_createSniper(#BMYMIB, {Pos2:}2501.8257, 2786.8713, {Heading:}134.4933)
+        1@ = localFunc_createSniper(#WMOMIB, {Pos2:}2746.5903, 2854.3540, {Heading:}311.4819)
+        2@ = localFunc_createSniper(#BMYMIB, {Pos2:}2746.7422, 2668.1873, {Heading:}227.2174) 
+        3@ = localFunc_createSniper(#BMYMIB, {Pos2:}2698.2397, 2620.4932, {Heading:}219.6978)
+        4@ = localFunc_createSniper(#WMOMIB, {Pos2:}2572.0151, 2620.3350, {Heading:}137.9170) 
+        Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+        Streaming.MarkModelAsNoLongerNeeded(#WMOMIB)
+        Streaming.MarkModelAsNoLongerNeeded(#SNIPER)    
+        
+        // Main Loop
+        while true
+            wait 0
+            // Check player is still in range, else end script.
+            if not Char.LocateAnyMeans2D($scplayer, {Pos2:}2618.0, 2724.0, {Rad. Pos2:}300.0, 300.0, {Draw Sphere:}False)
+            then
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSNIPR] [INFO] Script ending (Reason: Player left range of H.Q.).")
+                Break
+            end
+            
+            // Check if snipers should be hostile to player.
+            if or
+                $flagProsperoHostile == True
+                Char.HasBeenDamagedByChar(0@, $scplayer)
+                Char.HasBeenDamagedByChar(1@, $scplayer)
+                Char.HasBeenDamagedByChar(2@, $scplayer)
+                Char.HasBeenDamagedByChar(3@, $scplayer)
+                Char.HasBeenDamagedByChar(4@, $scplayer)
+            then
+                $flagProsperoHostile = True
+                Task.KillCharOnFoot(0@, $scplayer)
+                Task.KillCharOnFoot(1@, $scplayer)
+                Task.KillCharOnFoot(2@, $scplayer)
+                Task.KillCharOnFoot(3@, $scplayer)
+                Task.KillCharOnFoot(4@, $scplayer)
+            end
+        end
+        Break             
+    else
+        Streaming.RequestModel(#BMYMIB)
+        Streaming.RequestModel(#WMOMIB)
+        Streaming.RequestModel(#SNIPER)
+    end
+end
+terminate_this_script
+
+function localFunc_createSniper(model: Int, posX: Float, posY: Float, heading: Float): Int
+    Char outputChar
+    outputChar = Char.Create(PedType.Gang9, model, posX, posY, -100.0)
+    outputChar.SetHeading(heading)
+    outputChar.SetHealth(500)
+    outputChar.GiveWeapon(WeaponType.Sniper, 250)
+    outputChar.SetAccuracy(100)
+    outputChar.SetWeaponSkill(WeaponSkill.Pro)
+    outputChar.SetStayInSamePlace(True)
+    return outputChar
+end
+//
+//
+//
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | Prospero H.Q. | External Agents (Loader)
+//      - Creates a random assortmment of agents roaming the H.Q. grounds. Loader script.
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_ProsperoHQ_Agents_External_Loader
+script_name 'HQAGTEL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script started.")  
+
+while true
+    wait $mission_trigger_wait_time
+    if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
+    then
+        func_runExternalScript(externalHQAgentsExterior, "External-HQAgentsExterior")
+        repeat
+            wait 1000
+        until not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False) 
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script ending (Reason: Player left range of H.Q.).")  
+        StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsExterior)
+        terminate_this_script
+    end
+end
+terminate_this_script
 
 
 
 //------------------------------------------------------------------------------------------------------
-//      Universal Scripts | Prospero H.Q. | Master Loader
+//      Universal Scripts | Prospero H.Q. | Master Loader (Interior)
 //      - This script launches Prospero H.Q. interior scripts when the player enters the interior.
 //------------------------------------------------------------------------------------------------------
 :Script_Universal_ProsperoHQ_MasterLoader
@@ -490,30 +642,6 @@ while true
     end
 end
 StreamedScript.MarkAsNoLongerNeeded(externalHQSetpieceCustodian)
-terminate_this_script
-//
-//
-//
-//------------------------------------------------------------------------------------------------------
-//      Universal Scripts | Prospero H.Q. | External Agents (Loader)
-//      - Creates a random assortmment of agents roaming the H.Q. grounds. Loader script.
-//------------------------------------------------------------------------------------------------------
-:Script_Universal_ProsperoHQ_Agents_External_Loader
-script_name 'HQAGTEL'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script started.")  
-
-while true
-    wait $mission_trigger_wait_time
-    if Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
-    then
-        func_runExternalScript(externalHQAgentsExterior, "External-HQAgentsExterior")
-        repeat
-            wait 1000
-        until not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False) 
-        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQAGTEL] [INFO] Script ended. Restarting loader script.")
-        StreamedScript.MarkAsNoLongerNeeded(externalHQAgentsExterior)
-    end
-end
 terminate_this_script
 //
 //
@@ -657,9 +785,9 @@ Particle.Play(5@)
 wait 1000
 Particle.Kill(5@)
 return
-
-
-
+//
+//
+//
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Anomalies | Chrono
 //      - Chrono
@@ -754,8 +882,12 @@ terminate_this_script
 :Script_Universal_Facility_LilProbeInn
 script_name 'XFACLPI'
 // 0@: Pickup
+// 1@: Teleporter Frame
+// 2@: Teleporter Desk 1
+// 3@: Teleporter Desk 2
 
 Pickup.CreateForSaleProperty({Pos3:}-86.2929, 1382.7775, 10.2734, 10000, "PROP_3", 0@)
+1@ = Blip.AddSpriteForCoord({Pos3:}-86.2929, 1382.7775, 10.2734, RadarSprite.PropertyG)
 
 while true
     wait $mission_trigger_wait_time
@@ -763,12 +895,13 @@ while true
         Player.IsPlaying($player1)
         $ONMISSION == False
         Pickup.HasBeenCollected(0@)
-    then
-        Player.SetControl($player1, True)
+    then        
+        Player.SetControl($player1, False)
         Game.SetEveryoneIgnorePlayer($player1, True)
         Hud.SwitchWidescreen(True)
         Camera.SetFixedPosition({Pos3:}-66.8304, 1390.0591, 15.9004, {Rot. Pos3:}0.0, 0.0, 0.0) 
         Camera.PointAtPoint({Pos3:}-67.7256, 1389.6855, 15.6575, SwitchType.Jumpcut) 
+        Blip.Remove(1@)
         Text.PrintBig("XFLPI02", 5000, TextStyle.BottomRight)
         Audio.PlayMissionPassedTune(1)
         wait 5000
@@ -782,9 +915,9 @@ while true
         terminate_this_script        
     end
 end
-
-
-
+//
+//
+//
 //------------------------------------------------------------------------------------------------------
 //      Universal Scripts | Facilities | Missionary Hill
 //      - 
@@ -801,6 +934,16 @@ while true
         $ONMISSION == False
         Pickup.HasBeenCollected(0@)
     then
+        Streaming.RequestModel(#A51_JETPSTUFF)
+        Streaming.RequestModel(#A51_SDSK_2_)
+        Streaming.RequestModel(#A51_SDSK_4_)
+        Streaming.LoadAllModelsNow()
+        1@ = Object.Create(#A51_JETPSTUFF, {Pos3:}-2528.139, -613.367, 131.560)
+        Object.SetHeading(1@, 315.0)
+        2@ = Object.Create(#A51_SDSK_2_, {Pos3:}-2527.279, -616.050, 131.568)
+        Object.SetHeading(2@, 135.0)
+        3@ = Object.Create(#A51_SDSK_2_, {Pos3:}-2535.355, -613.898, 131.560)
+        
         Player.SetControl($player1, False)
         Game.SetEveryoneIgnorePlayer($player1, True)
         Hud.SwitchWidescreen(True)
@@ -816,11 +959,37 @@ while true
         Player.SetControl($player1, True)
         Game.SetEveryoneIgnorePlayer($player1, False)
         $flagFacilityMissionaryHillPurchased = 1
-        
-        //2@ = Object.C
         terminate_this_script        
     end
 end
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      Universal Scripts | TP Network (Loader)
+//      - 
+//------------------------------------------------------------------------------------------------------
+:Script_Universal_TPNetwork_Loader
+script_name 'TPNETWL'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|TPNETWL] [INFO] Script started.")  
+while true
+    wait 0
+    while true
+        wait 0
+        if or // Dupe this construct to go beyond 7 conditions.
+            $gurgle == 56 // TP locations
+            Char.LocateOnFoot3D($scplayer, {Pos3:}2582.03250, 2836.8716, 10.8203, {Rad. Pos3:}1.0, 1.0, 1.0, True) // Prospero H.Q.
+            Char.LocateOnFoot2D($scplayer, {Pos3:}-2526.1526, -617.1046, 1.0, 1.0, True) // Missionary Hill
+        then Break
+        end 
+    end
+    
+    func_runExternalScript(externalTPNetwork, "External-TPNetwork")
+    repeat
+        wait 0
+    until $flag_TPNetwork_Finished == True
+end
+terminate_this_script
 
 
 
@@ -1758,3 +1927,12 @@ end
 //------------------------------------------------------------------------------------------------------
 :External_FollowerSarah
 {$INCLUDE_ONCE main\externals\External-FollowerSarah.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 7 | TP Network
+//      - 
+//------------------------------------------------------------------------------------------------------
+:External_TPNetwork
+{$INCLUDE_ONCE main\externals\External-TPNetwork.txt}

@@ -1,0 +1,243 @@
+//========================================================================================================================================================================================================
+//------------------------------------------------------------------------------------------- GTA X-Files IV (2024) --------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- By james227uk -------------------------------------------------------------------------------------------
+//========================================================================================================================================================================================================
+// Name:        TP Network
+// Description: This script handles the functionality of the teleport station network around the map.
+// Path:        main\externals\External-TPNetwork.txt
+// Trigger:     Called by loader script when in range of any active TP station.
+//========================================================================================================================================================================================================
+script_name 'TPNETWS'
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script started.")
+Int iCurrentStation = 0
+Int iMenuTeleportChoice
+Int iValidSelection = False
+Int iTeleportSelected = False
+Float fStationX, fStationY, fStationZ, fStationH
+Float fParticleX, fParticleY, fParticleZ
+Menu menuTeleport
+Particle fxTPSmoke
+$flag_TPNetwork_Finished = False
+
+// Figure out which station the player is at.
+while true
+    wait 0
+    if Char.LocateOnFoot2D($scplayer, 2582.03250, 2836.8716, 2.0, 2.0, False) // Prospero H.Q.
+    then iCurrentStation = 1
+    end
+    if Char.LocateOnFoot2D($scplayer, -2526.1526, -617.1046, 2.0, 2.0, False) // Missionary Hill
+    then iCurrentStation = 2
+    end
+    //   iCurrentStation = 0 if no condition is passed here, meaning undefined/error. 
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Player at station %i.", iCurrentStation)
+    Break
+end
+
+// Initial actions for each station.
+Switch iCurrentStation
+    Case 0 // Undefined (Error!)
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [ERROR] Could not determine which station player is at. Are the coordinates correct?")
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Failed to determine current player station).")
+        terminate_this_script
+        
+    Case 1 // Prospero H.Q.
+        Camera.SetFixedPosition({Pos3:}2578.2207, 2836.9683, 11.0693, {Rot. Pos3:}0.0, 0.0, 0.0)  // Camera: Behind CJ, framing H.Q. teleporter.
+        Camera.PointAtPoint({Pos3:}2579.1279, 2836.5667, 11.1943, SwitchType.Interpolation)
+        fParticleX = 2586.3232  
+        fParticleY = 2833.0186
+        fParticleZ = 11.1093       
+        fStationX = 2582.03250
+        fStationY = 2836.8716
+        fStationZ = 10.8203
+             
+    Case 2 // Missionary Hill
+        fStationX = -2526.1526
+        fStationY = -617.1046
+        fStationZ = 0.0 // DEBUG: FIX ME 
+        
+end
+gosub @External_TPNetwork_MainMenu
+
+// Main Loop
+while true
+    wait 0
+    // Check if player wants to re-enter menu.
+    if Char.LocateOnFoot3D($scplayer, {Pos3:}fStationX, fStationY, fStationZ, {Rad. Pos3:}1.0, 1.0, 1.0, {Draw Sphere:}True)
+    then
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Drawing menu.") 
+    gosub @External_TPNetwork_MainMenu
+    end
+    // Check if player has walked into the portal.
+    if and
+        iValidSelection == True
+        Char.LocateOnFoot3D($scplayer, {Pos3:}fParticleX, fParticleY, fParticleZ, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}False)
+    then
+        gosub @External_TPNetwork_DoTP
+        $flag_TPNetwork_Finished = True
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Player has teleported).")
+        Break
+    end
+    // Check if the portal time has run out.
+    if TIMERA >= 30000
+    then
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Time limit exceeded).")
+        Break
+    end
+end
+terminate_this_script
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//       Functions and Gosubs
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:External_TPNetwork_MainMenu
+Player.SetControl($player1, False)
+menuTeleport = Menu.Create("XTPNM01", {X:}30.0, {Y:}250.0, {Width:}100.0, {Columns:}1, {Interactive:}True, {Background:}True, {Align:}False)
+menuTeleport.SetColumn({Column:}0, {Title:}"XTPNM02", {Rows:}"XTPNM03", "XTPNM04", "XTPNM05", "XTPNM06", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY", "DUMMY")
+menuTeleport.SetActiveItem(iMenuTeleportChoice)
+while true
+    wait 0
+    if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
+    then
+        iMenuTeleportChoice = Menu.GetItemSelected({Menu:}menuTeleport)
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Picked %i from menu.", iMenuTeleportChoice)
+        func_stallMenu(0) // Stall until confirm/sprint key released. 
+        
+        // Check the player hasn't selected the station they're already at.
+        gosub @External_TPNetwork_CheckValidSelection
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Checking selection...")     
+        if iValidSelection == False
+        then 
+            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection invalid.")
+            Menu.Delete(menuTeleport)
+            jump @External_TPNetwork_MainMenu
+        else
+            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection is valid.")
+            // Check if player has cancelled an active TP.
+            if iMenuTeleportChoice == 0
+            then 
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Teleport choice is 0, cancelling TP..")
+                Particle.Kill(fxTPSmoke)
+                Menu.Delete(menuTeleport)
+                terminate_this_script
+            else
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Standard TP selected.")
+                // Start the TP process.
+                iTeleportSelected = True
+                Menu.Delete(menuTeleport)
+                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Teleport selected: %i. Menu deleted. DO IT.", iTeleportSelected)
+                gosub @External_TPNetwork_CreateFX              
+                jump @External_TPNetwork_EndMenu
+            end
+        end
+    end
+    if
+        //Pad.IsKeyPressed(KeyCode.Space)
+        Pad.IsKeyPressed(Keycode.Return)
+    then
+        jump @External_TPNetwork_EndMenu
+    end     
+end
+
+:External_TPNetwork_EndMenu
+Text.PrintStringNow("Delete", 2000)
+Menu.Delete(menuTeleport)
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Menu deleted.")
+Player.SetControl($player1, True)
+Camera.RestoreJumpcut()
+repeat
+    wait 0
+until not Char.LocateOnFoot3D($scplayer, {Pos3:}fStationX, fStationY, fStationZ, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}False)
+
+if iTeleportSelected == False
+then
+    $flag_TPNetwork_Finished = True
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Menu exited and no destination was selected).")
+    terminate_this_script
+end
+return
+
+
+:External_TPNetwork_CreateFX
+fxTPSmoke = Particle.Create("CARWASHSPRAY", {Pos3:}fParticleX, fParticleY, fParticleZ, True)
+fxTPSmoke.Play()
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Created particle.")
+return
+
+
+:External_TPNetwork_CheckValidSelection
+if iMenuTeleportChoice == 0
+then
+    Text.PrintNow("XTPNM22", 2000, 2) // XTPNM22 SYSTEM INFO: Powering down.
+    return
+end
+
+if
+    iMenuTeleportChoice == iCurrentStation
+then
+    iValidSelection = False
+    Text.PrintNow("XTPNM20", 2000, 2) // XTPNM20 SYSTEM FAIL: Cannot teleport to same station.
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection invalid. Picked %i. Current station is %i.", iMenuTeleportChoice, iCurrentStation)
+ else
+    iValidSelection = True
+    Text.PrintNow("XTPNM21", 2000, 2) // XTPNM21 SYSTEM SUCCESS: Active for 30 seconds...
+    TIMERA = 0
+    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection valid. Picked %i. Current station is %i.", iMenuTeleportChoice, iCurrentStation)
+end
+return
+
+
+:External_TPNetwork_DoTP
+Camera.SetFadingColor(255, 255, 255)
+Camera.DoFade(2000, Fade.Out)
+while Camera.GetFadingStatus()
+    wait 0
+end
+Particle.Kill(fxTPSmoke)
+
+Switch iMenuTeleportChoice
+    Case 1 // Prospero H.Q.
+        fParticleX = 2586.3625
+        fParticleY = 2833.0674
+        fParticleZ = 11.1093
+        fStationH = 90.0
+        iValidSelection = True // Reusing variable, determines if target TP is roofed.
+    
+    Case 2 // Missionary Hill
+        fParticleX = -2529.7866 
+        fParticleY = -613.7792 
+        fParticleZ = 132.8599
+        fStationH = 270.0
+        iValidSelection = False // Reusing variable, determines if target TP is roofed.
+end
+
+gosub @External_TPNetwork_CreateFX
+if iValidSelection == True
+then gosub @External_TPNetwork_TPToRoofedArea
+else func_teleportSafe({Pos2:}fParticleX, fParticleY, {Heading:}272.7651, {Area:}0)
+end
+wait 2000
+Camera.DoFade(2000, Fade.In)
+while Camera.GetFadingStatus()
+    wait 0
+end
+Camera.SetFadingColor(0, 0, 0)
+wait 2000
+Particle.Kill(fxTPSmoke)
+return
+
+
+// Special version of the TP Safe function but for roofed areas.
+:External_TPNetwork_TPToRoofedArea
+Char.SetCoordinates($scplayer, fParticleX, fParticleY, fParticleZ)
+Streaming.RequestCollision(fParticleX, fParticleY)
+Streaming.LoadAllModelsNow()
+wait 0
+
+// put on loaded ground
+Char.SetCoordinates($scplayer, fParticleX, fParticleY, fParticleZ)
+Char.SetHeading($scplayer, fStationH)
+Streaming.LoadScene(fParticleX, fParticleY, fParticleZ)
+Streaming.LoadAllModelsNow()
+return

@@ -223,10 +223,104 @@ while true
         
         if iTab == 3 // Settings
         then
+            if ImGui.CollapsingHeader("All Flags")
+            then
+                ImGui.GetScalingSize("S8", 1, 0, fSzX, fSzY)
+                //-      
+                if ImGui.Button("Gamemode", fSzX, fSzY)
+                then
+                    if $flagGamemodeChoice == 0
+                    then
+                        $flagGamemodeChoice = gmFreemode
+                        Text.PrintStringNow("Gamemode flag now Freemode", 1000)
+                    else
+                        $flagGamemodeChoice = gmStorymode
+                        Text.PrintStringNow("Gamemode flag now Storymode", 1000)
+                    end
+                end
+                //- 
+                if ImGui.Button("Initialisation Completed", fSzX, fSzY)
+                then
+                    if $flagMissionInitialCompleted == False
+                    then
+                        $flagMissionInitialCompleted = True
+                        Text.PrintStringNow("Initialisation completed now TRUE", 1000)
+                    else
+                        $flagMissionInitialCompleted = False
+                        Text.PrintStringNow("Initialisation completed now FALSE", 1000)
+                    end
+                end
+                //-
+                if ImGui.Button("Introduction Completed", fSzX, fSzY)
+                then
+                    if $flagMissionIntroductionCompleted == False
+                    then
+                        $flagMissionIntroductionCompleted = True
+                        Text.PrintStringNow("Introduction completed now TRUE", 1000)
+                    else
+                        $flagMissionIntroductionCompleted = False
+                        Text.PrintStringNow("Introduction completed now FALSE", 1000)
+                    end
+                end
+                //-
+                if ImGui.Button("Arrival Completed", fSzX, fSzY)
+                then
+                    if $flagMissionArrivalCompleted == False
+                    then
+                        $flagMissionArrivalCompleted = True
+                        Text.PrintStringNow("Arrival completed now TRUE", 1000)
+                    else
+                        $flagMissionArrivalCompleted = False
+                        Text.PrintStringNow("Arrival completed now FALSE", 1000)
+                    end
+                end
+                //-
+                if ImGui.Button("Finding The Yeti Completed", fSzX, fSzY)
+                then
+                    if $flag_Storymode_Mission_FindingTheYeti_Completed == False
+                    then
+                        $flag_Storymode_Mission_FindingTheYeti_Completed = True
+                        Text.PrintStringNow("Finding The Yeti completed now TRUE", 1000)
+                    else
+                        $flag_Storymode_Mission_FindingTheYeti_Completed = False
+                        Text.PrintStringNow("Finding The Yeti completed now FALSE", 1000)
+                    end
+                end
+                //-
+                if ImGui.Button("Prospero Hostile", fSzX, fSzY)
+                then
+                    if $flagProsperoHostile == False
+                    then
+                        $flagProsperoHostile = True
+                        Text.PrintStringNow("Prospero Hostile now TRUE", 1000)
+                    else
+                        $flagProsperoHostile = False
+                        Text.PrintStringNow("Prospero Hostile now FALSE", 1000)
+                    end
+                end                      
+            end
+/*            
+
+
+
+
+    $flagProsperoHQGatesLocked: Int = False
+    $flag_ProsperoHQ_GuardsEnabled: Int = True
+    $flagWeaponsVendorMenuOpen: Int = False
+    $flagRelationshipScoreSarah: Int = 0
+    $flagIntroducedSarah: Int = False
+    $flagGamestage: Int = 0
+    $flagFollowerActive: Int = 0
+    $flagFollowerSarahAvailable: Int = False
+    $flagUpgradeFollowerBonusHealth: Int = 0   
+    $flagFacilityLilProbeInnPurchased: Int = False            
+*/            
+            
+            
             ImGui.Spacing()
             if ImGui.CollapsingHeader("General")
             then
-                ImGui.GetScalingSize("S8", 4, 0, fSzX, fSzY)
+                ImGui.GetScalingSize("S9", 4, 0, fSzX, fSzY)
                 if ImGui.Button("Lock H.Q. Gates", fSzX, fSzY)
                 then
                     if $flagProsperoHQGatesLocked == False
@@ -251,7 +345,7 @@ while true
                     Player.SetControl($player1, True)
                     func_restoreCamera()
                 end  
-                ImGui.GetScalingSize("S9", 2, 0, fSzX, fSzY)
+                ImGui.GetScalingSize("S10", 2, 0, fSzX, fSzY)
                 if ImGui.Button("1", fSzX, fSzY)
                 then
                 

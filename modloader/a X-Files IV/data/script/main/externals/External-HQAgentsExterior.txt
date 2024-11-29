@@ -15,11 +15,13 @@ NOP
 var cArrayAgents: array 25 of Char 
 Int iArrayAgentsIndex = 0
 Int iRandomModelFlip = 165
+Int iAgentsAttacking = False
 Float fRandomX, fRandomY, fRandomZ
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTES] [INFO] Script started")
 
 Streaming.RequestModel(#BMYMIB)
 Streaming.RequestModel(#WMOMIB)
+Streaming.RequestModel(#DESERT_EAGLE)
 repeat
     wait 0
     if and
@@ -33,6 +35,10 @@ until False
 repeat
     gosub @GenerateRandomCoords
     Char.Create(PedType.Gang9, iRandomModelFlip, fRandomX, fRandomY, 9.820312, cArrayAgents[iArrayAgentsIndex])
+    Char.GiveWeapon(cArrayAgents[iArrayAgentsIndex], WeaponType.DesertEagle, 99999)
+    Char.SetDropsWeaponsWhenDead(cArrayAgents[iArrayAgentsIndex], False)
+    Char.SetWeaponSkill(cArrayAgents[iArrayAgentsIndex], WeaponSkill.Pro)
+    Char.SetAccuracy(cArrayAgents[iArrayAgentsIndex], 80)
     Task.WanderStandard(cArrayAgents[iArrayAgentsIndex])
     if iRandomModelFlip == 165
     then iRandomModelFlip = 166
@@ -42,16 +48,33 @@ repeat
 until iArrayAgentsIndex == 25
 iArrayAgentsIndex = 0
 
-repeat
-    wait 1000
-until not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
+// Main Loop
+while true
+    wait 0
+    if not Char.LocateAnyMeans3D($scplayer, {Pos3:}2497.2947, 2773.2153, 10.8262, 300.0, 300.0, 300.0, False)
+    then Break
+    end
+    
+    if and
+        $flagProsperoHostile == True
+        iAgentsAttacking == False
+    then
+        iArrayAgentsIndex = 0
+        repeat
+            wait 0
+            Task.KillCharOnFoot(cArrayAgents[iArrayAgentsIndex], $scplayer)
+            iArrayAgentsIndex += 1
+        until iArrayAgentsIndex == 25
+        iAgentsAttacking = True
+    end
+end
 
 repeat
     Char.ClearTasksImmediately(cArrayAgents[iArrayAgentsIndex])
     Char.MarkAsNoLongerNeeded(cArrayAgents[iArrayAgentsIndex])
     iArrayAgentsIndex += 1
 until iArrayAgentsIndex == 25
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTES] [INFO] Distance exceeded. Script ending.")
+Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|HQAGTES] [INFO] Script ending (Reason: Player left range of H.Q.).")
 terminate_this_script
 
 
