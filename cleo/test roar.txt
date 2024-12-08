@@ -1,0 +1,24 @@
+{$CLEO .cs}
+
+script_name 'TESTSND'
+
+while true
+    repeat
+        wait 0
+    until Pad.TestCheat("JUJ")
+    
+    AudioStream3D asRoar = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\introroar.mp3")
+    repeat
+        wait 0
+    until AudioStream3D.Load("modloader\a X-Files IV\audio\fx\introroar.mp3", asRoar)
+    asRoar.SetType(AudioStreamType.Sfx)
+    asRoar.SetPlayAtCoords(-2321.3279, -1637.3391, 483.7031)
+    asRoar.SetSourceSize(100.0)
+    asRoar.SetState(AudioStreamAction.Play)
+    wait 100
+    
+    repeat
+        wait 0
+    until not asRoar.IsPlaying()
+    asRoar.Remove()
+end

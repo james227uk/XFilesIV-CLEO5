@@ -105,6 +105,14 @@ XSM0340 Same claw marks all over the metal.
 XSM0341 Whatever happened, I think we found why the line went dead.
 XSM0342 Same marks as the other victims.
 XSM0343 If this is a cat then it's faster than anything I know of.
+XSM0344 Maybe there is something going on here...
+XSM0345 The hell was that?!
+XSM0346 Sounded like it came from the summit!
+XSM0347 Can't say I really wanna go up there... but it's why I'm here...
+XSM0348 Head to the ~y~summit~w~.
+XSM0349 Huh... nothing here. Maybe I imagined it?
+XSM0350 I just had to open my mouth, didn't I?
+XSM0351 The hell is that?!
 
 
 # Universal | External | HQ Weapons Vendor
@@ -291,5 +299,6 @@ XTPNM04 Prospero H.Q.
 XTPNM05 Missionary Hill
 XTPNM06 Lil' Probe Inn
 XTPNM20 SYSTEM FAIL: Cannot teleport to same station.
-XTPNM21 SYSTEM SUCCESS: Active for 30 seconds...
+XTPNM21 SYSTEM SUCCESS: Activating...
 XTPNM22 SYSTEM INFO: Powering down.
+XTPNM23 SYSTEM FAIL: Destination not available.

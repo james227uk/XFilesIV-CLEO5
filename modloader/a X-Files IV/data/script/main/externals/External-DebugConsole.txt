@@ -43,13 +43,23 @@ while true
             ImGui.Spacing()
             ImGui.Text("Prospero")
             float fSzX, fSzY
-            ImGui.GetScalingSize("S0", 1, 0, fSzX, fSzY)
+            ImGui.GetScalingSize("S0", 2, 0, fSzX, fSzY)
             if ImGui.Button("Prospero H.Q.", fSzX, fSzY)
             then
                 func_teleportSafe({X:}2478.751, {Y:}2773.2268, {Heading:}270.0, {Area:}0)
             end
-                        
+            ImGui.SameLine()
+            if ImGui.Button("Missionary Hill", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}-2513.4885, {Y:}-610.444, {Heading:}151.7, {Area:}0)   
+            end
+            
+            if ImGui.Button("Lil' Probe Inn", fSzX, fSzY)
+            then
+                func_teleportSafe({X:}-82.103, {Y:}1372.8312, {Heading:}100.9, {Area:}0)
+            end       
             ImGui.Separator()
+            
             ImGui.Spacing()
             ImGui.Text("Other")
             ImGui.GetScalingSize("S1", 2, 0, fSzX, fSzY)
@@ -73,12 +83,6 @@ while true
             then
                 func_teleportSafe({X:}-512.116, {Y:}-183.331, {Heading:}354.0, {Area:}0)
             end
-                                
-            ImGui.Spacing()
-            if ImGui.Button("Lil' Probe Inn", fSzX, fSzY)
-            then
-                func_teleportSafe({X:}-82.103, {Y:}1372.8312, {Heading:}100.9, {Area:}0)
-            end                        
         end
 
         // Spawning
@@ -136,19 +140,6 @@ while true
                 end                
                 ImGui.Spacing()
                 ImGui.Text("Debug")                
-                if ImGui.Button("Follower", fSzX, fSzY)
-                then
-                    if $flagFollowerActive == False
-                    then start_new_script @Debug_Follower
-                    end
-                end
-                ImGui.SameLine()
-                if ImGui.Button("Myth", fSzX, fSzY)
-                then
-                    if $flagDebugMythActive == False
-                    then start_new_script @Debug_Myth
-                    end
-                end
             end  
         end
         
@@ -241,36 +232,36 @@ while true
                 //- 
                 if ImGui.Button("Initialisation Completed", fSzX, fSzY)
                 then
-                    if $flagMissionInitialCompleted == False
+                    if $flag_Mission_Initial_Completed == False
                     then
-                        $flagMissionInitialCompleted = True
+                        $flag_Mission_Initial_Completed = True
                         Text.PrintStringNow("Initialisation completed now TRUE", 1000)
                     else
-                        $flagMissionInitialCompleted = False
+                        $flag_Mission_Initial_Completed = False
                         Text.PrintStringNow("Initialisation completed now FALSE", 1000)
                     end
                 end
                 //-
                 if ImGui.Button("Introduction Completed", fSzX, fSzY)
                 then
-                    if $flagMissionIntroductionCompleted == False
+                    if $flag_Mission_Introduction_Completed == False
                     then
-                        $flagMissionIntroductionCompleted = True
+                        $flag_Mission_Introduction_Completed = True
                         Text.PrintStringNow("Introduction completed now TRUE", 1000)
                     else
-                        $flagMissionIntroductionCompleted = False
+                        $flag_Mission_Introduction_Completed = False
                         Text.PrintStringNow("Introduction completed now FALSE", 1000)
                     end
                 end
                 //-
                 if ImGui.Button("Arrival Completed", fSzX, fSzY)
                 then
-                    if $flagMissionArrivalCompleted == False
+                    if $flag_Mission_Arrival_Completed == False
                     then
-                        $flagMissionArrivalCompleted = True
+                        $flag_Mission_Arrival_Completed = True
                         Text.PrintStringNow("Arrival completed now TRUE", 1000)
                     else
-                        $flagMissionArrivalCompleted = False
+                        $flag_Mission_Arrival_Completed = False
                         Text.PrintStringNow("Arrival completed now FALSE", 1000)
                     end
                 end
@@ -304,7 +295,7 @@ while true
 
 
 
-    $flagProsperoHQGatesLocked: Int = False
+    $flag_ProsperoHQ_Gates_Locked: Int = False
     $flag_ProsperoHQ_GuardsEnabled: Int = True
     $flagWeaponsVendorMenuOpen: Int = False
     $flagRelationshipScoreSarah: Int = 0
@@ -323,12 +314,12 @@ while true
                 ImGui.GetScalingSize("S9", 4, 0, fSzX, fSzY)
                 if ImGui.Button("Lock H.Q. Gates", fSzX, fSzY)
                 then
-                    if $flagProsperoHQGatesLocked == False
+                    if $flag_ProsperoHQ_Gates_Locked == False
                     then 
-                        $flagProsperoHQGatesLocked = True
+                        $flag_ProsperoHQ_Gates_Locked = True
                         Text.PrintStringNow("H.Q. Gates Locked", 1000)
                     else 
-                        $flagProsperoHQGatesLocked = False
+                        $flag_ProsperoHQ_Gates_Locked = False
                         Text.PrintStringNow("H.Q. Gates Unlocked", 1000)
                     end
                 end   
@@ -340,7 +331,7 @@ while true
                 if ImGui.Button("Skip Arrival", fSzX, fSzY)
                 then
                     terminate_all_scripts_with_this_name "arrival"
-                    $flagMissionArrivalCompleted = True
+                    $flag_Mission_Arrival_Completed = True
                     $ONMISSION = False
                     Player.SetControl($player1, True)
                     func_restoreCamera()

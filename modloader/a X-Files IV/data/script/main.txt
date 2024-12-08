@@ -18,7 +18,7 @@ DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
 DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 DEFINE MISSION 3 AT @Mission_FindingTheYeti // 4. Storymode: Finding The Yeti
 
-DEFINE EXTERNAL_SCRIPTS 8
+DEFINE EXTERNAL_SCRIPTS 10
  // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCONS AT @External_DebugConsole         // 0
 DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior     // 1
@@ -28,6 +28,8 @@ DEFINE SCRIPT HQSETCS AT @External_HQSetpieceCustodian  // 4
 DEFINE SCRIPT HQSARAS AT @External_HQSarah              // 5
 DEFINE SCRIPT FLWRSWS AT @External_FollowerSarah        // 6
 DEFINE SCRIPT TPNETWS AT @External_TPNetwork            // 7
+DEFINE SCRIPT PLCHUTE AT @External_PlayerParachute      // 8
+DEFINE SCRIPT PARACHT AT @External_Parachute            // 9
 
 DEFINE UNKNOWN_EMPTY_SEGMENT 0
 DEFINE UNKNOWN_THREADS_MEMORY 0
@@ -36,7 +38,8 @@ DEFINE UNKNOWN_THREADS_MEMORY 0
 {$USE CLEO}
 {$USE CLEO+}
 {$USE NewOpcodes}
-
+{$USE BitWise}
+{$USE Debug}
 
 //--- Initial variable declarations
 var 
@@ -47,18 +50,19 @@ var
     $mission_trigger_wait_time: Int = 250
     $flagGamemodeChoice: Int = 0
     
-    $flagMissionInitialCompleted: Int = False
-    $flagMissionIntroductionCompleted: Int = False
-    $flagMissionArrivalCompleted: Int = False
+    $flag_Mission_Initial_Completed: Int = False
+    $flag_Mission_Introduction_Completed: Int = False
+    $flag_Mission_Arrival_Completed: Int = False
     $flag_Storymode_Mission_FindingTheYeti_Completed: Int = False
     
     $flag_TPNetwork_Finished: Int = False
     $flagDebugConsoleOpen: Int = False
-    $flagDebugMythActive: Int = False
+    $flag_Debug_TPNetwork_BypassValidCheck: Int = False
     
     $flagProsperoHostile: Int = False
-    $flagProsperoHQGatesLocked: Int = False
+    $flag_ProsperoHQ_Gates_Locked: Int = False
     $flag_ProsperoHQ_GuardsEnabled: Int = True
+    $flag_ProsperoHQ_TPHubEnabled: Int = False
     $flagWeaponsVendorMenuOpen: Int = False
     $flagRelationshipScoreSarah: Int = 0
     $flagIntroducedSarah: Int = False
@@ -85,7 +89,8 @@ const
     externalHQSetpieceCustodian = 4
     externalHQSarah = 5 
     externalFollowerSarah = 6 
-    externalTPNetwork = 7           
+    externalTPNetwork = 7 
+    externalPlayerParachute = 8          
 end 
 
 //--- Initial Weapons Vendor weapon Costs
@@ -124,9 +129,32 @@ var
     $iWeaponPriceParachute:         Int = 1000
     $iWeaponPriceJetpack:           Int = 50000
 end
+
+// Parachute vars
+$para_float_Vy = 5.0
+$para_float_Vz = -5.0
+$para_flare_Vy = 8.5
+$para_flare_Vz = -1.5
+$para_freefall_Vz = -30.0
+$para_freefall_Vy = 32.0
+$para_default_Vy = 0.0
+$para_force_chute_open = 0
+$player_fall_state = 0
+$player_has_parachute = 0
+$para_pickup_flag = 1
+$FREEFALL_STAGE = 0
+$PARACHUTE_CREATION_STAGE = 0
+$SCRIPT_STATUS = 0
+
+
 script_name 'MAIN'
 declare_mission_flag {Name:} $ONMISSION
 Fs.DeleteFile(logPath)
+
+
+// Car Generators
+CarGenerator.CreateWithPlate({Pos3:}2587.11, 2780.81, 10.82, 273.30, #BLISTAC, {Colours:}0, 0, {Force Spawn:}True, {Options:}0, 0, {Spawn Delays:}0, 10000, "SAJ1994", $parkedCarGen_SarahCar)
+CarGenerator.Switch($parkedCarGen_SarahCar, 101)
 
 
 
@@ -210,7 +238,7 @@ start_new_script @Script_Universal_ProsperoHQ_Gates
 Mission.LoadAndLaunchInternal(Mission_Initial)
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'initial'...")
 $ONMISSION = True
-while $flagMissionInitialCompleted == False
+while $flag_Mission_Initial_Completed == False
     wait 0
 end
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'initial'.")
@@ -222,7 +250,7 @@ then
     Mission.LoadAndLaunchInternal(Mission_Introduction)
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'introduction'...")
     $ONMISSION = True
-    while $flagMissionIntroductionCompleted == False
+    while $flag_Mission_Introduction_Completed == False
         wait 0
     end
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'introduction'.")
@@ -232,11 +260,10 @@ then
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Holding until mission 'arrival' is completed.")
     repeat
         wait 0
-    until $flagMissionArrivalCompleted == True
+    until $flag_Mission_Arrival_Completed == True
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Mission 'arrival' completed. Resuming.")
 else
     // Freemode
-    $flagFollowerSarahAvailable = True
     Camera.RestoreJumpcut()
     Player.SetControl($player1, True)
     func_giveAgentOutfit()
@@ -251,6 +278,9 @@ else
     Clock.SetTimeOfDay(12, 0)
     
     $flagDebugMythMarkers = True
+    $flag_ProsperoHQ_TPHubEnabled = True
+    $flagFollowerSarahAvailable = True
+    $flag_Debug_TPNetwork_BypassValidCheck = True
     
     start_new_script @Script_Freemode_Leatherface
     
@@ -281,6 +311,22 @@ while true
     wait $mission_trigger_wait_time
     Clock.GetTimeOfDay({Hours Var:} $TIME_HOURS, {Minutes Var:} $TIME_MINS)
     Char.GetAreaVisible($scplayer, $playerArea)
+    
+    // Parachute
+    if Char.HasGotWeapon($scplayer, WeaponType.Parachute)
+    then
+        0@ = StreamedScript.GetNumberOfInstances(externalPlayerParachute)
+        if 0@ == 0
+        then
+            StreamedScript.Stream(externalPlayerParachute)
+            if StreamedScript.HasLoaded(externalPlayerParachute)
+            then
+                StreamedScript.StartNew(externalPlayerParachute)
+            end
+        end
+    else StreamedScript.MarkAsNoLongerNeeded(externalPlayerParachute)
+    end 
+      
 end
 
 
@@ -446,11 +492,11 @@ Object.Slide(1@, {From Pos3:}2497.41, 2769.11, 9.8, {Speed Pos3:}0.0, 0.1, 0.0, 
 return
 
 :Script_Universal_ProsperoHQ_Gates_Lock
-if $flagProsperoHQGatesLocked == True
+if $flag_ProsperoHQ_Gates_Locked == True
 then
     repeat 
         wait $mission_trigger_wait_time
-    until $flagProsperoHQGatesLocked == False
+    until $flag_ProsperoHQ_Gates_Locked == False
 end
 return
 terminate_this_script
@@ -976,11 +1022,18 @@ while true
     wait 0
     while true
         wait 0
-        if or // Dupe this construct to go beyond 7 conditions.
-            $gurgle == 56 // TP locations
-            Char.LocateOnFoot3D($scplayer, {Pos3:}2582.03250, 2836.8716, 10.8203, {Rad. Pos3:}1.0, 1.0, 1.0, True) // Prospero H.Q.
-            Char.LocateOnFoot2D($scplayer, {Pos3:}-2526.1526, -617.1046, 1.0, 1.0, True) // Missionary Hill
-        then Break
+        if $flag_ProsperoHQ_TPHubEnabled == True
+        then
+            if Char.LocateOnFoot3D($scplayer, {Pos3:}2582.03250, 2836.8716, 10.8203, {Rad. Pos3:}1.0, 1.0, 1.0, True) // Prospero H.Q.
+            then Break
+            end
+        end
+
+        if $flagFacilityMissionaryHillPurchased == True
+        then
+            if Char.LocateOnFoot2D($scplayer, {Pos3:}-2526.1526, -617.1046, 1.0, 1.0, True) // Missionary Hill
+            then Break
+            end
         end 
     end
     
@@ -1016,123 +1069,6 @@ while true
         wait 0
     end
     StreamedScript.MarkAsNoLongerNeeded(externalDebugConsole)
-end
-terminate_this_script
-
-
-
-//------------------------------------------------------------------------------------------------------
-//      Universal Scripts | Debug | Debug Follower
-//      - A quick and dirty follower script to test interactions with other scripts.
-//------------------------------------------------------------------------------------------------------
-:Debug_Follower
-script_name 'DBGFLWR'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGFLWR] [INFO] Script started.")  
-{   -- Var Mapping --
-    0@: Player X
-    1@: Player Y
-    2@: Player Z
-    3@: Proximity Radius
-    4@: Blip
-}
-3@ = 150.0
-
-Streaming.RequestModel(#WFYST)
-Streaming.RequestModel(#M4)
-Streaming.LoadAllModelsNow()
-Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
-Char $cFollower = Char.Create(PedType.Gang10, #WFYST, 0@, 1@, -100.0)
-Char.GiveWeapon($cFollower, 31, 99999)
-Char.ShutUp($cFollower, True)
-Char.SetSuffersCriticalHits($cFollower, False)
-Char.SetProofs($cFollower, True, True, True, True, True)
-Group.SetMember($playerGroup, $cFollower)
-Char.SetNeverLeavesGroup($cFollower, True)
-Char.SetRelationship($cFollower, RelationshipType.Respect, PedType.Player1)
-Char.SetRelationship($cFollower, RelationshipType.Like, PedType.Gang9) // Prospero
-Char.SetRelationship($cFollower, RelationshipType.Hate, PedType.Gang8) // Myths
-$flagFollowerActive = followerSarah
-Streaming.MarkModelAsNoLongerNeeded(#WFYST)
-Streaming.MarkModelAsNoLongerNeeded(#M4)
-Blip.AddForChar($cFollower, 4@)
-Blip.SetAsFriendly(4@, True)
-Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGFLWR] [INFO] Spawned debug follower.") 
-
-:Debug_Follower_Loop
-wait 0
-if or
-    Player.IsDead($player1)
-    Pad.TestCheat("FOLLOW")
-then
-    Char.RemoveElegantly($cFollower)
-    Char.MarkAsNoLongerNeeded($cFollower)
-    Blip.Remove(4@)
-    wait 1000
-    $flagFollowerActive = False
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGFLWR] [INFO] Removed debug follower.") 
-    terminate_this_script
-end
-
-if not Char.LocateAnyMeansChar3D($cFollower, $scplayer, 3@, 3@, 3@, False)
-then
-    Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
-    Char.SetCoordinates($cFollower, 0@, 1@, -100.0)
-end
-jump @Debug_Follower_Loop
-terminate_this_script
-
-
-
-//------------------------------------------------------------------------------------------------------
-//      Universal Scripts | Debug | Debug Myth
-//      - A quick and dirty myth script to test interactions with other scripts.
-//------------------------------------------------------------------------------------------------------
-:Debug_Myth
-script_name 'DBGMYTH'
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGMYTH] [INFO] Script started.")  
-{   -- Var Mapping --
-    0@: Player X
-    1@: Player Y
-    2@: Player Z
-    3@: Myth
-    4@: Blip
-}
-Char.GetOffsetInWorldCoords($scplayer, 5.0, 0.0, 0.0, 0@, 1@, 2@)
-Streaming.LoadSpecialCharacter(1, "BIGFOOT")
-Streaming.LoadAllModelsNow()
-wait 0
-Char.Create(PedType.Gang8, #SPECIAL01, 0@, 1@, 2@, 3@)
-func_applyMythTemplate(3@)
-Task.KillCharOnFoot(3@, $scplayer)
-Char.SetAnimGroup(3@, "oldman")
-Char.SetDecisionMaker(3@, 2)
-Char.SetRelationship(3@, RelationShipType.Hate, PedType.Player1)
-Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang9) // Prospero
-Char.SetRelationship(3@, RelationShipType.Hate, PedType.Gang10) // Followers
-$flagDebugMythActive = True
-Streaming.UnloadSpecialCharacter(1)
-Blip.AddForChar(3@, 4@)
-Blip.SetAsFriendly(4@, False)
-Blip.SetAlwaysDisplayOnZoomedRadar(4@, True)
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGMYTH] [INFO] Spawned debug myth.") 
-
-:Debug_Myth_Loop
-wait 0
-if or
-    Char.IsDead(3@)
-    not Char.LocateAnyMeansChar2D($scplayer, 3@, 500.0, 500.0, False)
-    Pad.TestCheat("MYTH")
-then
-    Char.RemoveElegantly(3@)
-    Char.MarkAsNoLongerNeeded(3@)
-    Blip.Remove(4@)
-    wait 1000
-    $flagDebugMythActive = False
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|DBGMYTH] [INFO] Removed debug myth.") 
-    terminate_this_script
-else
-    jump @Debug_Myth_Loop
 end
 terminate_this_script
 
@@ -1298,7 +1234,7 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO]
 Mission.LoadAndLaunchInternal(Mission_Arrival)
 repeat
     wait $mission_trigger_wait_time
-until $flagMissionArrivalCompleted == True
+until $flag_Mission_Arrival_Completed == True
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'arrival'.")  
 Blip.Remove(0@)
 $ONMISSION = False  
@@ -1716,6 +1652,18 @@ end
 
 
 //------------------------------------------------------------------------------------------------------
+//      Functions | Wait Until Faded
+//      - This function pauses script execution until a fade is completed.
+//------------------------------------------------------------------------------------------------------
+function func_waitForFade()
+    while Camera.GetFadingStatus()
+        wait 0
+    end
+end
+
+
+
+//------------------------------------------------------------------------------------------------------
 //      Functions | Mission Fade
 //      - This function fades the game ready to launch a mission
 //------------------------------------------------------------------------------------------------------
@@ -1936,3 +1884,21 @@ end
 //------------------------------------------------------------------------------------------------------
 :External_TPNetwork
 {$INCLUDE_ONCE main\externals\External-TPNetwork.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 8 | Player Parachute
+//      - 
+//------------------------------------------------------------------------------------------------------
+:External_PlayerParachute
+{$INCLUDE_ONCE main\externals\External-PlayerParachute.txt}
+
+
+
+//------------------------------------------------------------------------------------------------------
+//      External Scripts | 9 | Parachute
+//      - 
+//------------------------------------------------------------------------------------------------------
+:External_Parachute
+{$INCLUDE_ONCE main\externals\External-Parachute.txt}

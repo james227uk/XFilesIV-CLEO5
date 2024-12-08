@@ -23,14 +23,14 @@ WHILE TRUE
         IF isCameraActive == FALSE
         THEN
             isCameraActive = TRUE
-            Player.setControl($PLAYER_CHAR, FALSE)
+            Player.setControl($player1, FALSE)
             wait 200
         ELSE
             isCameraActive = FALSE
             rotationX = 0.0
             rotationY = 0.0
             rotationZ = 0.0
-            Player.setControl($PLAYER_CHAR, TRUE)
+            Player.setControl($player1, TRUE)
             wait 200
             Camera.RestoreJumpcut()
         END

@@ -484,7 +484,7 @@ Streaming.RemoveAnimation("GANGS")
 Streaming.RemoveAnimation("MISC")
 AudioStream.Remove(asRoar)
 Text.ClearPrints()
-$flagMissionIntroductionCompleted = True
+$flag_Mission_Introduction_Completed = True
 $ONMISSION = False
 Mission.Finish()
 terminate_this_script

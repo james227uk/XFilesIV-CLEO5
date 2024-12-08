@@ -60,7 +60,7 @@ wait 5500
 Char.ClearTasksImmediately($scplayer)
 Player.SetControl($player1, True)
 func_restoreCamera()
-$flagProsperoHQGatesLocked = True
+$flag_ProsperoHQ_Gates_Locked = True
 
 :Mission_Arrival_HQCheck
 wait 0
@@ -118,7 +118,7 @@ func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arri
 func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0207.mp3", {scmID:}-1, {subID:}"XSM0207", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
 
 wait 1000
-$flagProsperoHQGatesLocked = False
+$flag_ProsperoHQ_Gates_Locked = False
 Camera.SetFixedPosition({Pos3:}2512.8057, 2766.4810, 10.0373, 0.0, 0.0, 0.0) // Camera: Inside gates, facing out to the road.
 Camera.PointAtPoint({Pos3:}2511.9309, 2766.9207, 10.2409, SwitchType.Jumpcut)
 wait 1000
@@ -185,7 +185,7 @@ func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arri
 func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\arrival\XSM0207.mp3", {scmID:}-1, {subID:}"XSM0207", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)
 
 wait 1000
-$flagProsperoHQGatesLocked = False
+$flag_ProsperoHQ_Gates_Locked = False
 Camera.SetFixedPosition({Pos3:}2512.8057, 2766.4810, 10.0373, 0.0, 0.0, 0.0) // Camera: Inside gates, facing out to the road.
 Camera.PointAtPoint({Pos3:}2511.9309, 2766.9207, 10.2409, SwitchType.Jumpcut)
 wait 1000
@@ -383,7 +383,7 @@ Text.ClearPrints()
 //------------------------------------------------------------------------------------------------------
 
 :Mission_Arrival_Passed
-$flagMissionArrivalCompleted = True
+$flag_Mission_Arrival_Completed = True
 Player.SetControl($player1, True)
 func_restoreCamera()
 return

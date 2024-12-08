@@ -16,6 +16,7 @@ Char cSetpCarter
 Char cSetpDavis
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCS] [INFO] Script started.")
 
+Streaming.RequestAnimation("GRAVEYARD")
 Streaming.LoadSpecialCharacter(1, "WUZIMU")
 Streaming.LoadSpecialCharacter(2, "CARTER")
 Streaming.LoadSpecialCharacter(3, "DAVIS")
@@ -24,6 +25,7 @@ Streaming.RequestModel(#KNIFECUR)
 repeat
     wait 0
     if and
+        Streaming.HasAnimationLoaded("GRAVEYARD")
         Streaming.HasSpecialCharacterLoaded(1)
         Streaming.HasSpecialCharacterLoaded(2)
         Streaming.HasSpecialCharacterLoaded(3)
@@ -38,6 +40,8 @@ cSetpDavis = Char.Create(PedType.Special, #SPECIAL03, 352.8675, 164.6367, 1025.7
 func_setpieceCustodian_BatchActions({Mode:}0, {Char:}cSetpCustodian, {Heading:}177.08)
 func_setpieceCustodian_BatchActions({Mode:}0, {Char:}cSetpCarter, {Heading:}177.88)
 func_setpieceCustodian_BatchActions({Mode:}0, {Char:}cSetpDavis, {Heading:}181.64)
+Task.PlayAnim(cSetpCarter, "prst_loopa", "GRAVEYARD", 4.0, True, False, False, False, -1) 
+Task.PlayAnim(cSetpDavis, "prst_loopa", "GRAVEYARD", 4.0, True, False, False, False, -1) 
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQSETCS] [INFO] Created setpiece Custodian, Carter, and Davis.")
 
 repeat
@@ -92,13 +96,14 @@ function func_setpieceCustodian_BatchActions(mode: Int, charTargetChar: Char, fH
             Char.SetStayInSamePlace(charTargetChar, True)
             Char.SetHealth(charTargetChar, 99999)
             Char.SetCurrentWeapon(charTargetChar, WeaponType.Unarmed) 
-            Char.SetDecisionMaker(charTargetChar, 32)        
+            Char.SetDecisionMaker(charTargetChar, 32)       
         
         Case 1 // Kill player
             Char.SetHealth(charTargetChar, 20000)
             Char.SetCurrentWeapon(charTargetChar, WeaponType.DesertEagle)   
             Char.SetStayInSamePlace(charTargetChar, False)
-            Char.SetIgnoreDamageAnims(charTargetChar, True)           
+            Char.SetIgnoreDamageAnims(charTargetChar, True)
+            Char.ClearTasks(charTargetChar)          
             Task.KillCharOnFoot(charTargetChar, $scplayer)                  
         
         Case 2 // Cleanup

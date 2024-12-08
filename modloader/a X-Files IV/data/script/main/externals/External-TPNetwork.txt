@@ -9,6 +9,7 @@
 //========================================================================================================================================================================================================
 script_name 'TPNETWS'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script started.")
+$flag_TPNetwork_Finished = False
 Int iCurrentStation = 0
 Int iMenuTeleportChoice
 Int iValidSelection = False
@@ -17,7 +18,13 @@ Float fStationX, fStationY, fStationZ, fStationH
 Float fParticleX, fParticleY, fParticleZ
 Menu menuTeleport
 Particle fxTPSmoke
-$flag_TPNetwork_Finished = False
+AudioStream3D asActive = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\tpnetwork\active.wav")
+AudioStream3D asFail   = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\tpnetwork\fail.mp3")
+AudioStream3D asLock   = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\tpnetwork\lock.mp3")
+AudioStream3D asTravel = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\tpnetwork\travel.mp3")
+AudioStream3D asExit   = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\tpnetwork\exit.mp3")
+AudioStream3D asClose  = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\tpnetwork\close.mp3")
+
 
 // Figure out which station the player is at.
 while true
@@ -28,8 +35,7 @@ while true
     if Char.LocateOnFoot2D($scplayer, -2526.1526, -617.1046, 2.0, 2.0, False) // Missionary Hill
     then iCurrentStation = 2
     end
-    //   iCurrentStation = 0 if no condition is passed here, meaning undefined/error. 
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Player at station %i.", iCurrentStation)
+    //   iCurrentStation = 0 if no condition is passed here, meaning undefined/error.
     Break
 end
 
@@ -53,9 +59,10 @@ Switch iCurrentStation
     Case 2 // Missionary Hill
         fStationX = -2526.1526
         fStationY = -617.1046
-        fStationZ = 0.0 // DEBUG: FIX ME 
+        fStationZ = 132.8599
         
 end
+gosub @External_TPNetwork_SetupAudio
 gosub @External_TPNetwork_MainMenu
 
 // Main Loop
@@ -63,9 +70,7 @@ while true
     wait 0
     // Check if player wants to re-enter menu.
     if Char.LocateOnFoot3D($scplayer, {Pos3:}fStationX, fStationY, fStationZ, {Rad. Pos3:}1.0, 1.0, 1.0, {Draw Sphere:}True)
-    then
-        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Drawing menu.") 
-    gosub @External_TPNetwork_MainMenu
+    then gosub @External_TPNetwork_MainMenu
     end
     // Check if player has walked into the portal.
     if and
@@ -73,7 +78,6 @@ while true
         Char.LocateOnFoot3D($scplayer, {Pos3:}fParticleX, fParticleY, fParticleZ, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}False)
     then
         gosub @External_TPNetwork_DoTP
-        $flag_TPNetwork_Finished = True
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Player has teleported).")
         Break
     end
@@ -81,10 +85,11 @@ while true
     if TIMERA >= 30000
     then
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Time limit exceeded).")
+        gosub @External_TPNetwork_CloseTP
         Break
     end
 end
-terminate_this_script
+jump @External_TPNetwork_Cleanup
 
 
 
@@ -101,49 +106,46 @@ while true
     if Pad.IsButtonPressed({Pad:}PadID.Pad1, {Button:}Button.Cross) // Sprint
     then
         iMenuTeleportChoice = Menu.GetItemSelected({Menu:}menuTeleport)
-        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Picked %i from menu.", iMenuTeleportChoice)
         func_stallMenu(0) // Stall until confirm/sprint key released. 
         
         // Check the player hasn't selected the station they're already at.
-        gosub @External_TPNetwork_CheckValidSelection
-        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Checking selection...")     
+        gosub @External_TPNetwork_CheckValidSelection   
         if iValidSelection == False
-        then 
-            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection invalid.")
+        then
+            AudioStream3D.SetState(asFail, AudioStreamAction.Play)
             Menu.Delete(menuTeleport)
             jump @External_TPNetwork_MainMenu
         else
-            Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection is valid.")
             // Check if player has cancelled an active TP.
             if iMenuTeleportChoice == 0
             then 
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Teleport choice is 0, cancelling TP..")
+                AudioStream3D.SetState(asActive, AudioStreamAction.Stop)
+                AudioStream3D.SetState(asClose, AudioStreamAction.Play)
                 Particle.Kill(fxTPSmoke)
                 Menu.Delete(menuTeleport)
                 terminate_this_script
             else
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Standard TP selected.")
                 // Start the TP process.
                 iTeleportSelected = True
                 Menu.Delete(menuTeleport)
-                Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Teleport selected: %i. Menu deleted. DO IT.", iTeleportSelected)
-                gosub @External_TPNetwork_CreateFX              
-                jump @External_TPNetwork_EndMenu
+                AudioStream3D.SetState(asLock, AudioStreamAction.Play)
+                wait 1000
+                gosub @External_TPNetwork_CreateFX
+                AudioStream3D.SetState(asActive, AudioStreamAction.Play)
+                AudioStream3D.SetVolume(asActive, 0.0)
+                AudioStream3D.SetVolumeWithTransition(asActive, 1.0, 5000)
+                AudioStream3D.SetLooped(asActive, True)             
+                //jump @External_TPNetwork_EndMenu
+                Break
             end
+        Break
         end
     end
-    if
-        //Pad.IsKeyPressed(KeyCode.Space)
-        Pad.IsKeyPressed(Keycode.Return)
-    then
-        jump @External_TPNetwork_EndMenu
+    if Pad.IsKeyPressed(Keycode.Return)
+    then Break
     end     
 end
-
-:External_TPNetwork_EndMenu
-Text.PrintStringNow("Delete", 2000)
 Menu.Delete(menuTeleport)
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Menu deleted.")
 Player.SetControl($player1, True)
 Camera.RestoreJumpcut()
 repeat
@@ -154,7 +156,7 @@ if iTeleportSelected == False
 then
     $flag_TPNetwork_Finished = True
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Script ending (Reason: Menu exited and no destination was selected).")
-    terminate_this_script
+    jump @External_TPNetwork_Cleanup
 end
 return
 
@@ -162,7 +164,6 @@ return
 :External_TPNetwork_CreateFX
 fxTPSmoke = Particle.Create("CARWASHSPRAY", {Pos3:}fParticleX, fParticleY, fParticleZ, True)
 fxTPSmoke.Play()
-Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Created particle.")
 return
 
 
@@ -173,22 +174,46 @@ then
     return
 end
 
-if
-    iMenuTeleportChoice == iCurrentStation
+if iMenuTeleportChoice == iCurrentStation
 then
     iValidSelection = False
     Text.PrintNow("XTPNM20", 2000, 2) // XTPNM20 SYSTEM FAIL: Cannot teleport to same station.
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection invalid. Picked %i. Current station is %i.", iMenuTeleportChoice, iCurrentStation)
- else
-    iValidSelection = True
-    Text.PrintNow("XTPNM21", 2000, 2) // XTPNM21 SYSTEM SUCCESS: Active for 30 seconds...
-    TIMERA = 0
-    Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Exts|TPNETWS] [INFO] Selection valid. Picked %i. Current station is %i.", iMenuTeleportChoice, iCurrentStation)
+    return
+else
+    if $flag_Debug_TPNetwork_BypassValidCheck == True
+    then jump @External_TPNetwork_CheckValidSelection_Valid
+    end
+    
+    Switch iMenuTeleportChoice
+        Case 0
+        
+        Case 1 // Prospero H.Q.
+            if $flag_ProsperoHQ_TPHubEnabled == True
+            then jump @External_TPNetwork_CheckValidSelection_Valid
+            end
+        
+        Case 2 // Missionary Hill
+            if $flagFacilityMissionaryHillPurchased == True
+            then jump @External_TPNetwork_CheckValidSelection_Valid
+            end
+    end
+    Text.PrintNow("XTPNM23", 2000, 2) // XTPNM23 SYSTEM FAIL: Destination not available.
 end
+return
+
+           
+                     
+
+:External_TPNetwork_CheckValidSelection_Valid
+iValidSelection = True
+Text.PrintNow("XTPNM21", 2000, 2) // XTPNM21 SYSTEM SUCCESS: Activating...
+TIMERA = 0
 return
 
 
 :External_TPNetwork_DoTP
+AudioStream3D.SetState(asTravel, AudioStreamAction.Play)
+AudioStream3D.SetState(asActive, AudioStreamAction.Stop)
 Camera.SetFadingColor(255, 255, 255)
 Camera.DoFade(2000, Fade.Out)
 while Camera.GetFadingStatus()
@@ -212,19 +237,24 @@ Switch iMenuTeleportChoice
         iValidSelection = False // Reusing variable, determines if target TP is roofed.
 end
 
+gosub @External_TPNetwork_SetupAudio
 gosub @External_TPNetwork_CreateFX
 if iValidSelection == True
 then gosub @External_TPNetwork_TPToRoofedArea
-else func_teleportSafe({Pos2:}fParticleX, fParticleY, {Heading:}272.7651, {Area:}0)
+else func_teleportSafe({Pos2:}fParticleX, fParticleY, {Heading:}fStationH, {Area:}0)
 end
 wait 2000
+AudioStream3D.SetState(asActive, AudioStreamAction.Play)
+AudioStream3D.SetVolume(asActive, 0.0)
+AudioStream3D.SetVolumeWithTransition(asActive, 1.0, 2000)
+AudioStream3D.SetState(asExit, AudioStreamAction.Play)
 Camera.DoFade(2000, Fade.In)
 while Camera.GetFadingStatus()
     wait 0
 end
 Camera.SetFadingColor(0, 0, 0)
 wait 2000
-Particle.Kill(fxTPSmoke)
+gosub @External_TPNetwork_CloseTP
 return
 
 
@@ -234,10 +264,48 @@ Char.SetCoordinates($scplayer, fParticleX, fParticleY, fParticleZ)
 Streaming.RequestCollision(fParticleX, fParticleY)
 Streaming.LoadAllModelsNow()
 wait 0
-
-// put on loaded ground
 Char.SetCoordinates($scplayer, fParticleX, fParticleY, fParticleZ)
 Char.SetHeading($scplayer, fStationH)
 Streaming.LoadScene(fParticleX, fParticleY, fParticleZ)
 Streaming.LoadAllModelsNow()
 return
+
+
+// Ends the TP effects and handles the sounds.
+:External_TPNetwork_CloseTP
+Particle.Kill(fxTPSmoke)
+AudioStream3D.SetState(asActive, AudioStreamAction.Stop)
+AudioStream3D.SetState(asClose, AudioStreamAction.Play)
+repeat
+    wait 0
+until not AudioStream3D.IsPlaying(asClose)
+return
+
+
+// Sets AudioStream emitter locations and size.
+:External_TPNetwork_SetupAudio
+AudioStream3D.SetPlayAtCoords(asActive, fParticleX, fParticleY, fParticleZ)
+AudioStream3D.SetPlayAtCoords(asFail, fParticleX, fParticleY, fParticleZ)
+AudioStream3D.SetPlayAtCoords(asLock, fParticleX, fParticleY, fParticleZ)
+AudioStream3D.SetPlayAtCoords(asTravel, fParticleX, fParticleY, fParticleZ)
+AudioStream3D.SetPlayAtCoords(asExit, fParticleX, fParticleY, fParticleZ)
+AudioStream3D.SetPlayAtCoords(asClose, fParticleX, fParticleY, fParticleZ)
+AudioStream3D.SetSourceSize(asActive, 20.0)
+AudioStream3D.SetSourceSize(asFail, 20.0)
+AudioStream3D.SetSourceSize(asLock, 20.0)
+AudioStream3D.SetSourceSize(asTravel, 20.0)
+AudioStream3D.SetSourceSize(asExit, 20.0)
+AudioStream3D.SetSourceSize(asClose, 20.0)
+return
+
+
+:External_TPNetwork_Cleanup
+AudioStream3D.Remove(asActive)
+AudioStream3D.Remove(asFail)
+AudioStream3D.Remove(asLock)
+AudioStream3D.Remove(asTravel)
+AudioStream3D.Remove(asExit)
+AudioStream3D.Remove(asClose)
+Player.SetControl($player1, True)
+$flag_TPNetwork_Finished = True
+terminate_this_script

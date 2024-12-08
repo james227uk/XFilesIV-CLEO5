@@ -15,6 +15,7 @@ Blip blipEvidenceTrailHikers
 Blip blipEvidenceTrailFootprints
 Blip blipEvidenceCabin
 Blip blipEvidenceCabinOverlook
+Blip blipSummit
 Char cSetpieceHikerM
 Char cSetpieceHikerF
 Char cSetpieceCabin1
@@ -26,16 +27,22 @@ Char cSetpieceCabin6
 Char cSetpieceCabin7
 Char cSetpieceYeti
 Char cSetpieceBikerBiker
+Char cYeti
 Car vehSetpieceCabinCar
 Car vehSetpieceBikerBike
+AudioStream3D asMissionSFX
+Particle fxYetiBlast
+Int iTemp = False
+Float fTemp
 Int flagEvidenceTrailBikerCollected = False
 Int flagEvidenceTrailHikersCollected = False
 Int flagEvidenceTrailFootprintsCollected = False
 Int flagEvidenceCabinCollected = False
 Int flagEvidenceCabinOverlookCollected = False
 Int flagEvidenceCollectedCount = 0
-Int iTemp
-Float fTemp
+Int iYetiHealth
+Float fYetiAbilityRoll
+Float fTempX, fTempY, fTempZ
 
 // Start the mssion
 register_mission_given
@@ -46,7 +53,6 @@ then
 end
 gosub @Mission_FindingTheYeti_Cleanup
 terminate_this_script
-
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //      1. Main Mission Body                                                                                                                                                         Main Mission Body | 1
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -95,8 +101,6 @@ vehSetpieceBikerBike.SetHealth(0)
 cSetpieceYeti = Char.Create(PedType.Special, #SPECIAL01, {Pos3:}-2787.9829, -1447.3538, 136.1136)
 cSetpieceYeti.SetVisible(False)
 
-
-iTemp = False
 wait 1000
 Char.FreezePosition($scplayer, False)
 Char.FreezePosition(cSetpieceHikerM, True)
@@ -111,6 +115,7 @@ Char.FreezePosition(cSetpieceCabin7, True)
 Char.FreezePosition(cSetpieceBikerBiker, True)
 Car.FreezePosition(vehSetpieceCabinCar, True)
 
+iTemp = False
 skip_cutscene_start_internal @Mission_FindingTheYeti_IntroSkip
 Hud.SwitchWidescreen(True)
 Camera.DoFade(5000, Fade.In)
@@ -143,18 +148,20 @@ iTemp = True
 skip_cutscene_end
 if iTemp == False // Intro wasn't watched, create markers.
 then
-    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Intro was skipped.")
-    func_restoreCamera()
-    Player.SetControl($player1, True)
+    Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Intro was skipped. iTemp: %i", iTemp)
     gosub @Mission_FindingTheYeti_MarkersTrail
     gosub @Mission_FindingTheYeti_MarkersCabin
 end
-
+Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Intro was not skipped. iTemp: %i", iTemp)
+func_restoreCamera()
+Player.SetControl($player1, True)
 
 while true
     wait 0
     // Evidence counter
-    if flagEvidenceCollectedCount == 4
+    if or 
+        flagEvidenceCollectedCount == 4
+        Pad.TestCheat("JUJ")
     then Break
     end
     
@@ -571,13 +578,13 @@ while true
                 // XSM0339 These guys must've tried to run away.
                 Camera.SetFixedPosition({Pos3:}-2803.9883, -1511.2303, 139.6395, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing CJ, car, and driver.
                 Camera.PointAtPoint({Pos3:}-2803.2715, -1511.9044, 139.4609, SwitchType.Jumpcut) 
-                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0339.mp3", {scmID:}-1, {subID:}"XSM0339", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}500)       
+                func_playDialogue({mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0339.mp3", -1, {SubID:}"XSM0339", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500)       
                 Task.TurnCharToFaceCoord($scplayer, {Pos3:}-2799.0498, -1514.6777, 139.1873)
                 wait 1000
                 cSetpieceYeti.SetCoordinates(-2787.5757, -1446.712, -100.0)
                 cSetpieceYeti.SetHeading(163.7249)                
                 // XSM0340 Same claw marks all over the metal.
-                func_playDialogue({mode:}0, {asPath:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0340.mp3", {scmID:}-1, {subID:}"XSM0340", {doAnims:}False, -1, {waitToFinish:}True, {extraWaitTime:}1000)       
+                func_playDialogue({mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0340.mp3", -1, {SubID:}"XSM0340", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}1000)       
                 Task.ToggleDuck($scplayer, False)
                 wait 1000
                 Task.TurnCharToFaceChar($scplayer, cSetpieceCabin2)
@@ -602,8 +609,172 @@ while true
     end                                    
 end
 
+Blip.Remove(blipEvidenceCabin)
+Blip.Remove(blipEvidenceCabinOverlook)
+Blip.Remove(blipEvidenceTrailBiker)
+Blip.Remove(blipEvidenceTrailHikers)
+Blip.Remove(blipEvidenceTrailFootprints)
 
-func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0341.mp3", -1, {SubID:}"XSM0341", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}1000)  
+asMissionSFX = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\introroar.mp3")
+repeat
+    wait 0
+until AudioStream3D.Load("modloader\a X-Files IV\audio\fx\introroar.mp3", asMissionSFX)
+asMissionSFX.SetType(AudioStreamType.Sfx)
+asMissionSFX.SetPlayAtCoords(-2321.3279, -1637.3391, 483.7031)
+asMissionSFX.SetSourceSize(100.0)
+wait 1000
+// XSM0344 Maybe there is something going on here...
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0344.mp3", -1, {SubID:}"XSM0344", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}3000)  
+asMissionSFX.SetState(AudioStreamAction.Play)
+wait 3500
+// XSM0345 The hell was that?!
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0345.mp3", -1, {SubID:}"XSM0345", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}2000) 
+ // XSM0346 Sounded like it came from the summit!
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0346.mp3", -1, {SubID:}"XSM0346", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}2000) 
+// XSM0347 Can't say I really wanna go up there... but it's why I'm here...
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0347.mp3", -1, {SubID:}"XSM0347", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}2000) 
+asMissionSFX.Remove()
+
+blipSummit = Blip.AddForCoord(-2288.2034, -1698.1034, 479.3199)
+Text.PrintNow("XSM0348", 5000, 2) // XSM0348 Head to the ~y~summit~w~.
+repeat
+    wait 0
+until Char.LocateOnFoot3D($scplayer, {Pos3:}-2288.2034, -1698.1034, 479.3199, {Rad. Pos3:}2.0, 2.0, 2.0, {Draw Sphere:}True)
+
+Camera.DoFade(2000, Fade.Out)
+func_waitForFade()
+Player.SetControl($player1, False)
+Hud.SwitchWidescreen(True)
+Blip.Remove(blipSummit)
+
+
+Streaming.RequestAnimation("BOMBER")
+if not Streaming.HasSpecialCharacterLoaded(1)
+then
+    Streaming.LoadSpecialCharacter(1, "YETI")
+    Streaming.LoadAllModelsNow()
+end
+cYeti = Char.Create(PedType.Special, #SPECIAL01, -2348.2734, -1659.8505, -100.0)
+cYeti.SetHeading(254.8381)
+cYeti.SetHealth(20000)
+func_applyMythTemplate(cYeti)
+
+skip_cutscene_start_internal @Mission_FindingTheYeti_Fight
+Char.SetCoordinates($scplayer, -2292.1309, -1689.0717, -100.0)
+Char.SetHeading($scplayer, 25.4719)
+Camera.SetFixedPosition({Pos3:}-2297.9797, -1668.3373, 482.9535, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: On ground, facing CJ walking up summit hill.
+Camera.PointAtPoint({Pos3:}-2297.9702, -1669.3351, 483.0191, SwitchType.Jumpcut)
+Task.CharSlideToCoord($scplayer, -2297.5071, -1678.0659, 483.6011, 54.9256, 0.05)
+asMissionSFX = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\zapslat_roar.mp3")
+Camera.DoFade(2000, Fade.In)
+repeat
+    wait 0
+until AudioStream3D.Load("modloader\a X-Files IV\audio\fx\zapslat_roar.mp3", asMissionSFX)
+asMissionSFX.SetPlayAtCoords(-2337.541, -1664.8275, 483.5904)
+asMissionSFX.SetSourceSize(10.0)
+TIMERA = 0
+repeat
+    wait 0
+    if or
+        Char.LocateAnyMeans2D($scplayer, -2297.5071, -1678.0659, 0.05, 0.05, False)
+        TIMERA >= 10000
+    then Break
+    end
+until False
+Camera.SetVectorMove({Pos3:}-2298.7305, -1676.2133, 484.3748, {Pos3:}-2298.7305, -1676.2133, 484.3748, 10000, False) // Camera: Slow pan from bushes to the mountain peak
+Camera.SetVectorTrack({Pos3:}-2299.7195, -1676.3605, 484.3566, {Pos3:}-2299.4827, -1675.5728, 484.5292, 10000, False)
+wait 3000
+Char.SetCoordinates($scplayer, -2297.5071, -1678.0659, -100.0)
+Char.SetHeading($scplayer, 54.9256)
+Camera.ResetNewScriptables()
+wait 2000
+Camera.SetFixedPosition({Pos3:}-2298.3774, -1677.5377, 484.2021, {Rot. Pos3:}0.0, 0.0, 0.0) 
+Camera.PointAtPoint({Pos3:}-2297.5283, -1678.0653, 484.1807, SwitchType.Jumpcut)
+wait 500
+repeat
+    wait 0
+until Streaming.HasAnimationLoaded("BOMBER")
+// XSM0349 Huh... nothing here. Maybe I imagined it?
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0349.mp3", -1, {SubID:}"XSM0349", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500) 
+Task.CharSlideToCoordAndPlayAnim(cYeti, -2337.541, -1664.8275, 483.5904, 238.5212, 0.05, "BOM_Plant_Loop", "BOMBER", 4.0, True, False, False, False, -1)
+wait 1000
+Camera.SetFixedPosition({Pos3:}-2329.4028, -1669.5317, 483.9995, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing Yeti, fairly close.
+Camera.PointAtPoint({Pos3:}-2330.2788, -1669.0504, 483.9698, SwitchType.Jumpcut) 
+wait 5000
+// XSM0350 I just had to open my mouth, didn't I?
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0350.mp3", -1, {SubID:}"XSM0350", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500) 
+// XSM0349 XSM0351 The hell is that?!
+func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0351.mp3", -1, {SubID:}"XSM0351", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500) 
+asMissionSFX.SetState(AudioStreamAction.Play)
+Task.PlayAnim(cYeti, "BOM_Plant_2Idle", "BOMBER", 4.0, False, False, False, False, -1)
+wait 5000
+
+
+:Mission_FindingTheYeti_Fight
+skip_cutscene_end
+Task.KillCharOnFoot(cYeti, $scplayer)
+TIMERA = 0 // Yeti Ability Cooldown
+TIMERB = 0 // Yeti Ability Duration
+
+while true
+    wait 0
+    // Debug------------------------------
+    if Pad.TestCheat("JUJ")
+    then Char.SetHealth(cYeti, 10001)
+    end
+    //
+    if Pad.TestCheat("KIK")
+    then Char.SetHealth(cYeti, 5001)
+    end
+    //------------------------------------
+    if Char.IsDead(cYeti)
+    then Break
+    end
+    
+    if TIMERB >= 5000
+    then
+        Char.SetAnimSpeed($scplayer, "Walk_Player", 1.0)
+        Char.SetAnimSpeed($scplayer, "Run_Player", 1.0)
+    end
+    /*
+    // If Yeti 50% health
+    iYetiHealth = Char.GetHealth(cYeti)
+    if and
+        iYetiHealth > 5000
+        10000 > iYetiHealth
+        TIMERA >= 10000
+    then
+        if Math.RandomChance(10.0)
+        then
+            Task.PlayAnim(cYeti, "BOM_Plant_Loop", "BOMBER", 4.0, False, False, False, False, 2000)
+            Char.GetCoordinates($scplayer, fTempX, fTempY, fTempZ)
+            wait 1000
+            fxYetiBlast = Particle.CreateOnChar("CARWASHSPRAY", $scplayer, 0.0, 0.0, 0.0, True)
+            fxYetiBlast.PlayAndKill()
+            Char.SetAnimSpeed($scplayer, "Walk_Player", 0.5)
+            Char.SetAnimSpeed($scplayer, "Run_Player", 0.5)
+            TIMERB = 0
+            iTemp = 1
+            wait 1000
+            Task.PlayAnim(cYeti, "BOM_Plant_2Idle", "BOMBER", 4.0, False, False, False, False, -1)
+            Task.KillCharOnFoot(cYeti, $scplayer)
+            TIMERA = 0
+        end
+    end
+    */
+        
+    
+    // If Yeti 25% health
+    
+    // If player too far away
+   
+end
+// Yeti is dead, finale cutscene
+
+Camera.RestoreJumpcut()
+Hud.SwitchWidescreen(False)
+Player.SetControl($player1, True)
+
 
 wait 5000
 repeat

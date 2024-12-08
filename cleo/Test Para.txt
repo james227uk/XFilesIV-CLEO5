@@ -1,0 +1,91 @@
+{$CLEO .cs}
+nop
+
+{$USE CLEO+}
+
+script_name 'TESTCHT'
+Float fPlayerX, fPlayerY, fPlayerZ
+Float fParaPlaneHeading
+Float fRandomHeadingAdj
+Int iRandomDelay
+Var cParaAgents: array 6 of Char
+Plane vehParaPlane
+Char cParaPlanePilot
+$ParaAgentsIndex = 0
+
+while true
+    wait 0
+    if Pad.TestCheat("JUMP")
+    then
+        Streaming.RequestModel(#BMYMIB)
+        Streaming.RequestModel(#WMOMIB)
+        Streaming.RequestModel(#DESERT_EAGLE)
+        Streaming.RequestModel(#ANDROM)
+        StreamedScript.Stream(9)
+        Streaming.LoadAllModelsNow()
+        
+        Char.GetCoordinates($scplayer, fPlayerX, fPlayerY, fPlayerZ)
+        Float fRandomHeading = Math.RandomFloatInRange(0.0, 360.0)
+        Float fSin = Math.Sin(fRandomHeading)
+        Float fCos = Math.Cos(fRandomHeading)
+        fSin *= 1000.0
+        fCos *= 1000.0
+        fSin += fPlayerX
+        fCos += fPlayerY
+        vehParaPlane = Plane.Create(#ANDROM, fSin, fCos, 400.0)
+        cParaPlanePilot = Char.CreateInsideCar(vehParaPlane, PedType.Special, #BMYMIB)
+        fParaPlaneHeading = Math.GetAngleFromTwoCoords(fSin, fCos, fPlayerX, fPlayerY)
+        vehParaPlane.SetHeading(fParaPlaneHeading)
+        vehParaPlane.SetForwardSpeed(30.0)
+        vehParaPlane.SetUndercarriageUp(True)
+        Blip blipTestMark = Blip.AddForCar(vehParaPlane)
+        
+        
+        repeat
+            wait 0
+        until Car.Locate2D(vehParaPlane, fPlayerX, fPlayerY, 10.0, 10.0, False)
+        Audio.PlayMissionPassedTune(2)
+        $ParaAgentsIndex = 0
+        repeat
+            Plane.GetCoordinates(vehParaPlane, fPlayerX, fPlayerY, fPlayerZ) // Reusing to save variables.
+            fPlayerZ -= 5.0
+            cParaAgents[$ParaAgentsIndex] = Char.Create(PedType.Gang9, #BMYMIB, fPlayerX, fPlayerY, fPlayerZ)
+            fRandomHeadingAdj = Math.RandomFloatInRange(-10.0, 10.0)
+            fRandomHeadingAdj += fParaPlaneHeading // Reusing to save variables.
+            cParaAgents[$ParaAgentsIndex].SetHeading(fRandomHeadingAdj)
+            StreamedScript.StartNew(9, {Pickup:}-1, {Fall Speed:}-2.0, {Fall Fwrd Speed:}1.0, {Speed:}-3.0, {Decel Speed:}-10.0, {Fwrd Speed:}0.0, {Glide Fwrd Speed:}0.0, {Start in Air:}True, cParaAgents[$ParaAgentsIndex])
+            iRandomDelay = Math.RandomIntInRange(100, 500)
+            wait iRandomDelay
+            $ParaAgentsIndex += 1
+            fRandomHeadingAdj = 0.0
+            fParaPlaneHeading = Plane.GetHeading(vehParaPlane)
+        until $ParaAgentsIndex >= 6        
+    end
+end
+
+terminate_this_custom_script
+
+
+
+
+
+Streaming.RequestModel(#PARACHUTE)
+Streaming.RequestModel(#PARA_PACK)
+Streaming.RequestAnimation("PARACHUTE")
+
+
+
+/*
+set_lvar_text_label 94@s = 'MKND02K'
+
+CREATE_FX_SYSTEM smoke_flare 1291.4536 -775.3071 95.5 TRUE signal_flare_M1[0]
+    CREATE_FX_SYSTEM smoke_flare 1303.2109 -788.2426 95.5 TRUE signal_flare_M1[1]
+    CREATE_FX_SYSTEM smoke_flare 1291.1592 -800.4006 95.5 TRUE signal_flare_M1[2]
+    
+
+	
+*/
+
+
+StreamedScript.StartNew(9, {Pickup:}-1, {Fall Speed:}-2.0, {Fall Forward Speed:}1.0, {Speed:}-3.0, {Decel Speed:}-1.0, {Forward Speed:}1.5, {Glide Speed:}3.2, {Start in Air:}True, cPara)
+

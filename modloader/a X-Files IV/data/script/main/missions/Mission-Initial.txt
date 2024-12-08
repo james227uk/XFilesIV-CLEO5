@@ -14,10 +14,10 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|Initial] [INFO]
 
 
 int iRandomSceneChoice
-Menu mainMenu
 Int iMainMenuChoice
+Int iTemp
+Menu mainMenu
 AudioStream mainTheme
-
 Car custodianSceneHeli
 Char custodianSceneHeliPilot
 Char custodianSceneCustodian
@@ -136,6 +136,7 @@ switch iRandomSceneChoice
         
         :Mission_Initial_Skip_Sarah
         skip_cutscene_end
+        Camera.ResetNewScriptables()
         gosub @Mission_Initial_Skip_Universal
         gosub @Mission_Initial_Cleanup_Sarah
     
@@ -149,8 +150,29 @@ jump @Mission_Initial_Cleanup_Universal
 
 :Mission_Initial_SceneSelecter
 // Randomly select a scene.
-Math.RandomIntInRange(0, 2, iRandomSceneChoice)
+//Clock.GetLocalTime(iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemSeed)
+//Math.GenerateRandomIntInRangeWithSeed(iSystemSeed, 0, 2, iRandomSceneChoice)
+//-
+//Temp workaround since random int isn't all that random.
+iTemp = Math.RandomIntInRange(1, 100)
+if and
+    iTemp >= 1
+    33 >= iTemp
+then iRandomSceneChoice = 0
+end
 
+if and
+    iTemp >= 34
+    66 >= iTemp
+then iRandomSceneChoice = 1
+end
+
+if and
+    iTemp >= 67
+    100 >= iTemp
+then iRandomSceneChoice = 2
+end
+//-
 switch iRandomSceneChoice
     case 0 // Custodian on helipad      
         Streaming.RequestModel(#MAVERICK)
@@ -214,7 +236,7 @@ return
 // Cleanup code executed for all scenes.
 :Mission_Initial_Cleanup_Universal
 AudioStream.Remove(mainTheme)
-$flagMissionInitialCompleted = True
+$flag_Mission_Initial_Completed = True
 $ONMISSION = False
 terminate_this_script
 
