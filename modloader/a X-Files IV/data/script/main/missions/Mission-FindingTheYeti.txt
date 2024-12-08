@@ -32,8 +32,6 @@ Car vehSetpieceCabinCar
 Car vehSetpieceBikerBike
 AudioStream3D asMissionSFX
 Particle fxYetiBlast
-Int iTemp = False
-Float fTemp
 Int flagEvidenceTrailBikerCollected = False
 Int flagEvidenceTrailHikersCollected = False
 Int flagEvidenceTrailFootprintsCollected = False
@@ -43,9 +41,12 @@ Int flagEvidenceCollectedCount = 0
 Int iYetiHealth
 Float fYetiAbilityRoll
 Float fTempX, fTempY, fTempZ
+Int iTemp = False
+Float fTemp
 
-// Start the mssion
+// Start the mission
 register_mission_given
+$ONMISSION = True
 gosub @Mission_FindingTheYeti_Start
 if has_deatharrest_been_executed
 then
@@ -736,7 +737,7 @@ while true
         Char.SetAnimSpeed($scplayer, "Walk_Player", 1.0)
         Char.SetAnimSpeed($scplayer, "Run_Player", 1.0)
     end
-    /*
+    
     // If Yeti 50% health
     iYetiHealth = Char.GetHealth(cYeti)
     if and
@@ -761,7 +762,7 @@ while true
             TIMERA = 0
         end
     end
-    */
+
         
     
     // If Yeti 25% health
