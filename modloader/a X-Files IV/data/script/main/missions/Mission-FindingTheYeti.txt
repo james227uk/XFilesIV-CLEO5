@@ -7,9 +7,12 @@
 // Path:        main\missions\Mission-FindingTheYeti.txt
 // Trigger:     Upon entering the proximity of Mount Chiliad.
 //==========================================================================================================================================================================================================
+{$USE math}
+
 script_name 'findyti'
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Loaded mission 'Finding The Yeti'.")
 
+Int ReservedOffset[34] // Missions should start at 34@
 Blip blipEvidenceTrailBiker
 Blip blipEvidenceTrailHikers
 Blip blipEvidenceTrailFootprints
@@ -30,6 +33,7 @@ Char cSetpieceBikerBiker
 Char cYeti
 Car vehSetpieceCabinCar
 Car vehSetpieceBikerBike
+Car vehPlayerVehicle
 AudioStream3D asMissionSFX
 Particle fxYetiBlast
 Int flagEvidenceTrailBikerCollected = False
@@ -39,14 +43,13 @@ Int flagEvidenceCabinCollected = False
 Int flagEvidenceCabinOverlookCollected = False
 Int flagEvidenceCollectedCount = 0
 Int iYetiHealth
-Float fYetiAbilityRoll
+Int iYetiAbilityRoll
 Float fTempX, fTempY, fTempZ
 Int iTemp = False
 Float fTemp
 
 // Start the mission
 register_mission_given
-$ONMISSION = True
 gosub @Mission_FindingTheYeti_Start
 if has_deatharrest_been_executed
 then
@@ -609,13 +612,12 @@ while true
         end
     end                                    
 end
-
 Blip.Remove(blipEvidenceCabin)
 Blip.Remove(blipEvidenceCabinOverlook)
 Blip.Remove(blipEvidenceTrailBiker)
 Blip.Remove(blipEvidenceTrailHikers)
 Blip.Remove(blipEvidenceTrailFootprints)
-
+/*
 asMissionSFX = AudioStream3D.Load("modloader\a X-Files IV\audio\fx\introroar.mp3")
 repeat
     wait 0
@@ -635,7 +637,6 @@ func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findth
 // XSM0347 Can't say I really wanna go up there... but it's why I'm here...
 func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0347.mp3", -1, {SubID:}"XSM0347", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}2000) 
 asMissionSFX.Remove()
-
 blipSummit = Blip.AddForCoord(-2288.2034, -1698.1034, 479.3199)
 Text.PrintNow("XSM0348", 5000, 2) // XSM0348 Head to the ~y~summit~w~.
 repeat
@@ -648,7 +649,7 @@ Player.SetControl($player1, False)
 Hud.SwitchWidescreen(True)
 Blip.Remove(blipSummit)
 
-
+*/
 Streaming.RequestAnimation("BOMBER")
 if not Streaming.HasSpecialCharacterLoaded(1)
 then
@@ -684,8 +685,8 @@ repeat
 until False
 Camera.SetVectorMove({Pos3:}-2298.7305, -1676.2133, 484.3748, {Pos3:}-2298.7305, -1676.2133, 484.3748, 10000, False) // Camera: Slow pan from bushes to the mountain peak
 Camera.SetVectorTrack({Pos3:}-2299.7195, -1676.3605, 484.3566, {Pos3:}-2299.4827, -1675.5728, 484.5292, 10000, False)
-wait 3000
-Char.SetCoordinates($scplayer, -2297.5071, -1678.0659, -100.0)
+wait 7000
+Char.SetCoordinates($scplayer, {Pos3:}-2297.5071, -1678.0659, -100.0)
 Char.SetHeading($scplayer, 54.9256)
 Camera.ResetNewScriptables()
 wait 2000
@@ -697,7 +698,7 @@ repeat
 until Streaming.HasAnimationLoaded("BOMBER")
 // XSM0349 Huh... nothing here. Maybe I imagined it?
 func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0349.mp3", -1, {SubID:}"XSM0349", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500) 
-Task.CharSlideToCoordAndPlayAnim(cYeti, -2337.541, -1664.8275, 483.5904, 238.5212, 0.05, "BOM_Plant_Loop", "BOMBER", 4.0, True, False, False, False, -1)
+Task.CharSlideToCoordAndPlayAnim(cYeti, {Pos3:}-2337.541, -1664.8275, 483.5904, {Heading:}238.5212, {Stop Rad.}0.05, "BOM_Plant_Loop", "BOMBER", 4.0, True, False, False, False, -1)
 wait 1000
 Camera.SetFixedPosition({Pos3:}-2329.4028, -1669.5317, 483.9995, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing Yeti, fairly close.
 Camera.PointAtPoint({Pos3:}-2330.2788, -1669.0504, 483.9698, SwitchType.Jumpcut) 
@@ -707,18 +708,20 @@ func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findth
 // XSM0349 XSM0351 The hell is that?!
 func_playDialogue({Mode:}0, {File:}"modloader\a X-Files IV\audio\dialogue\findtheyeti\XSM0351.mp3", -1, {SubID:}"XSM0351", {Anims?:}False, -1, {Let Finish:}True, {Add Time:}500) 
 asMissionSFX.SetState(AudioStreamAction.Play)
-Task.PlayAnim(cYeti, "BOM_Plant_2Idle", "BOMBER", 4.0, False, False, False, False, -1)
-wait 5000
-
+Task.PlayAnim(cYeti, {Anim:}"BOM_Plant_2Idle", "BOMBER", 4.0, False, False, False, False, -1)
+wait 2000
 
 :Mission_FindingTheYeti_Fight
 skip_cutscene_end
+Char.ClearTasksImmediately($scplayer)
+Player.SetControl($player1, True)
+func_restoreCamera()
 Task.KillCharOnFoot(cYeti, $scplayer)
 TIMERA = 0 // Yeti Ability Cooldown
-TIMERB = 0 // Yeti Ability Duration
 
 while true
     wait 0
+    iYetiHealth = Char.GetHealth(cYeti)
     // Debug------------------------------
     if Pad.TestCheat("JUJ")
     then Char.SetHealth(cYeti, 10001)
@@ -731,43 +734,81 @@ while true
     if Char.IsDead(cYeti)
     then Break
     end
-    
-    if TIMERB >= 5000
-    then
-        Char.SetAnimSpeed($scplayer, "Walk_Player", 1.0)
-        Char.SetAnimSpeed($scplayer, "Run_Player", 1.0)
-    end
-    
+
     // If Yeti 50% health
-    iYetiHealth = Char.GetHealth(cYeti)
     if and
         iYetiHealth > 5000
         10000 > iYetiHealth
         TIMERA >= 10000
     then
-        if Math.RandomChance(10.0)
+        Clock.GetLocalTime(iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iTemp)
+        iYetiAbilityRoll = Math.GenerateRandomIntInRangeWithSeed(iTemp, 0, 200)
+        if iYetiAbilityRoll == 77
         then
-            Task.PlayAnim(cYeti, "BOM_Plant_Loop", "BOMBER", 4.0, False, False, False, False, 2000)
+            Task.PlayAnim(cYeti, {Anim:}"BOM_Plant_Loop", "BOMBER", 4.0, False, False, False, False, 2000)
             Char.GetCoordinates($scplayer, fTempX, fTempY, fTempZ)
             wait 1000
-            fxYetiBlast = Particle.CreateOnChar("CARWASHSPRAY", $scplayer, 0.0, 0.0, 0.0, True)
-            fxYetiBlast.PlayAndKill()
-            Char.SetAnimSpeed($scplayer, "Walk_Player", 0.5)
-            Char.SetAnimSpeed($scplayer, "Run_Player", 0.5)
-            TIMERB = 0
-            iTemp = 1
+            fxYetiBlast = Particle.CreateOnChar("CARWASHSPRAY", $scplayer, {Offset Pos3:}0.0, 0.0, 0.3, True)
+            fxYetiBlast.Play()
+            wait 3000
+            if Char.IsInAnyCar($scplayer)
+            then 
+               vehPlayerVehicle = Char.StoreCarIsInNoSave($scplayer)
+               vehPlayerVehicle.SetForwardSpeed(20.0)
+            else Task.FallAndGetUp($scplayer, True, 1000)
+            end
             wait 1000
-            Task.PlayAnim(cYeti, "BOM_Plant_2Idle", "BOMBER", 4.0, False, False, False, False, -1)
+            fxYetiBlast.Kill()
+            Task.PlayAnim(cYeti, {Anim:}"BOM_Plant_2Idle", "BOMBER", 4.0, False, False, False, False, -1)
             Task.KillCharOnFoot(cYeti, $scplayer)
-            TIMERA = 0
+            TimerA = 0
         end
     end
 
-        
-    
+          
     // If Yeti 25% health
+    if and
+        iYetiHealth > 1000
+        5000 > iYetiHealth
+        TIMERA >= 5000
+    then
+        Clock.GetLocalTime(iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iTemp)
+        iYetiAbilityRoll = Math.GenerateRandomIntInRangeWithSeed(iTemp, 0, 200)
+        if iYetiAbilityRoll == 77
+        then
+            Task.PlayAnim(cYeti, {Anim:}"BOM_Plant_Loop", "BOMBER", {Speed:}4.0, {Loop:}False, {LockX:}False, {LockY:}False, {Freeze Frame:}False, {Time:}2000)
+            wait 1000
+            fxYetiBlast = Particle.CreateOnChar("CARWASHSPRAY", cYeti, {Offset Pos3:}0.0, 0.0, 0.3, True)
+            fxYetiBlast.Play()
+            fTempZ = Math.GenerateRandomFloatInRangeWithSeed({Seed:}iTemp, {Range:}-15.0, -5.0)
+            Char.GetOffsetInWorldCoords($scplayer, {Offset Pos3:}fTempZ, 0.0, 0.0, {Store To Pos3:}fTempX, fTempY, fTempZ)
+            wait 1000
+            Char.SetCoordinates(cYeti, {Pos3:}fTempX, fTempY, -100.0)
+            wait 1000
+            fxYetiBlast.Kill()
+            TimerA = 0
+        end
+    end
     
     // If player too far away
+    if not Char.LocateAnyMeansChar2D($scplayer, cYeti, {Rad. Pos2:}500.0, 500.0, False)
+    then
+        TimerB = 0
+        Text.PrintNow("XSM0352", 10000, 1) // XSM0352 You are too far away. Return to the mountain!
+        while true
+            wait 0
+            if TimerB >= 10000
+            then
+                Text.ClearPrints()
+                Text.PrintNow("XSM0353", 5000, 1) // XSM0353 You abandoned the search!
+                gosub @Mission_FindingTheYeti_Failed
+            end
+            
+            if Char.LocateAnyMeansChar2D($scplayer, cYeti, {Rad. Pos2:}500.0, 500.0, False)
+            then Break
+            end
+        end
+    end
    
 end
 // Yeti is dead, finale cutscene
@@ -796,6 +837,7 @@ return
 :Mission_FindingTheYeti_Passed
 $flag_Storymode_Mission_FindingTheYeti_Completed = True
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Returning from mission (Reason: Mission passed).")
+Text.PrintBig("M_PASS", 5000, 1) // MISSION PASSED!~n~~w~$~1~
 return
 
 
@@ -805,6 +847,8 @@ return
 
 :Mission_FindingTheYeti_Failed
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mssn-FindYti] [INFO] Returning from mission (Reason: Mission failed).")
+Text.PrintBig("M_FAIL", 5000, 1) // ~r~MISSION FAILED!
+$flag_Storymode_Mission_FindingTheYeti_Failed = True
 return
 
 
@@ -815,7 +859,7 @@ Streaming.MarkModelAsNoLongerNeeded(#CWFYHB)
 Streaming.MarkModelAsNoLongerNeeded(#LANDSTAL)
 Streaming.MarkModelAsNoLongerNeeded(#SANCHEZ)
 Streaming.RemoveSpecialModel(1)
-$ONMISSION = False
+$flag_Player_On_Mission = False
 Mission.Finish()
 return
 
@@ -833,4 +877,12 @@ return
 :Mission_FindingTheYeti_MarkersCabin
 blipEvidenceCabin = Blip.AddSpriteForCoord({Pos3:}-2797.2817, -1535.8827, 139.4028, RadarSprite.Qmark)
 blipEvidenceCabinOverlook = Blip.AddSpriteForCoord({Pos3:}-2731.7129, -1598.2828, 235.9504, RadarSprite.Qmark)
+return
+
+:Mission_FindingTheYeti_YetiAblityPreamble
+Task.PlayAnim(cYeti, "BOM_Plant_Loop", "BOMBER", 4.0, False, False, False, False, 2000)
+Char.GetCoordinates($scplayer, fTempX, fTempY, fTempZ)
+wait 1000
+fxYetiBlast = Particle.CreateOnChar("CARWASHSPRAY", $scplayer, 0.0, 0.0, 0.3, True)
+fxYetiBlast.Play()
 return

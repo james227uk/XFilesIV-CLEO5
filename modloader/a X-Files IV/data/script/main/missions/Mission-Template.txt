@@ -11,6 +11,7 @@
 :Mission_X_Header
 script_name 'X'
 Debugger.LogLine({Filename:}logPath, {Timestamp:}True, {Text:}"[Mission-Arrival] [INFO] Loaded mission 'XE'.")
+Int ReservedOffset[34] // Missions should start at 34@
 
 // Start the mssion
 register_mission_given
@@ -36,7 +37,7 @@ return
 //------------------------------------------------------------------------------------------------------
 
 :Mission_X_Passed
-$flagMissionXCompleted = True
+$flag_Mission_X_Completed = True
 return
 
 
@@ -52,6 +53,6 @@ return
 // Mission cleanup.
 :Mission_Arrival_Cleanup
 
-$ONMISSION = False
+$flag_Player_On_Mission = False
 Mission.Finish()
 return

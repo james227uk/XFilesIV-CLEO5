@@ -397,6 +397,6 @@ return
 :Mission_Arrival_Cleanup
 Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
 Streaming.RemoveAnimation("MISC")
-$ONMISSION = False
+$flag_Player_On_Mission = False
 Mission.Finish()
 return

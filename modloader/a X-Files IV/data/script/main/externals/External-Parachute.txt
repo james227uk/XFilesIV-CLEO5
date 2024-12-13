@@ -735,7 +735,7 @@ $ai_landed = 1
 
 :PARACH_5438
 if 
-  $onmission == 1
+  $flag_Player_On_Mission == 1
 goto_if_false @PARACH_5463
 gosub @PARACH_6417
 

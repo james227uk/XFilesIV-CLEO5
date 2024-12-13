@@ -10,8 +10,6 @@
 //      1. SCM Header 
 //      Core SCM stats such as mission counts, and initial variable declarations.
 //========================================================================================================================================================================================================
-
-//--- Primary header
 DEFINE MISSIONS 4
 DEFINE MISSION 0 AT @Mission_Initial        // 1. Initialisation Script
 DEFINE MISSION 1 AT @Mission_Introduction   // 2. Storymode: Introduction
@@ -19,7 +17,6 @@ DEFINE MISSION 2 AT @Mission_Arrival        // 3. Storymode: Arrival
 DEFINE MISSION 3 AT @Mission_FindingTheYeti // 4. Storymode: Finding The Yeti
 
 DEFINE EXTERNAL_SCRIPTS 10
- // Use -1 in order not to compile AAA script
 DEFINE SCRIPT DBGCONS AT @External_DebugConsole         // 0
 DEFINE SCRIPT HQAGTES AT @External_HQAgentsExterior     // 1
 DEFINE SCRIPT HQAGTIS AT @External_HQAgentsInterior     // 2
@@ -40,13 +37,14 @@ DEFINE UNKNOWN_THREADS_MEMORY 0
 {$USE NewOpcodes}
 {$USE BitWise}
 {$USE Debug}
+{$USE math}
 
 //--- Initial variable declarations
 var 
     $player1: Player         // gta3sc/SBL analogue of PLAYER_CHAR
     $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
     $playerGroup: Group
-    $playerArea: Int
+    $playerArddddddddddddddddddddea: Int
     $mission_trigger_wait_time: Int = 250
     $flagGamemodeChoice: Int = 0
     
@@ -54,6 +52,7 @@ var
     $flag_Mission_Introduction_Completed: Int = False
     $flag_Mission_Arrival_Completed: Int = False
     $flag_Storymode_Mission_FindingTheYeti_Completed: Int = False
+    $flag_Storymode_Mission_FindingTheYeti_Failed: Int = False
     
     $flag_TPNetwork_Finished: Int = False
     $flagDebugConsoleOpen: Int = False
@@ -148,7 +147,7 @@ $SCRIPT_STATUS = 0
 
 
 script_name 'MAIN'
-declare_mission_flag {Name:} $ONMISSION
+declare_mission_flag {Name:} $flag_Player_On_Mission
 Fs.DeleteFile(logPath)
 
 
@@ -237,7 +236,7 @@ start_new_script @Script_Universal_ProsperoHQ_Gates
 //--- Launch the initialisation 'mission'. This contains the main menu etc.
 Mission.LoadAndLaunchInternal(Mission_Initial)
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'initial'...")
-$ONMISSION = True
+$flag_Player_On_Mission = True
 while $flag_Mission_Initial_Completed == False
     wait 0
 end
@@ -249,7 +248,7 @@ then
     // Launch Introduction cutscene
     Mission.LoadAndLaunchInternal(Mission_Introduction)
     Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Launching mission 'introduction'...")
-    $ONMISSION = True
+    $flag_Player_On_Mission = True
     while $flag_Mission_Introduction_Completed == False
         wait 0
     end
@@ -277,7 +276,7 @@ else
 
     Clock.SetTimeOfDay(12, 0)
     
-    $flagDebugMythMarkers = True
+    $flag_Debug_Myth_Markers = True
     $flag_ProsperoHQ_TPHubEnabled = True
     $flagFollowerSarahAvailable = True
     $flag_Debug_TPNetwork_BypassValidCheck = True
@@ -394,7 +393,7 @@ if not Pickup.HasBeenCollected(3@)
 then jump @Script_Universal_HQSavePoint_Loop
 end
 
-$ONMISSION = 1
+$flag_Player_On_Mission = 1
 Player.SetControl($player1, False)
 Game.ActivateSaveMenu()
 
@@ -410,7 +409,7 @@ until Player.IsPlaying($player1)
 Camera.RestoreJumpcut()
 Camera.SetBehindPlayer()
 Player.SetControl($player1, True)
-$ONMISSION = 0
+$flag_Player_On_Mission = 0
 
 repeat
     wait 0
@@ -671,7 +670,7 @@ while true
     Clock.GetTimeOfDay(0@, 1@)
     wait $mission_trigger_wait_time
     if and
-        $ONMISSION == False
+        $flag_Player_On_Mission == False
         $playerArea == 3
         0@ >= 6
         not 0@ >= 21
@@ -939,7 +938,7 @@ while true
     wait $mission_trigger_wait_time
     if and
         Player.IsPlaying($player1)
-        $ONMISSION == False
+        $flag_Player_On_Mission == False
         Pickup.HasBeenCollected(0@)
     then        
         Player.SetControl($player1, False)
@@ -977,7 +976,7 @@ while true
     wait $mission_trigger_wait_time
     if and
         Player.IsPlaying($player1)
-        $ONMISSION == False
+        $flag_Player_On_Mission == False
         Pickup.HasBeenCollected(0@)
     then
         Streaming.RequestModel(#A51_JETPSTUFF)
@@ -1099,8 +1098,7 @@ while true
     Streaming.RequestModel(#DESERT_EAGLE)
     Streaming.LoadAllModelsNow()
     Char.GetCoordinates($scplayer, 0@, 1@, 2@)
-    Path.GetClosestCarNode({Pos3:}0@, 1@, 2@, {Pos3:}0@, 1@, 2@)
-    
+    Path.GetClosestCarNode({Pos3:}0@, 1@, 2@, {Pos3:}0@, 1@, 2@)   
     3@ = Car.Create(#COACH, {Pos3:}0@, 1@, 2@)
     4@ = Char.CreateInsideCar(3@, PedType.Gang9, #WMOMIB)
     5@ = Char.CreateAsPassenger(3@, PedType.Gang9, #BMYMIB, SeatId.FrontRight)
@@ -1114,8 +1112,7 @@ while true
     Char.GiveWeapon(6@, WeaponType.DesertEagle, 99999)
     Char.GiveWeapon(7@, WeaponType.DesertEagle, 99999)
     Char.GiveWeapon(8@, WeaponType.DesertEagle, 99999)
-    Char.GiveWeapon(9@, WeaponType.DesertEagle, 99999)
-    
+    Char.GiveWeapon(9@, WeaponType.DesertEagle, 99999) 
     Char.GetCoordinates($scplayer, 0@, 1@, 2@)
     Task.CarDriveToCoord(4@, 3@, {Pos3:}2@, 3@, 4@, 15.0, DriveMode.Accurate, 0, 0)
     
@@ -1237,7 +1234,7 @@ repeat
 until $flag_Mission_Arrival_Completed == True
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Returned from mission 'arrival'.")  
 Blip.Remove(0@)
-$ONMISSION = False  
+$flag_Player_On_Mission = False  
 start_new_script @Script_Storymode_FindingTheYeti_Loader
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO] Script ended.")
 terminate_this_script
@@ -1254,8 +1251,17 @@ Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMFTYEL] [INFO]
 gosub @Script_Storymode_FindingTheYeti_Loader_Blip
 
 while true
-    wait $mission_trigger_wait_time
-    if $flag_Storymode_Mission_FindingTheYeti_Completed == True
+    wait $mission_trigger_wait_time 
+    
+    if $flag_Mission_Storymode_FindingTheYeti_Failed == True // If mission is failed, stall until player moves away to prevent instant re-firing.
+    then
+        repeat
+            wait $mission_trigger_wait_time
+        until not Char.LocateAnyMeans2D($scplayer, {Pos3:}-2472.0, -1561.0, 412.9375, {Radius:}300.0, {Draw Sphere:}False)
+        $flag_Mission_Storymode_FindingTheYeti_Failed = False
+    end
+    
+    if $flag_Storymode_Mission_FindingTheYeti_Completed == True // If mission is completed, remove the blip and end this loader script.
     then 
         Blip.Remove(0@)
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMFTYEL] [INFO] Script ended.")
@@ -1263,13 +1269,13 @@ while true
         terminate_this_script
     end
     
-    if and 
-        $ONMISSION == False
+    if and // If the player is in range and can start a mission, then do so. 
+        $flag_Player_On_Mission == False
         Player.IsPlaying($player1)
         Player.CanStartMission($player1)
         Char.LocateAnyMeans2D($scplayer, {Pos3:}-2472.0, -1561.0, 412.9375, {Radius:}300.0, {Draw Sphere:}False)
     then
-        if and
+        if and // If the time isn't alreeady between 22:00 - 03:00, then fast-forward to 22:00.
             $TIME_HOURS >= 3
             22 >= $TIME_HOURS
         then func_doMissionTimeskip({targetHour:}22)
@@ -1278,17 +1284,17 @@ while true
         func_doMissionFade()
         Blip.Remove(0@)
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMFTYEL] [INFO] Launching mission 'Finding The Yeti'...")
+        $flag_Player_On_Mission = True
         Mission.LoadAndLaunchInternal(Mission_FindingTheYeti)
     end
     
-    if not Player.IsPlaying($player1)
-    then
-        Blip.Remove(0@)
-        gosub @Script_Storymode_FindingTheYeti_Loader_Blip
+    if not Player.IsPlaying($player1) // If the player is wasted or busted, then re-create the mission blip.
+    then gosub @Script_Storymode_FindingTheYeti_Loader_Blip
     end     
 end
 
 :Script_Storymode_FindingTheYeti_Loader_Blip
+Blip.Remove(0@)
 0@ = Blip.AddSpriteForCoord({Pos3:}-2472.0, -1561.0, 412.9375, RadarSprite.Crash1)
 return
 
@@ -1341,7 +1347,7 @@ while true
             Case 7 // NW, between log piles
                 1@ = func_freemodeLeatherfaceSpawn(-567.1461, -102.5068, 65.1088, 251.3683)
         end
-        if $flagDebugMythMarkers == True
+        if $flag_Debug_Myth_Markers == True
         then 2@ = Blip.AddForChar(1@)
         end 
         
@@ -1366,7 +1372,7 @@ while true
                     repeat
                         wait 1000
                     until Char.LocateAnyMeansChar3D($scplayer, 1@, 300.0, 300.0, 300.0, False)
-                    if $flagDebugMythMarkers == True
+                    if $flag_Debug_Myth_Markers == True
                     then 2@ = Blip.AddForChar(1@)
                     end
                 else // Else, cleanup and start the script again
@@ -1597,8 +1603,7 @@ AudioStream streamID
         streamLength += 1000
         AudioStream.SetState(streamID, AudioStreamAction.Play)
         if Game.AreSubtitlesSwitchedOn()
-        then
-            Text.PrintNow(subID, streamLength, 1)
+        then Text.PrintNow(subID, streamLength, 1)
         end  
         
         if doAnims == True
@@ -1670,7 +1675,7 @@ end
 function func_doMissionFade()
     if Player.IsPlaying($player1)
     then
-        $ONMISSION = True
+        $flag_Player_On_Mission = True
         Player.SetControl($player1, False)      
         Camera.SetFadingColor(0, 0, 0)
         Camera.DoFade(1000, Fade.Out)

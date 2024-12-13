@@ -332,7 +332,7 @@ while true
                 then
                     terminate_all_scripts_with_this_name "arrival"
                     $flag_Mission_Arrival_Completed = True
-                    $ONMISSION = False
+                    $flag_Player_On_Mission = False
                     Player.SetControl($player1, True)
                     func_restoreCamera()
                 end  

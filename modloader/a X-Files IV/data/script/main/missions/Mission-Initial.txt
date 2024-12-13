@@ -11,9 +11,10 @@
 :Mission_Initial_Header
 script_name 'initial'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Mssn|Initial] [INFO] Loaded mission 'initial'.")
+Debugger.Trace("Test")
 
 
-int iRandomSceneChoice
+int iRandomSceneChoice = 0
 Int iMainMenuChoice
 Int iTemp
 Menu mainMenu
@@ -149,32 +150,20 @@ jump @Mission_Initial_Cleanup_Universal
 
 
 :Mission_Initial_SceneSelecter
-// Randomly select a scene.
-//Clock.GetLocalTime(iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemTime, iSystemSeed)
-//Math.GenerateRandomIntInRangeWithSeed(iSystemSeed, 0, 2, iRandomSceneChoice)
-//-
-//Temp workaround since random int isn't all that random.
+// Randomly select a scene. Default is 0 so no need to set it here.
+iRandomSceneChoice = 0
 iTemp = Math.RandomIntInRange(1, 100)
-if and
-    iTemp >= 1
-    33 >= iTemp
-then iRandomSceneChoice = 0
-end
-
-if and
-    iTemp >= 34
-    66 >= iTemp
+if iTemp >= 33
 then iRandomSceneChoice = 1
 end
 
-if and
-    iTemp >= 67
-    100 >= iTemp
+if iTemp >= 66
 then iRandomSceneChoice = 2
 end
 //-
 switch iRandomSceneChoice
-    case 0 // Custodian on helipad      
+    case 0 // Custodian on helipad    
+        Streaming.RequestAnimation("Cop_Ambient")  
         Streaming.RequestModel(#MAVERICK)
         Streaming.RequestModel(#BMYMIB)
         Streaming.RequestModel(#DESERT_EAGLE)
@@ -196,10 +185,10 @@ switch iRandomSceneChoice
         Char.SetHeading(custodianSceneDavis, 0.0)
         Char.GiveWeapon(custodianSceneCarter, WeaponType.DesertEagle, 1)
         Char.GiveWeapon(custodianSceneDavis, WeaponType.DesertEagle, 1)
+        Task.PlayAnim(custodianSceneCustodian, "Coplook_loop", "Cop_Ambient", 4.0, True, False, False, False, -1)
         Task.AimGunAtCoord(custodianSceneCarter, {Pos3:}2616.405029, 2727.775635, 36.538643, -1)
         Task.AimGunAtCoord(custodianSceneDavis, {Pos3:}2616.405029, 2727.775635, 36.538643, -1)
-        // Facing The Custodian and the heli.
-        Camera.SetFixedPosition({Pos3:}2616.405029, 2727.775635, 36.538643, {Rot. Pos3:}0.0, 0.0, 0.0)
+        Camera.SetFixedPosition({Pos3:}2616.405029, 2727.775635, 36.538643, {Rot. Pos3:}0.0, 0.0, 0.0) // Camera: Facing The Custodian and the heli.
         Camera.PointAtPoint({Pos3:}2820.191650, 2213.777588, 114.439705, SwitchType.JumpCut)      
         
     case 1 // CJ in car
@@ -237,7 +226,7 @@ return
 :Mission_Initial_Cleanup_Universal
 AudioStream.Remove(mainTheme)
 $flag_Mission_Initial_Completed = True
-$ONMISSION = False
+$flag_Player_On_Mission = False
 terminate_this_script
 
 // Cleanup code specific to each scene
@@ -250,6 +239,7 @@ Car.Delete(custodianSceneHeli)
 Streaming.MarkModelAsNoLongerNeeded(#MAVERICK)
 Streaming.MarkModelAsNoLongerNeeded(#DESERT_EAGLE)
 Streaming.MarkModelAsNoLongerNeeded(#BMYMIB)
+Streaming.RemoveAnimation("Cop_Ambient")
 return
 
 

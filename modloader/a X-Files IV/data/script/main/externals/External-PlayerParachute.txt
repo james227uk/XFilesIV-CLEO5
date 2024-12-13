@@ -150,7 +150,7 @@ if
   Streaming.HasAnimationLoaded("PARACHUTE")
 goto_if_false @PLCHUTE_912
 if 
-  $onmission == 0
+  $flag_Player_On_Mission == 0
 goto_if_false @PLCHUTE_912
 Text.PrintNow('PARA_01', 1000, 1) // ~s~Open your parachute!
 
