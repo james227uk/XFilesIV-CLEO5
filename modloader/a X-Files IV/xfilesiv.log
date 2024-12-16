@@ -1,20 +1,39 @@
-12/12/2024 23:28:10.778 [Main|_______] [INFO] Starting early loaders...
-12/12/2024 23:28:10.778 [Main|_______] [INFO] Launching mission 'initial'...
-12/12/2024 23:28:10.801 [Mssn|Initial] [INFO] Loaded mission 'initial'.
-12/12/2024 23:28:10.815 [Main|PHQGATE] [INFO] Script started.
-12/12/2024 23:28:10.815 [Main|DBGCONL] [INFO] Script started.
-12/12/2024 23:29:06.069 [Mssn|INITIAL] [INFO] Selected gamemode 'Freemode'.
-12/12/2024 23:29:06.170 [Main|_______] [INFO] Returned from mission 'initial'.
-12/12/2024 23:29:06.171 [Main|_______] [INFO] Starting universal scripts...
-12/12/2024 23:29:06.202 [Main|TPNETWL] [INFO] Script started.
-12/12/2024 23:29:06.202 [Main|ANOMCHR] [INFO] Script started.
-12/12/2024 23:29:06.211 [Main|HQAGTIL] [INFO] Script started.
-12/12/2024 23:29:06.211 [Main|HQMASTL] [INFO] Script started.
-12/12/2024 23:29:06.211 [Main|HQEXMSL] [INFO] Script started.
-12/12/2024 23:29:06.211 [Main|FMLEATH] [INFO] Script started.
-12/12/2024 23:29:06.219 [Main|HQEXMSL] [INFO] First run detected, skipping starting some scripts.
-12/12/2024 23:29:06.235 [Main|HQSNIPR] [INFO] Script started.
-12/12/2024 23:29:06.235 [Main|HQAGTEL] [INFO] Script started.
-12/12/2024 23:29:06.235 [Main|HQSAVEP] [INFO] Script started.
-12/12/2024 23:29:06.569 [Main|_______] [INFO] Began external script 'External-HQAgentsExterior'.
-12/12/2024 23:29:06.585 [Exts|HQAGTES] [INFO] Script started
+16/12/2024 13:58:54.792 [Main|_______] [INFO] Starting early loaders...
+16/12/2024 13:58:54.792 [Main|_______] [INFO] Launching mission 'initial'...
+16/12/2024 13:58:54.833 [Mssn|Initial] [INFO] Loaded mission 'initial'.
+16/12/2024 13:58:54.859 [Main|PHQGATE] [INFO] Script started.
+16/12/2024 13:58:54.859 [Main|DBGCONL] [INFO] Script started.
+16/12/2024 13:58:56.308 [Mssn|INITIAL] [INFO] Selected gamemode 'Freemode'.
+16/12/2024 13:58:56.375 [Main|_______] [INFO] Returned from mission 'initial'.
+16/12/2024 13:58:56.375 [Main|_______] [INFO] Starting universal scripts...
+16/12/2024 13:58:56.431 [Main|TPNETWL] [INFO] Script started.
+16/12/2024 13:58:56.431 [Main|ANOMCHR] [INFO] Script started.
+16/12/2024 13:58:56.431 [Main|HQMASTL] [INFO] Script started.
+16/12/2024 13:58:56.431 [Main|HQEXMSL] [INFO] Script started.
+16/12/2024 13:58:56.431 [Main|FMLEATH] [INFO] Script started.
+16/12/2024 13:58:56.451 [Main|HQEXMSL] [INFO] First run detected, skipping starting some scripts.
+16/12/2024 13:58:56.468 [Main|HQSNIPR] [INFO] Script started.
+16/12/2024 13:58:56.468 [Main|HQAGTEL] [INFO] Script started.
+16/12/2024 13:58:56.468 [Main|HQSAVEP] [INFO] Script started.
+16/12/2024 13:58:56.785 [Main|_______] [INFO] Began external script 'External-HQAgentsExterior'.
+16/12/2024 13:58:56.806 [Exts|HQAGTES] [INFO] Script started
+16/12/2024 13:58:58.541 [Exts|HQAGTES] [INFO] Script ending (Reason: Player left range of H.Q.).
+16/12/2024 13:58:58.541 [Main|HQSNIPR] [INFO] Script ending (Reason: Player left range of H.Q.).
+16/12/2024 13:58:58.541 [Main|PHQGATE] [INFO] Script ending (Reason: Player left range of H.Q.).
+16/12/2024 13:58:58.618 [Main|HQSAVEP] [INFO] Script ending (Reason: Player left range of H.Q.).
+16/12/2024 13:58:58.751 [Main|HQMASTL] [INFO] H.Q. interior entered. Starting subscripts...
+16/12/2024 13:58:58.768 [Main|HQAGTIL] [INFO] Script started.
+16/12/2024 13:58:58.768 [Main|HQSARAL] [INFO] Script started.
+16/12/2024 13:58:58.768 [Main|HQSETCL] [INFO] Script started.
+16/12/2024 13:58:58.768 [Main|HQWPNVL] [INFO] Script started.
+16/12/2024 13:58:58.818 [Main|_______] [INFO] Began external script 'External-HQSarah'.
+16/12/2024 13:58:58.835 [Exts|HQSARAS] [INFO] Script started.
+16/12/2024 13:58:58.868 [Main|HQAGTEL] [INFO] Script ending (Reason: Player left range of H.Q.).
+16/12/2024 13:58:59.051 [Main|_______] [INFO] Began external script 'External-HQSetpieceCustodian'.
+16/12/2024 13:58:59.051 [Main|_______] [INFO] Began external script 'External-HQWeaponsVendor'.
+16/12/2024 13:58:59.068 [Main|HQWPNVS] [INFO] Script started.
+16/12/2024 13:58:59.068 [Main|HQSETCS] [INFO] Script started.
+16/12/2024 13:58:59.068 [Main|_______] [INFO] Began external script 'External-HQAgentsInterior'.
+16/12/2024 13:58:59.098 [Exts|HQAGTIS] [INFO] Script started.
+16/12/2024 13:58:59.117 [Main|HQSETCS] [INFO] Created setpiece Custodian, Carter, and Davis.
+16/12/2024 13:59:00.689 [Exts|HQAGTIS] [INFO] Interior agents populated.

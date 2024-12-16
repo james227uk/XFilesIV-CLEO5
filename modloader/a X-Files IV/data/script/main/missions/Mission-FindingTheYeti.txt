@@ -742,7 +742,7 @@ while true
         TIMERA >= 10000
     then
         Clock.GetLocalTime(iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iYetiAbilityRoll, iTemp)
-        iYetiAbilityRoll = Math.GenerateRandomIntInRangeWithSeed(iTemp, 0, 200)
+        iYetiAbilityRoll = Math.GenerateRandomIntInRangeWithSeed(iTemp, 0, 150)
         if iYetiAbilityRoll == 77
         then
             Task.PlayAnim(cYeti, {Anim:}"BOM_Plant_Loop", "BOMBER", 4.0, False, False, False, False, 2000)
@@ -750,12 +750,15 @@ while true
             wait 1000
             fxYetiBlast = Particle.CreateOnChar("CARWASHSPRAY", $scplayer, {Offset Pos3:}0.0, 0.0, 0.3, True)
             fxYetiBlast.Play()
-            wait 3000
+            wait 2000
             if Char.IsInAnyCar($scplayer)
             then 
                vehPlayerVehicle = Char.StoreCarIsInNoSave($scplayer)
                vehPlayerVehicle.SetForwardSpeed(20.0)
-            else Task.FallAndGetUp($scplayer, True, 1000)
+            else
+                if not Char.IsDucking($scplayer) 
+                then Task.FallAndGetUp($scplayer, True, 1000)
+                end
             end
             wait 1000
             fxYetiBlast.Kill()

@@ -44,7 +44,7 @@ var
     $player1: Player         // gta3sc/SBL analogue of PLAYER_CHAR
     $scplayer: Char          // gta3sc/SBL analogue of PLAYER_ACTOR
     $playerGroup: Group
-    $playerArddddddddddddddddddddea: Int
+    $playerArea: Int
     $mission_trigger_wait_time: Int = 250
     $flagGamemodeChoice: Int = 0
     
@@ -289,7 +289,6 @@ end
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|_______] [INFO] Starting universal scripts...") 
 start_new_script @Script_Universal_ProsperoHQ_ExtMasterLoader
 start_new_script @Script_Universal_ProsperoHQ_MasterLoader
-start_new_script @Script_Universal_ProsperoHQ_Agents_Interior_Loader
 start_new_script @Script_Universal_Anomaly_Mimic
 start_new_script @Script_Universal_Anomaly_Chrono
 start_new_script @Script_Universal_Facility_LilProbeInn
@@ -621,7 +620,8 @@ while true
         Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|HQMASTL] [INFO] H.Q. interior entered. Starting subscripts...")  
         start_new_script @Script_Universal_ProsperoHQ_WeaponsVendor_Loader
         start_new_script @Script_Universal_ProsperoHQ_CustodianSetPiece_Loader 
-        start_new_script @Script_Universal_ProsperoHQ_Sarah_Loader       
+        start_new_script @Script_Universal_ProsperoHQ_Sarah_Loader    
+        start_new_script @Script_Universal_ProsperoHQ_Agents_Interior_Loader
         repeat
             wait 0
         until not $playerArea == 3
@@ -907,6 +907,7 @@ while true
     if not $playerArea == 3
     then
         func_runExternalScript(externalFollowerSarah, "External-FollowerSarah")
+        Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|FLWRSWL] [INFO] Script ended (Reason: Successfully launched FollowerSarah streamed script.") 
         Break
     end
     // 
@@ -1226,7 +1227,7 @@ return
 script_name 'SMARIVL'
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO] Script started.")
 
-0@ = Blip.AddSpriteForCoord(2485.9832, 2770.8528, 10.7738, RadarSprite.Crash1)
+0@ = Blip.AddSpriteForCoord({Pos3:}2485.9832, 2770.8528, 10.7738, RadarSprite.Crash1)
 Debugger.LogLine({File:}logPath, {Timestamp:}True, {Text:}"[Main|SMARIVL] [INFO] Launching mission 'arrival'...")
 Mission.LoadAndLaunchInternal(Mission_Arrival)
 repeat
